@@ -1,11 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MotionDiv } from "@/components/shared/motion-div";
 import { ArrowRight, Play } from "lucide-react";
 
 export function Hero() {
+  const router = useRouter();
   return (
     <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28">
       <div className="absolute inset-0 -z-10">
@@ -40,7 +42,7 @@ export function Hero() {
 
           <MotionDiv animation="slideUp" delay={0.4}>
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <Button variant="primary" size="xl" className="rounded-full">
+              <Button variant="primary" size="xl" className="rounded-full" onClick={() => router.push("/login")}>
                 Start Learning
                 <ArrowRight className="h-5 w-5" />
               </Button>

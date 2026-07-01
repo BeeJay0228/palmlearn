@@ -60,3 +60,26 @@ export const BREAKPOINTS = {
   xl: 1280,
   "2xl": 1536,
 } as const;
+
+export const AUTH_STORAGE_KEY = "palmlearn-auth";
+export const USERS_STORAGE_KEY = "palmlearn-users";
+
+export const DEFAULT_ADMIN = {
+  email: "adeyinka.bolaji500@gmail.com",
+  password: "ADMIN",
+  name: "Adeyinka Bolaji",
+  role: "admin" as const,
+  mustChangePassword: true,
+};
+
+export const ROLE_LABELS: Record<string, string> = {
+  admin: "Super Admin",
+  trainer: "Trainer",
+  learner: "Learner",
+};
+
+export const ROLE_COLORS: Record<string, string> = {
+  admin: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200",
+  trainer: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200",
+  learner: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200",
+};

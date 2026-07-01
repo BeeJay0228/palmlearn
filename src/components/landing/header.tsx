@@ -2,19 +2,29 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { APP_NAME, NAV_ITEMS } from "@/constants";
 import { useScroll } from "@/hooks/use-scroll";
 import { useMounted } from "@/hooks/use-mounted";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Sun, Moon, Menu, X } from "lucide-react";
+import { GraduationCap, Sun, Moon, Menu, X, LogIn } from "lucide-react";
 
 export function LandingHeader() {
   const { isScrolled } = useScroll(20);
   const { theme, setTheme } = useTheme();
   const mounted = useMounted();
+  const { isAuthenticated, user } = useAuth();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      router.replace("/dashboard");
+    }
+  }, [isAuthenticated, user, router]);
 
   useEffect(() => {
     if (mobileOpen) {
@@ -59,6 +69,13 @@ export function LandingHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {!isAuthenticated && (
+            <Button variant="tertiary" size="sm" onClick={() => router.push("/login")} className="hidden md:inline-flex">
+              <LogIn className="h-4 w-4" />
+              Login
+            </Button>
+          )}
+
           {mounted && (
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -69,7 +86,7 @@ export function LandingHeader() {
             </button>
           )}
 
-          <Button variant="primary" size="sm" className="hidden md:inline-flex">
+          <Button variant="primary" size="sm" className="hidden md:inline-flex" onClick={() => router.push("/login")}>
             Get Started
           </Button>
 
@@ -111,7 +128,13 @@ export function LandingHeader() {
                   {theme === "dark" ? "Light Mode" : "Dark Mode"}
                 </button>
               )}
-              <Button variant="primary" className="mt-2 w-full">
+              {!isAuthenticated && (
+                <Button variant="tertiary" className="w-full" onClick={() => { setMobileOpen(false); router.push("/login"); }}>
+                  <LogIn className="h-4 w-4" />
+                  Login
+                </Button>
+              )}
+              <Button variant="primary" className="mt-2 w-full" onClick={() => { setMobileOpen(false); router.push("/login"); }}>
                 Get Started
               </Button>
             </div>
