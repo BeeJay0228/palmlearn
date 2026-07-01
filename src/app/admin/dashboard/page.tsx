@@ -8,7 +8,8 @@ import { NotificationsWidget } from "@/components/dashboard/notifications-widget
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { AssignmentSummaryCards, RegionalPerformanceWidget, RecentAssignmentsWidget } from "@/components/assignments/assignment-analytics";
-import { Users, BookOpen, CalendarDays, TrendingUp, UserPlus, FileText, Bell, UserCheck, BarChart3, Globe, GraduationCap, Award, Clock, Activity, ClipboardList } from "lucide-react";
+import { AdminEventDashboardCards } from "@/components/events/event-dashboard-cards";
+import { Users, BookOpen, CalendarDays, TrendingUp, UserPlus, FileText, Bell, UserCheck, BarChart3, GraduationCap, Award, Clock, Activity, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const recentActivity = [
@@ -24,13 +25,6 @@ const notifications = [
   { id: "2", title: "Course report ready", description: "Q2 learning analytics generated", time: "1h ago", unread: true },
   { id: "3", title: "System update", description: "Platform version 2.4.0 deployed", time: "3h ago", unread: false },
   { id: "4", title: "Storage warning", description: "Resource library at 82% capacity", time: "8h ago", unread: true },
-];
-
-const regionPerformance = [
-  { name: "Lagos", users: 342, completion: 87, color: "bg-primary-600" },
-  { name: "Abuja", users: 198, completion: 74, color: "bg-primary-500" },
-  { name: "Rivers", users: 156, completion: 91, color: "bg-primary-400" },
-  { name: "Kaduna", users: 89, completion: 68, color: "bg-primary-300" },
 ];
 
 export default function AdminDashboard() {
@@ -81,6 +75,11 @@ export default function AdminDashboard() {
 
       {/* Assignment Summary */}
       <AssignmentSummaryCards role="admin" />
+
+      {/* Event Analytics Dashboard Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <AdminEventDashboardCards />
+      </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

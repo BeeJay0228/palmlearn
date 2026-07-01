@@ -9,7 +9,8 @@ import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LearnerContinueLearning, LearnerMandatoryLearning, LearnerDueSoon, LearnerCompleted } from "@/components/assignments/learner-assignments";
-import { BookOpen, Clock, Award, TrendingUp, PlayCircle, CheckCircle, Star, Trophy, ChevronRight, Sparkles, BarChart3, Flame, AlertCircle } from "lucide-react";
+import { TodaysEvents, UpcomingLiveSessions, MissedEvents, CompletedEvents } from "@/components/events/learner-events";
+import { BookOpen, Clock, Award, TrendingUp, PlayCircle, CheckCircle, Star, Trophy, ChevronRight, Sparkles, BarChart3, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const recentActivity = [
@@ -114,6 +115,12 @@ export default function LearnerDashboard() {
         <StatCard title="Certificates" value="3" icon={Award} trend="+1 new" trendUp iconColor="text-amber-600 dark:text-amber-400" bgColor="bg-amber-50 dark:bg-amber-950/30" />
         <StatCard title="Avg. Score" value="87%" icon={TrendingUp} trend="+3% improvement" trendUp iconColor="text-purple-600 dark:text-purple-400" bgColor="bg-purple-50 dark:bg-purple-950/30" />
       </div>
+
+      {/* Event-based Learning Widgets */}
+      <TodaysEvents onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
+      <UpcomingLiveSessions onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
+      <MissedEvents onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
+      <CompletedEvents onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
 
       {/* Assignment-based Learning Widgets */}
       <LearnerMandatoryLearning />

@@ -8,8 +8,9 @@ import { NotificationsWidget } from "@/components/dashboard/notifications-widget
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { AssignmentSummaryCards, PendingLearnersWidget } from "@/components/assignments/assignment-analytics";
+import { TrainerEventDashboardCards } from "@/components/events/event-dashboard-cards";
 import { cn } from "@/lib/utils";
-import { Users, BookOpen, CalendarDays, TrendingUp, ClipboardList, Award, Clock, BarChart3, GraduationCap, Star, CheckCircle, PlayCircle, AlertCircle } from "lucide-react";
+import { Users, BookOpen, CalendarDays, TrendingUp, ClipboardList, Award, Clock, BarChart3, GraduationCap, Star, CheckCircle, PlayCircle } from "lucide-react";
 
 const recentActivity = [
   { id: "1", icon: Users, iconBg: "bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400", title: "New learner added", description: "Michael Chen joined your Mathematics class", time: "15m ago" },
@@ -78,6 +79,11 @@ export default function TrainerDashboard() {
 
       {/* Assignment Summary */}
       <AssignmentSummaryCards role="trainer" />
+
+      {/* Event Analytics Dashboard Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <TrainerEventDashboardCards />
+      </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

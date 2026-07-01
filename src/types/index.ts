@@ -393,3 +393,143 @@ export const AUDIENCE_TYPE_LABELS: Record<AudienceType, string> = {
   trainer_group: "By Trainer Group",
   organization: "Entire Organization",
 };
+
+// --- Event Types ---
+
+export type EventType = "virtual" | "physical" | "hybrid" | "webinar" | "workshop" | "town_hall";
+export type EventStatus = "draft" | "published" | "cancelled" | "completed";
+export type RecurrencePattern = "none" | "daily" | "weekly" | "biweekly" | "monthly";
+export type AttendanceStatus = "invited" | "registered" | "joined" | "completed" | "missed";
+
+export interface EventLocation {
+  type: EventType;
+  meetingUrl?: string;
+  platform?: string;
+  venue?: string;
+  address?: string;
+  gpsLocation?: string;
+}
+
+export interface EventSchedule {
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+  timezone: string;
+  recurrence: RecurrencePattern;
+  capacity: number;
+  registrationDeadline: string | null;
+}
+
+export interface EventNotifications {
+  registrationConfirmation: boolean;
+  reminder24h: boolean;
+  reminder1h: boolean;
+  reminder15m: boolean;
+  postEventFollowUp: boolean;
+}
+
+export interface EventResource {
+  id: string;
+  name: string;
+  type: "pdf" | "slides" | "video" | "link" | "document" | "assignment";
+  url: string;
+}
+
+export interface PostEvent {
+  feedbackSurvey: boolean;
+  certificate: boolean;
+  recording: string | null;
+  trainerNotes: string | null;
+  actionItems: string[];
+}
+
+export interface TrainingEvent {
+  id: string;
+  title: string;
+  description: string;
+  banner: string;
+  trainerId: string;
+  categoryId: string;
+  subCategoryId: string;
+  eventType: EventType;
+  schedule: EventSchedule;
+  location: EventLocation;
+  targetAudience: TargetAudience;
+  notifications: EventNotifications;
+  resources: EventResource[];
+  postEvent: PostEvent;
+  status: EventStatus;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventAttendance {
+  id: string;
+  eventId: string;
+  learnerId: string;
+  status: AttendanceStatus;
+  registeredAt: string | null;
+  joinedAt: string | null;
+  completedAt: string | null;
+  timeAttended: number;
+  earlyExit: boolean;
+  lateArrival: boolean;
+}
+
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  virtual: "Virtual",
+  physical: "Physical",
+  hybrid: "Hybrid",
+  webinar: "Webinar",
+  workshop: "Workshop",
+  town_hall: "Town Hall",
+};
+
+export const EVENT_TYPE_COLORS: Record<EventType, string> = {
+  virtual: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
+  physical: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
+  hybrid: "bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400",
+  webinar: "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400",
+  workshop: "bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400",
+  town_hall: "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-400",
+};
+
+export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
+  draft: "Draft",
+  published: "Published",
+  cancelled: "Cancelled",
+  completed: "Completed",
+};
+
+export const EVENT_STATUS_COLORS: Record<EventStatus, string> = {
+  draft: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  published: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
+  cancelled: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400",
+  completed: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
+};
+
+export const ATTENDANCE_STATUS_LABELS: Record<AttendanceStatus, string> = {
+  invited: "Invited",
+  registered: "Registered",
+  joined: "Joined",
+  completed: "Completed",
+  missed: "Missed",
+};
+
+export const ATTENDANCE_STATUS_COLORS: Record<AttendanceStatus, string> = {
+  invited: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  registered: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
+  joined: "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400",
+  completed: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
+  missed: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400",
+};
+
+export const RECURRENCE_LABELS: Record<RecurrencePattern, string> = {
+  none: "Does not repeat",
+  daily: "Daily",
+  weekly: "Weekly",
+  biweekly: "Bi-Weekly",
+  monthly: "Monthly",
+};

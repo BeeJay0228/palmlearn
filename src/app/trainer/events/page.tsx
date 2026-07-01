@@ -1,7 +1,16 @@
 "use client";
 
-import { PlaceholderPage } from "@/components/pages/placeholder-page";
+import { PageHeader } from "@/components/ui/page-header";
+import { EventsPage } from "@/components/events/events-page";
 
 export default function TrainerEventsPage() {
-  return <PlaceholderPage title="Training Events" description="Schedule and manage training sessions, workshops, and events." />;
+  return (
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="All Events"
+        description="Manage your training events."
+      />
+      <EventsPage role="trainer" />
+    </div>
+  );
 }

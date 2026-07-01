@@ -20,6 +20,10 @@ import {
   ClipboardList,
   Megaphone,
   History,
+  List,
+  UserCheck,
+  LineChart,
+  Calendar,
 } from "lucide-react";
 
 const adminNavItems: NavItem[] = [
@@ -27,9 +31,14 @@ const adminNavItems: NavItem[] = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Users", href: "/admin/users", icon: Users },
   { label: "Learning", href: "/admin/learning", icon: BookOpen },
-  { label: "Events", href: "/admin/events", icon: CalendarDays },
   { label: "Reports", href: "/admin/reports", icon: BarChart3 },
   { label: "Notifications", href: "/admin/notifications", icon: Bell },
+  { label: "Training Events", href: "", isSection: true },
+  { label: "Events Calendar", href: "/admin/events/calendar", icon: Calendar },
+  { label: "All Events", href: "/admin/events", icon: List },
+  { label: "My Events", href: "/admin/events/my-events", icon: CalendarDays },
+  { label: "Attendance", href: "/admin/events/attendance", icon: UserCheck },
+  { label: "Event Analytics", href: "/admin/events/analytics", icon: LineChart },
   { label: "Learning Delivery", href: "", isSection: true },
   { label: "Assignments", href: "/admin/assignments", icon: ClipboardList },
   { label: "Learning Campaigns", href: "/admin/learning-campaigns", icon: Megaphone },
