@@ -5,11 +5,11 @@ import { AssignmentsPage } from "@/components/assignments/assignments-page";
 import { seedAssignments } from "@/lib/assignments";
 import { seedLearnerAssignments } from "@/lib/learner-assignments";
 
-export default function TrainerAssignmentsRoute() {
+export default function AdminAssignmentsRoute() {
   useEffect(() => {
     seedAssignments();
     seedLearnerAssignments();
   }, []);
 
-  return <AssignmentsPage role="trainer" />;
+  return <AssignmentsPage role="admin" />;
 }

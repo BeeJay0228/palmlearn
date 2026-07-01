@@ -7,7 +7,8 @@ import { ActivityTimeline } from "@/components/dashboard/activity-timeline";
 import { NotificationsWidget } from "@/components/dashboard/notifications-widget";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Users, BookOpen, CalendarDays, TrendingUp, UserPlus, FileText, Bell, UserCheck, BarChart3, Globe, GraduationCap, Award, Clock, Activity } from "lucide-react";
+import { AssignmentSummaryCards, RegionalPerformanceWidget, RecentAssignmentsWidget } from "@/components/assignments/assignment-analytics";
+import { Users, BookOpen, CalendarDays, TrendingUp, UserPlus, FileText, Bell, UserCheck, BarChart3, Globe, GraduationCap, Award, Clock, Activity, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const recentActivity = [
@@ -78,6 +79,9 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Assignment Summary */}
+      <AssignmentSummaryCards role="admin" />
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Total Users" value="1,284" icon={Users} trend="+12% this month" trendUp iconColor="text-emerald-600 dark:text-emerald-400" bgColor="bg-emerald-50 dark:bg-emerald-950/30" />
@@ -88,36 +92,15 @@ export default function AdminDashboard() {
 
       {/* Charts & Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Regional Performance */}
-        <Card variant="default" padding="none" className="lg:col-span-1">
-          <div className="px-5 py-4 border-b border-border/50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-primary-600" />
-                <CardTitle>Regional Performance</CardTitle>
-              </div>
-              <span className="text-xs text-content-tertiary">Top 4 regions</span>
-            </div>
-          </div>
-          <CardContent className="p-5">
-            <div className="flex flex-col gap-4">
-              {regionPerformance.map((r) => (
-                <div key={r.name} className="flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-content">{r.name}</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-content-tertiary">{r.users} users</span>
-                      <span className="text-xs font-semibold text-content">{r.completion}%</span>
-                    </div>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-surface-tertiary overflow-hidden">
-                    <div className={cn("h-full rounded-full transition-all duration-1000", r.color)} style={{ width: `${r.completion}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Regional Assignment Performance */}
+        <div className="lg:col-span-1">
+          <RegionalPerformanceWidget />
+        </div>
+
+        {/* Recent Assignments */}
+        <div className="lg:col-span-1">
+          <RecentAssignmentsWidget />
+        </div>
 
         {/* Recent Activity */}
         <div className="lg:col-span-1">
@@ -138,7 +121,7 @@ export default function AdminDashboard() {
           actions={[
             { label: "Add User", href: "/admin/users", icon: UserPlus, color: "text-emerald-600", bgColor: "bg-emerald-50 dark:bg-emerald-950/30" },
             { label: "View Reports", href: "/admin/reports", icon: BarChart3, color: "text-blue-600", bgColor: "bg-blue-50 dark:bg-blue-950/30" },
-            { label: "Manage Learning", href: "/admin/learning", icon: BookOpen, color: "text-amber-600", bgColor: "bg-amber-50 dark:bg-amber-950/30" },
+            { label: "Assignments", href: "/admin/assignments", icon: ClipboardList, color: "text-amber-600", bgColor: "bg-amber-50 dark:bg-amber-950/30" },
             { label: "Settings", href: "/admin/settings", icon: GraduationCap, color: "text-purple-600", bgColor: "bg-purple-50 dark:bg-purple-950/30" },
           ]}
         />

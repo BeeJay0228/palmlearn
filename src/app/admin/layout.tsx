@@ -17,6 +17,9 @@ import {
   Library,
   Map,
   Globe,
+  ClipboardList,
+  Megaphone,
+  History,
 } from "lucide-react";
 
 const adminNavItems: NavItem[] = [
@@ -27,6 +30,10 @@ const adminNavItems: NavItem[] = [
   { label: "Events", href: "/admin/events", icon: CalendarDays },
   { label: "Reports", href: "/admin/reports", icon: BarChart3 },
   { label: "Notifications", href: "/admin/notifications", icon: Bell },
+  { label: "Learning Delivery", href: "", isSection: true },
+  { label: "Assignments", href: "/admin/assignments", icon: ClipboardList },
+  { label: "Learning Campaigns", href: "/admin/learning-campaigns", icon: Megaphone },
+  { label: "Assignment History", href: "/admin/assignments/history", icon: History },
   { label: "Learning Library", href: "", isSection: true },
   { label: "Courses", href: "/admin/courses", icon: Library },
   { label: "Learning Paths", href: "/admin/learning-paths", icon: Map },

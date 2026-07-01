@@ -7,8 +7,9 @@ import { ActivityTimeline } from "@/components/dashboard/activity-timeline";
 import { NotificationsWidget } from "@/components/dashboard/notifications-widget";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { AssignmentSummaryCards, PendingLearnersWidget } from "@/components/assignments/assignment-analytics";
 import { cn } from "@/lib/utils";
-import { Users, BookOpen, CalendarDays, TrendingUp, ClipboardList, Award, Clock, BarChart3, GraduationCap, Star, CheckCircle, PlayCircle } from "lucide-react";
+import { Users, BookOpen, CalendarDays, TrendingUp, ClipboardList, Award, Clock, BarChart3, GraduationCap, Star, CheckCircle, PlayCircle, AlertCircle } from "lucide-react";
 
 const recentActivity = [
   { id: "1", icon: Users, iconBg: "bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400", title: "New learner added", description: "Michael Chen joined your Mathematics class", time: "15m ago" },
@@ -75,6 +76,9 @@ export default function TrainerDashboard() {
         </div>
       </div>
 
+      {/* Assignment Summary */}
+      <AssignmentSummaryCards role="trainer" />
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="My Learners" value="128" icon={Users} trend="+8 this month" trendUp iconColor="text-emerald-600 dark:text-emerald-400" bgColor="bg-emerald-50 dark:bg-emerald-950/30" />
@@ -114,6 +118,11 @@ export default function TrainerDashboard() {
             </button>
           </CardContent>
         </Card>
+
+        {/* Pending Learners */}
+        <div className="lg:col-span-1">
+          <PendingLearnersWidget />
+        </div>
 
         {/* Recent Activity */}
         <div className="lg:col-span-1">

@@ -13,16 +13,21 @@ import {
   Library,
   Map,
   Globe,
+  Megaphone,
+  History,
 } from "lucide-react";
 
 const trainerNavItems: NavItem[] = [
   { label: "Main", href: "", isSection: true },
   { label: "Dashboard", href: "/trainer/dashboard", icon: LayoutDashboard },
   { label: "My Learners", href: "/trainer/my-learners", icon: Users },
-  { label: "Assignments", href: "/trainer/assignments", icon: ClipboardList },
   { label: "Events", href: "/trainer/events", icon: CalendarDays },
   { label: "Reports", href: "/trainer/reports", icon: BarChart3 },
   { label: "Notifications", href: "/trainer/notifications", icon: Bell },
+  { label: "Learning Delivery", href: "", isSection: true },
+  { label: "Assignments", href: "/trainer/assignments", icon: ClipboardList },
+  { label: "Learning Campaigns", href: "/trainer/learning-campaigns", icon: Megaphone },
+  { label: "Assignment History", href: "/trainer/assignments/history", icon: History },
   { label: "Learning Library", href: "", isSection: true },
   { label: "Courses", href: "/trainer/courses", icon: Library },
   { label: "Learning Paths", href: "/trainer/learning-paths", icon: Map },

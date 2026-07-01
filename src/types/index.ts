@@ -230,3 +230,166 @@ export const COURSE_STATUS_COLORS: Record<CourseStatus, string> = {
   published: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
   archived: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400",
 };
+
+// --- Assignment & Campaign Types ---
+
+export type AssignmentType = "mandatory" | "optional" | "recommended" | "refresher";
+export type AssignmentPriority = "low" | "medium" | "high" | "critical";
+export type AssignmentStatus = "draft" | "active" | "completed" | "cancelled";
+export type AudienceType = "single" | "multiple" | "category" | "subcategory" | "region" | "state" | "office" | "trainer_group" | "organization";
+export type ScheduleType = "immediate" | "scheduled";
+export type ReminderSchedule = "none" | "daily" | "weekly";
+export type LearnerAssignmentStatus = "not_started" | "in_progress" | "completed" | "overdue" | "expired" | "locked";
+export type CampaignStatus = "draft" | "active" | "completed" | "archived";
+
+export interface TargetAudience {
+  type: AudienceType;
+  userIds: string[];
+  categoryIds: string[];
+  subCategoryIds: string[];
+  regionIds: string[];
+  stateIds: string[];
+}
+
+export interface AssignmentSchedule {
+  type: ScheduleType;
+  startDate: string | null;
+  dueDate: string | null;
+  expiryDate: string | null;
+  timezone: string;
+}
+
+export interface AssignmentNotifications {
+  sendEmail: boolean;
+  inApp: boolean;
+  reminderSchedule: ReminderSchedule;
+  reminderFrequency: number;
+}
+
+export interface Assignment {
+  id: string;
+  name: string;
+  description: string;
+  type: AssignmentType;
+  priority: AssignmentPriority;
+  courseIds: string[];
+  campaignId?: string;
+  assignedBy: string;
+  targetAudience: TargetAudience;
+  schedule: AssignmentSchedule;
+  notifications: AssignmentNotifications;
+  status: AssignmentStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  description: string;
+  courseIds: string[];
+  status: CampaignStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LearnerAssignment {
+  id: string;
+  assignmentId: string;
+  campaignId?: string;
+  learnerId: string;
+  courseId: string;
+  progress: number;
+  status: LearnerAssignmentStatus;
+  assignedDate: string;
+  firstOpened?: string;
+  lastActivity?: string;
+  completedDate?: string;
+  timeSpent: number;
+}
+
+export const ASSIGNMENT_TYPE_LABELS: Record<AssignmentType, string> = {
+  mandatory: "Mandatory",
+  optional: "Optional",
+  recommended: "Recommended",
+  refresher: "Refresher",
+};
+
+export const ASSIGNMENT_TYPE_COLORS: Record<AssignmentType, string> = {
+  mandatory: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400",
+  optional: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  recommended: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
+  refresher: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
+};
+
+export const ASSIGNMENT_PRIORITY_LABELS: Record<AssignmentPriority, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  critical: "Critical",
+};
+
+export const ASSIGNMENT_PRIORITY_COLORS: Record<AssignmentPriority, string> = {
+  low: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  medium: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
+  high: "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400",
+  critical: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400",
+};
+
+export const ASSIGNMENT_STATUS_LABELS: Record<AssignmentStatus, string> = {
+  draft: "Draft",
+  active: "Active",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
+
+export const ASSIGNMENT_STATUS_COLORS: Record<AssignmentStatus, string> = {
+  draft: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  active: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
+  completed: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
+  cancelled: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400",
+};
+
+export const LEARNER_ASSIGNMENT_STATUS_LABELS: Record<LearnerAssignmentStatus, string> = {
+  not_started: "Not Started",
+  in_progress: "In Progress",
+  completed: "Completed",
+  overdue: "Overdue",
+  expired: "Expired",
+  locked: "Locked",
+};
+
+export const LEARNER_ASSIGNMENT_STATUS_COLORS: Record<LearnerAssignmentStatus, string> = {
+  not_started: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  in_progress: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
+  completed: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
+  overdue: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400",
+  expired: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  locked: "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400",
+};
+
+export const CAMPAIGN_STATUS_LABELS: Record<CampaignStatus, string> = {
+  draft: "Draft",
+  active: "Active",
+  completed: "Completed",
+  archived: "Archived",
+};
+
+export const CAMPAIGN_STATUS_COLORS: Record<CampaignStatus, string> = {
+  draft: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  active: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
+  completed: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
+  archived: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400",
+};
+
+export const AUDIENCE_TYPE_LABELS: Record<AudienceType, string> = {
+  single: "Single Learner",
+  multiple: "Multiple Learners",
+  category: "By Category",
+  subcategory: "By Sub-Category",
+  region: "By Region",
+  state: "By State",
+  office: "By Office",
+  trainer_group: "By Trainer Group",
+  organization: "Entire Organization",
+};
