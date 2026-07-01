@@ -3,34 +3,38 @@
 import { useAuth } from "@/hooks/use-auth";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { AppShell } from "@/components/layout/app-shell";
-import { LayoutDashboard, Users, Settings, Building2, FolderTree, FolderOpen, MapPin, Globe } from "lucide-react";
 import type { NavItem } from "@/types";
 import type { ReactNode } from "react";
+import {
+  LayoutDashboard, Users, BookOpen, BookMarked, GitBranch, MapPin, Globe,
+  ClipboardList, PlayCircle,
+} from "lucide-react";
 
 const adminNav: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Organization", href: "", icon: Building2, isSection: true },
-  { label: "Users", href: "/dashboard/admin/users", icon: Users },
-  { label: "Categories", href: "/dashboard/admin/categories", icon: FolderTree },
-  { label: "Sub-Categories", href: "/dashboard/admin/sub-categories", icon: FolderOpen },
-  { label: "Regions", href: "/dashboard/admin/regions", icon: MapPin },
-  { label: "States", href: "/dashboard/admin/states", icon: Globe },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { label: "Main", href: "", isSection: true },
+  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Users", href: "/admin/users", icon: Users },
+  { label: "Learning", href: "/admin/learning", icon: BookOpen },
+  { label: "Organization", href: "", isSection: true },
+  { label: "Categories", href: "/admin/categories", icon: BookMarked },
+  { label: "Sub-Categories", href: "/admin/sub-categories", icon: GitBranch },
+  { label: "Regions", href: "/admin/regions", icon: MapPin },
+  { label: "States", href: "/admin/states", icon: Globe },
 ];
 
 const trainerNav: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "My Courses", href: "/dashboard/trainer/courses", icon: FolderOpen, disabled: true },
-  { label: "Schedule", href: "/dashboard/trainer/schedule", icon: FolderTree, disabled: true },
-  { label: "Learners", href: "/dashboard/trainer/learners", icon: Users, disabled: true },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { label: "Main", href: "", isSection: true },
+  { label: "Dashboard", href: "/trainer/dashboard", icon: LayoutDashboard },
+  { label: "My Learners", href: "/trainer/my-learners", icon: Users },
+  { label: "Learning", href: "/trainer/learning", icon: BookOpen },
+  { label: "Assignments", href: "/trainer/assignments", icon: ClipboardList },
 ];
 
 const learnerNav: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "My Learning", href: "/dashboard/learner/courses", icon: FolderOpen, disabled: true },
-  { label: "Calendar", href: "/dashboard/learner/calendar", icon: FolderTree, disabled: true },
-  { label: "Achievements", href: "/dashboard/learner/achievements", icon: Building2, disabled: true },
+  { label: "Main", href: "", isSection: true },
+  { label: "Dashboard", href: "/learner/dashboard", icon: LayoutDashboard },
+  { label: "Continue Learning", href: "/learner/continue-learning", icon: PlayCircle },
+  { label: "My Courses", href: "/learner/my-courses", icon: BookOpen },
 ];
 
 const navMap: Record<string, NavItem[]> = {

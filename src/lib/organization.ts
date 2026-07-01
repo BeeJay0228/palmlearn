@@ -415,3 +415,13 @@ export function resetUserPassword(id: string): { success: boolean; password?: st
 
   return { success: true, password: newPassword };
 }
+
+export function getCategoryName(categoryId: string): string | null {
+  const cats = getCategories();
+  return cats.find((c) => c.id === categoryId)?.name ?? null;
+}
+
+export function getRegionName(regionId: string): string | null {
+  const regions = getRegions();
+  return regions.find((r) => r.id === regionId)?.name ?? null;
+}

@@ -23,16 +23,16 @@ export default function DashboardRedirect() {
 
     switch (user.role) {
       case "admin":
-        router.replace("/dashboard/admin");
+        router.replace("/admin/dashboard");
         break;
       case "trainer":
-        router.replace("/dashboard/trainer");
+        router.replace("/trainer/dashboard");
         break;
       case "learner":
-        router.replace("/dashboard/learner");
+        router.replace("/learner/dashboard");
         break;
       default:
-        router.replace("/dashboard/learner");
+        router.replace("/learner/dashboard");
     }
   }, [user, isLoading, router]);
 

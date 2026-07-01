@@ -22,7 +22,7 @@ export function LandingHeader() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      router.replace("/dashboard");
+      router.replace(`/${user.role}/dashboard`);
     }
   }, [isAuthenticated, user, router]);
 
