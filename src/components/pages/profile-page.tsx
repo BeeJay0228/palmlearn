@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { updateProfile, updatePassword } from "@/lib/auth";
 import Image from "next/image";
-import { Camera, Loader2, Save, Lock, KeyRound, Eye, EyeOff, CheckCircle2, AlertCircle } from "lucide-react";
+import { Camera, Loader2, Save, Lock, KeyRound, Eye, EyeOff, CheckCircle2, AlertCircle, User } from "lucide-react";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ROLE_LABELS } from "@/constants";
 
 export function ProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -32,6 +37,11 @@ export function ProfilePage() {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const initials = useMemo(() => {
+    if (!user) return "?";
+    return user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  }, [user]);
 
   if (!user) return null;
 
@@ -93,205 +103,207 @@ export function ProfilePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-8">
+    <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full animate-fade-in">
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-content">Profile</h1>
-        <p className="text-sm text-content-secondary mt-1">Manage your personal information and password</p>
+        <p className="text-sm text-content-secondary/80 mt-1">Manage your personal information and password</p>
       </div>
 
+      {/* Status Messages */}
       {success && (
-        <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 text-sm text-emerald-700 dark:text-emerald-400">
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
+        <div className="flex items-center gap-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-800/30 p-4 text-sm text-emerald-700 dark:text-emerald-400">
+          <CheckCircle2 className="h-5 w-5 shrink-0" />
           {success}
         </div>
       )}
       {error && (
-        <div className="flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-4 text-sm text-red-700 dark:text-red-400">
-          <AlertCircle className="h-4 w-4 shrink-0" />
+        <div className="flex items-center gap-2.5 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200/50 dark:border-red-800/30 p-4 text-sm text-red-700 dark:text-red-400">
+          <AlertCircle className="h-5 w-5 shrink-0" />
           {error}
         </div>
       )}
 
-      <section className="rounded-xl border border-border bg-surface p-6">
-        <h2 className="text-base font-semibold text-content mb-6">Personal Information</h2>
-        <div className="flex flex-col sm:flex-row items-center gap-6 mb-8 pb-8 border-b border-border">
-          <div className="relative cursor-pointer group" onClick={handleAvatarClick}>
-            <div className="relative h-24 w-24 rounded-full bg-primary-600 flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
-              {avatarPreview ? (
-                <Image src={avatarPreview} alt="Avatar" fill className="object-cover" unoptimized />
-              ) : (
-                user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
-              )}
-            </div>
-            <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera className="h-6 w-6 text-white" />
-            </div>
-          </div>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-          <div className="text-center sm:text-left">
-            <p className="text-sm font-semibold text-content">{user.name}</p>
-            <p className="text-xs text-content-tertiary">{user.email}</p>
-            <p className="text-xs text-content-tertiary mt-1">Click avatar to upload a photo</p>
+      {/* Personal Information */}
+      <Card variant="default" padding="none">
+        <div className="px-6 py-4 border-b border-border/50">
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 text-primary-600" />
+            <CardTitle>Personal Information</CardTitle>
           </div>
         </div>
+        <CardContent className="p-6">
+          {/* Avatar Section */}
+          <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 mb-6 border-b border-border/50">
+            <div className="relative cursor-pointer group" onClick={handleAvatarClick}>
+              <div className="relative h-24 w-24 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-3xl font-bold overflow-hidden shadow-md shadow-primary-600/20">
+                {avatarPreview ? (
+                  <Image src={avatarPreview} alt="Avatar" fill className="object-cover" unoptimized />
+                ) : (
+                  initials
+                )}
+              </div>
+              <div className="absolute inset-0 rounded-2xl bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+            <div className="text-center sm:text-left">
+              <p className="text-base font-semibold text-content">{user.name}</p>
+              <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
+                <Badge variant="default" size="sm">{ROLE_LABELS[user.role]}</Badge>
+                <Badge variant={user.status === "active" ? "success" : "danger"} size="sm">
+                  {user.status === "active" ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+              <p className="text-xs text-content-tertiary mt-2">Click avatar to upload a photo</p>
+            </div>
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-content-secondary">Full Name</label>
-            <input
-              type="text"
+          {/* Form Fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <Input
+              label="Full Name"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="h-10 rounded-lg border border-border bg-surface-secondary px-3 text-sm text-content placeholder:text-content-tertiary outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-all"
+              variant="filled"
+              inputSize="lg"
+              floating
             />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-content-secondary">Email</label>
-            <input
+            <Input
+              label="Email"
               type="email"
               value={user.email}
               disabled
-              className="h-10 rounded-lg border border-border bg-surface-secondary px-3 text-sm text-content-secondary/60 cursor-not-allowed outline-none"
+              variant="filled"
+              inputSize="lg"
+              floating
             />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-content-secondary">Phone</label>
-            <input
+            <Input
+              label="Phone"
               type="tel"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="h-10 rounded-lg border border-border bg-surface-secondary px-3 text-sm text-content placeholder:text-content-tertiary outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-all"
+              variant="filled"
+              inputSize="lg"
+              floating
               placeholder="+1 (555) 000-0000"
             />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-content-secondary">Role</label>
-            <input
-              type="text"
+            <Input
+              label="Role"
               value={user.role.charAt(0).toUpperCase() + user.role.slice(1)}
               disabled
-              className="h-10 rounded-lg border border-border bg-surface-secondary px-3 text-sm text-content-secondary/60 cursor-not-allowed outline-none"
+              variant="filled"
+              inputSize="lg"
+              floating
             />
+            <div className="sm:col-span-2">
+              <Input
+                label="Bio"
+                value={form.bio}
+                onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                variant="filled"
+                placeholder="Tell us about yourself..."
+                floating
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Input
+                label="Office Address"
+                value={form.officeAddress}
+                onChange={(e) => setForm({ ...form, officeAddress: e.target.value })}
+                variant="filled"
+                floating
+                placeholder="123 Business Ave"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Input
+                label="Home Address"
+                value={form.homeAddress}
+                onChange={(e) => setForm({ ...form, homeAddress: e.target.value })}
+                variant="filled"
+                floating
+                placeholder="456 Home St"
+              />
+            </div>
           </div>
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-xs font-medium text-content-secondary">Bio</label>
-            <textarea
-              value={form.bio}
-              onChange={(e) => setForm({ ...form, bio: e.target.value })}
-              rows={3}
-              className="rounded-lg border border-border bg-surface-secondary px-3 py-2 text-sm text-content placeholder:text-content-tertiary outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-all resize-none"
-              placeholder="Tell us about yourself..."
-            />
-          </div>
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-xs font-medium text-content-secondary">Office Address</label>
-            <input
-              type="text"
-              value={form.officeAddress}
-              onChange={(e) => setForm({ ...form, officeAddress: e.target.value })}
-              className="h-10 rounded-lg border border-border bg-surface-secondary px-3 text-sm text-content placeholder:text-content-tertiary outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-all"
-              placeholder="Office address"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-xs font-medium text-content-secondary">Home Address</label>
-            <input
-              type="text"
-              value={form.homeAddress}
-              onChange={(e) => setForm({ ...form, homeAddress: e.target.value })}
-              className="h-10 rounded-lg border border-border bg-surface-secondary px-3 text-sm text-content placeholder:text-content-tertiary outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-all"
-              placeholder="Home address"
-            />
-          </div>
-        </div>
 
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={handleProfileSave}
-            disabled={saving}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50 transition-all"
-          >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
-        </div>
-      </section>
+          <div className="mt-6 flex justify-end">
+            <Button onClick={handleProfileSave} disabled={saving} variant="primary" size="lg">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-      <section className="rounded-xl border border-border bg-surface p-6">
-        <div className="flex items-center gap-2 mb-6">
-          <Lock className="h-4 w-4 text-content-secondary" />
-          <h2 className="text-base font-semibold text-content">Change Password</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-content-secondary">Current Password</label>
-            <div className="relative">
-              <input
-                type={showCurrent ? "text" : "password"}
-                value={passwordForm.currentPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                className="h-10 w-full rounded-lg border border-border bg-surface-secondary px-3 pr-9 text-sm text-content placeholder:text-content-tertiary outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-all"
-                placeholder="Enter current password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrent(!showCurrent)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-content-tertiary hover:text-content-secondary"
-              >
-                {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-content-secondary">New Password</label>
-            <div className="relative">
-              <input
-                type={showNew ? "text" : "password"}
-                value={passwordForm.newPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                className="h-10 w-full rounded-lg border border-border bg-surface-secondary px-3 pr-9 text-sm text-content placeholder:text-content-tertiary outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-all"
-                placeholder="Min. 6 characters"
-              />
-              <button
-                type="button"
-                onClick={() => setShowNew(!showNew)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-content-tertiary hover:text-content-secondary"
-              >
-                {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-content-secondary">Confirm New Password</label>
-            <div className="relative">
-              <input
-                type={showConfirm ? "text" : "password"}
-                value={passwordForm.confirmPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                className="h-10 w-full rounded-lg border border-border bg-surface-secondary px-3 pr-9 text-sm text-content placeholder:text-content-tertiary outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-all"
-                placeholder="Re-enter new password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-content-tertiary hover:text-content-secondary"
-              >
-                {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
+      {/* Change Password */}
+      <Card variant="default" padding="none">
+        <div className="px-6 py-4 border-b border-border/50">
+          <div className="flex items-center gap-2">
+            <Lock className="h-4 w-4 text-primary-600" />
+            <CardTitle>Change Password</CardTitle>
           </div>
         </div>
-        <div className="mt-5 flex justify-end">
-          <button
-            onClick={handlePasswordChange}
-            disabled={savingPassword}
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-5 py-2.5 text-sm font-semibold text-content hover:bg-surface-hover disabled:opacity-50 transition-all"
-          >
-            {savingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
-            {savingPassword ? "Changing..." : "Change Password"}
-          </button>
-        </div>
-      </section>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <Input
+              label="Current Password"
+              type={showCurrent ? "text" : "password"}
+              value={passwordForm.currentPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+              variant="filled"
+              floating
+              rightIcon={
+                <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="text-content-tertiary hover:text-content-secondary">
+                  {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              }
+            />
+            <Input
+              label="New Password"
+              type={showNew ? "text" : "password"}
+              value={passwordForm.newPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+              variant="filled"
+              floating
+              placeholder="Min. 6 characters"
+              rightIcon={
+                <button type="button" onClick={() => setShowNew(!showNew)} className="text-content-tertiary hover:text-content-secondary">
+                  {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              }
+            />
+            <Input
+              label="Confirm New Password"
+              type={showConfirm ? "text" : "password"}
+              value={passwordForm.confirmPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+              variant="filled"
+              floating
+              rightIcon={
+                <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="text-content-tertiary hover:text-content-secondary">
+                  {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              }
+            />
+          </div>
+          <div className="mt-5 flex justify-end">
+            <Button
+              onClick={handlePasswordChange}
+              disabled={savingPassword}
+              variant="secondary"
+              size="lg"
+            >
+              {savingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+              {savingPassword ? "Changing..." : "Change Password"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
+
+// Extend Input to support rightIcon

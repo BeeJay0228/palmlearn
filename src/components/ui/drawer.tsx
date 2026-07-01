@@ -32,14 +32,14 @@ export function Drawer({ open, onClose, title, children, className }: DrawerProp
     <>
       <div
         className={cn(
-          "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-300",
+          "fixed inset-0 z-50 bg-black/20 backdrop-blur-sm transition-all duration-300",
           open ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={onClose}
       />
       <div
         className={cn(
-          "fixed inset-y-0 right-0 z-50 w-full max-w-lg border-l border-border bg-surface shadow-2xl transition-transform duration-300 ease-in-out",
+          "fixed inset-y-0 right-0 z-50 w-full max-w-lg border-l border-border bg-surface shadow-2xl transition-transform duration-300 ease-out",
           open ? "translate-x-0" : "translate-x-full",
           className,
         )}
@@ -48,7 +48,7 @@ export function Drawer({ open, onClose, title, children, className }: DrawerProp
           <h2 className="text-lg font-semibold text-content">{title}</h2>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
             aria-label="Close drawer"
           >
             <X className="h-4 w-4" />

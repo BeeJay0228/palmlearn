@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
@@ -11,6 +10,8 @@ interface StatCardProps {
   trend?: string;
   trendUp?: boolean;
   className?: string;
+  iconColor?: string;
+  bgColor?: string;
 }
 
 export function StatCard({
@@ -20,28 +21,42 @@ export function StatCard({
   trend,
   trendUp,
   className,
+  iconColor = "text-primary-600 dark:text-primary-400",
+  bgColor = "bg-primary-50 dark:bg-primary-950/30",
 }: StatCardProps) {
   return (
-    <Card variant="default" padding="md" className={cn("group", className)}>
-      <CardContent>
-        <div className="flex items-start justify-between">
-          <div className="flex flex-col gap-1.5">
-            <p className="text-sm text-content-secondary">{title}</p>
-            <p className="text-2xl font-bold text-content">{value}</p>
-            {trend && (
-              <p className={cn(
-                "text-xs font-medium",
-                trendUp ? "text-success" : "text-danger",
-              )}>
-                {trend}
-              </p>
-            )}
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-950/50 text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform">
-            <Icon className="h-5 w-5" />
-          </div>
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-2xl border border-border/50 bg-surface p-5 transition-all duration-300 card-hover",
+        className,
+      )}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-1.5">
+          <p className="text-xs font-medium text-content-secondary/80 uppercase tracking-wider">{title}</p>
+          <p className="stat-value">{value}</p>
+          {trend && (
+            <div className={cn(
+              "inline-flex items-center gap-1 text-xs font-semibold mt-0.5",
+              trendUp ? "text-success" : "text-danger",
+            )}>
+              <span className={cn(
+                "inline-block w-0 h-0",
+                trendUp ? "border-l-[4px] border-r-[4px] border-b-[5px] border-l-transparent border-r-transparent border-b-current" : "border-l-[4px] border-r-[4px] border-t-[5px] border-l-transparent border-r-transparent border-t-current",
+              )} />
+              {trend}
+            </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+        <div className={cn(
+          "flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-300 group-hover:scale-110",
+          bgColor,
+        )}>
+          <Icon className={cn("h-5 w-5", iconColor)} />
+        </div>
+      </div>
+
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary-500/20 to-transparent" />
+    </div>
   );
 }

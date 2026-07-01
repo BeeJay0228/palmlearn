@@ -16,28 +16,48 @@ interface NotificationsWidgetProps {
 }
 
 export function NotificationsWidget({ notifications, title = "Notifications", className }: NotificationsWidgetProps) {
+  const unreadCount = notifications.filter((n) => n.unread).length;
+
   return (
-    <div className={cn("rounded-xl border border-border bg-surface", className)}>
-      <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-content">{title}</h3>
-        <span className="text-xs text-content-tertiary">{notifications.filter((n) => n.unread).length} unread</span>
+    <div className={cn("rounded-2xl border border-border/50 bg-surface overflow-hidden", className)}>
+      <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-content">{title}</h3>
+          {unreadCount > 0 && (
+            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white px-1.5">
+              {unreadCount}
+            </span>
+          )}
+        </div>
+        <button className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors">
+          View all
+        </button>
       </div>
-      <div className="p-5 flex flex-col gap-3">
+      <div className="p-3 flex flex-col gap-1">
         {notifications.length === 0 ? (
-          <div className="flex flex-col items-center py-6 text-center">
+          <div className="flex flex-col items-center py-8 text-center">
             <Bell className="h-8 w-8 text-content-tertiary mb-2" />
             <p className="text-sm text-content-secondary">No notifications</p>
             <p className="text-xs text-content-tertiary mt-1">You&apos;re all caught up!</p>
           </div>
         ) : (
           notifications.map((n) => (
-            <div key={n.id} className={cn("flex items-start gap-3 p-3 rounded-lg", n.unread ? "bg-primary-50/50 dark:bg-primary-950/20" : "bg-surface-secondary")}>
-              <div className={cn("h-2 w-2 mt-1.5 rounded-full shrink-0", n.unread ? "bg-primary-600" : "bg-transparent")} />
+            <div
+              key={n.id}
+              className={cn(
+                "flex items-start gap-3 p-3 rounded-xl transition-colors cursor-pointer",
+                n.unread ? "bg-primary-50/60 dark:bg-primary-950/20" : "hover:bg-surface-hover",
+              )}
+            >
+              <div className={cn(
+                "h-2.5 w-2.5 mt-1 rounded-full shrink-0",
+                n.unread ? "bg-primary-600" : "bg-transparent border border-border",
+              )} />
               <div className="flex-1 min-w-0">
                 <p className={cn("text-sm", n.unread ? "font-semibold text-content" : "text-content")}>{n.title}</p>
-                <p className="text-xs text-content-tertiary mt-0.5">{n.description}</p>
+                <p className="text-xs text-content-tertiary mt-0.5 leading-relaxed">{n.description}</p>
               </div>
-              <span className="text-xs text-content-tertiary shrink-0">{n.time}</span>
+              <span className="text-[11px] text-content-tertiary/70 shrink-0 whitespace-nowrap">{n.time}</span>
             </div>
           ))
         )}
