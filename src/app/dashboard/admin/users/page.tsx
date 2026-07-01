@@ -36,6 +36,8 @@ export default function AdminUsersPage() {
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const [resetTarget, setResetTarget] = useState<User | null>(null);
   const [resetPasswordValue, setResetPasswordValue] = useState("");
+  const [createdPassword, setCreatedPassword] = useState<string | null>(null);
+  const [createdUserName, setCreatedUserName] = useState("");
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState<CreateUserData>({
@@ -96,11 +98,17 @@ export default function AdminUsersPage() {
     try {
       if (editingUser) {
         await updateManagedUser(editingUser.id, form);
+        setDrawerOpen(false);
+        loadUsers();
       } else {
-        await createManagedUser(form);
+        const result = createManagedUser(form);
+        if (result.success && result.password) {
+          setCreatedPassword(result.password);
+          setCreatedUserName(form.name);
+        }
+        setDrawerOpen(false);
+        loadUsers();
       }
-      setDrawerOpen(false);
-      loadUsers();
     } catch {
       // Silently handle
     } finally {
@@ -356,6 +364,29 @@ export default function AdminUsersPage() {
             </div>
             <div className="flex justify-center mt-6">
               <Button onClick={() => { setResetTarget(null); setResetPasswordValue(""); }}>Done</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {createdPassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setCreatedPassword(null)} />
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-surface shadow-2xl p-6 animate-scale-in">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <KeyRound className="h-6 w-6 text-primary-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-content">User Created Successfully</h3>
+                <p className="text-sm text-content-secondary mt-1">Temporary password for <strong>{createdUserName}</strong>. They will be required to change it on next login.</p>
+              </div>
+              <div className="w-full rounded-xl bg-surface-secondary border border-border p-4">
+                <p className="text-lg font-mono font-bold text-primary-600 text-center tracking-wider select-all">{createdPassword}</p>
+              </div>
+            </div>
+            <div className="flex justify-center mt-6">
+              <Button onClick={() => setCreatedPassword(null)}>Done</Button>
             </div>
           </div>
         </div>

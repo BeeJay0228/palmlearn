@@ -275,7 +275,7 @@ export function getUserById(id: string): User | null {
   return getManagedUsers().find((u) => u.id === id) || null;
 }
 
-export function createManagedUser(data: CreateUserData): { success: boolean; user?: User; error?: string } {
+export function createManagedUser(data: CreateUserData): { success: boolean; user?: User; error?: string; password?: string } {
   const users = getRawUsers();
   if (users.some((u) => u.email === data.email)) {
     return { success: false, error: "A user with this email already exists." };
@@ -325,6 +325,7 @@ export function createManagedUser(data: CreateUserData): { success: boolean; use
       mustChangePassword: true,
       createdAt: now,
     },
+    password: tempPassword,
   };
 }
 
