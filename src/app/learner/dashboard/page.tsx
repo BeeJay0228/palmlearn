@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 import { RoleGreeting } from "@/components/dashboard/role-greeting";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { ActivityTimeline } from "@/components/dashboard/activity-timeline";
@@ -42,6 +43,7 @@ const achievements = [
 
 export default function LearnerDashboard() {
   const { user } = useAuth();
+  const router = useRouter();
 
   if (!user) return null;
 
@@ -72,6 +74,7 @@ export default function LearnerDashboard() {
               variant="glass-primary"
               size="lg"
               className="text-white border-white/20 hover:bg-white/15"
+              onClick={() => router.push("/learner/courses")}
             >
               <PlayCircle className="h-4 w-4" />
               Continue Learning

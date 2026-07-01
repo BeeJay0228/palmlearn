@@ -39,6 +39,7 @@ export default function AdminUsersPage() {
   const [createdPassword, setCreatedPassword] = useState<string | null>(null);
   const [createdUserName, setCreatedUserName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const [form, setForm] = useState<CreateUserData>({
     name: "", email: "", role: "learner",
@@ -59,6 +60,7 @@ export default function AdminUsersPage() {
 
   function openCreate() {
     setEditingUser(null);
+    setFormError("");
     setForm({ name: "", email: "", role: "learner", phone: "", officeAddress: "", homeAddress: "", bio: "", categoryId: "", subCategoryId: "", regionId: "", stateId: "" });
     setFormErrors({});
     setDrawerOpen(true);
@@ -66,6 +68,7 @@ export default function AdminUsersPage() {
 
   function openEdit(user: User) {
     setEditingUser(user);
+    setFormError("");
     setForm({
       name: user.name,
       email: user.email,
@@ -97,12 +100,20 @@ export default function AdminUsersPage() {
     setSaving(true);
     try {
       if (editingUser) {
-        await updateManagedUser(editingUser.id, form);
+        const result = updateManagedUser(editingUser.id, form);
+        if (!result.success) {
+          setFormError(result.error || "Failed to update user.");
+          return;
+        }
         setDrawerOpen(false);
         loadUsers();
       } else {
         const result = createManagedUser(form);
-        if (result.success && result.password) {
+        if (!result.success) {
+          setFormError(result.error || "Failed to create user.");
+          return;
+        }
+        if (result.password) {
           setCreatedPassword(result.password);
           setCreatedUserName(form.name);
         }
@@ -110,7 +121,7 @@ export default function AdminUsersPage() {
         loadUsers();
       }
     } catch {
-      // Silently handle
+      setFormError("An unexpected error occurred.");
     } finally {
       setSaving(false);
     }
@@ -228,6 +239,9 @@ export default function AdminUsersPage() {
 
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={editingUser ? "Edit User" : "Create User"}>
         <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="flex flex-col gap-5">
+          {formError && (
+            <div className="rounded-xl bg-danger/10 border border-danger/20 px-4 py-3 text-sm text-danger">{formError}</div>
+          )}
           <Input label="Full Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} error={formErrors.name} variant="filled" inputSize="lg" placeholder="John Doe" />
           <Input label="Email Address" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} error={formErrors.email} variant="filled" inputSize="lg" placeholder="john@company.com" />
 

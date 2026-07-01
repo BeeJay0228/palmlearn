@@ -330,7 +330,7 @@ export function LearnerEventsPage({ onEventClick }: { onEventClick?: (e: Trainin
   const todayStr = now.toDateString();
   const upcoming = allEvents.filter((e) => new Date(e.schedule.startDate) > now);
   const todayEvents = allEvents.filter((e) => new Date(e.schedule.startDate).toDateString() === todayStr);
-  const pastEvents = allEvents.filter((e) => new Date(e.schedule.startDate) < now && e.schedule.startDate !== e.schedule.endDate);
+  const pastEvents = allEvents.filter((e) => new Date(e.schedule.startDate) < now);
 
   const attendance = useMemo(() => {
     if (!user) return [];

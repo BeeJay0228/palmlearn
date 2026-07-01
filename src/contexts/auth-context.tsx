@@ -4,6 +4,7 @@ import { createContext, useCallback, useState } from "react";
 import type { ReactNode } from "react";
 import type { User, LoginCredentials } from "@/types";
 import * as authLib from "@/lib/auth";
+import { AUTH_STORAGE_KEY } from "@/constants";
 
 interface AuthContextValue {
   user: User | null;
@@ -43,7 +44,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const updateUser = useCallback((updated: User) => {
     setUser(updated);
-    localStorage.setItem("palmlearn-auth", JSON.stringify(updated));
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
   }, []);
 
   const refreshUser = useCallback(() => {

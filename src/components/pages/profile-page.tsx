@@ -61,8 +61,12 @@ export function ProfilePage() {
     setError(null);
     setSuccess(null);
     try {
-      await updateProfile(user.id, form);
-      await refreshUser();
+      const result = updateProfile(user.id, form);
+      if (!result.success) {
+        setError(result.error || "Failed to update profile");
+        return;
+      }
+      refreshUser();
       setSuccess("Profile updated successfully");
       setTimeout(() => setSuccess(null), 3000);
     } catch {
@@ -91,12 +95,16 @@ export function ProfilePage() {
 
     setSavingPassword(true);
     try {
-      await updatePassword(user.id, passwordForm.currentPassword, passwordForm.newPassword);
+      const result = updatePassword(user.id, passwordForm.currentPassword, passwordForm.newPassword);
+      if (!result.success) {
+        setError(result.error || "Failed to change password");
+        return;
+      }
       setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setSuccess("Password changed successfully");
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to change password");
+    } catch {
+      setError("An unexpected error occurred");
     } finally {
       setSavingPassword(false);
     }

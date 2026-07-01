@@ -34,8 +34,9 @@ function formatDate(dateStr: string): string {
 }
 
 export function CoursesPage() {
-  const allCourses = useMemo(() => getCourses(), []);
-  const categories = useMemo(() => getCategories(), []);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const allCourses = useMemo(() => getCourses(), [refreshKey]);
+  const categories = useMemo(() => getCategories(), [refreshKey]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<CourseStatus | "all">("all");
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | "all">("all");
@@ -94,11 +95,13 @@ export function CoursesPage() {
     if (deleteConfirm) {
       deleteCourse(deleteConfirm.id);
       setDeleteConfirm(null);
+      setRefreshKey((k) => k + 1);
     }
   };
 
   const handleStatusChange = (course: Course, status: CourseStatus) => {
     updateCourseStatus(course.id, status);
+    setRefreshKey((k) => k + 1);
   };
 
   const getCategoryName = (id: string): string => {
@@ -350,7 +353,7 @@ export function CoursesPage() {
       {showBuilder && (
         <CourseBuilder
           initialData={editingCourse || undefined}
-          onClose={() => { setShowBuilder(false); setEditingCourse(null); }}
+          onClose={() => { setShowBuilder(false); setEditingCourse(null); setRefreshKey((k) => k + 1); }}
         />
       )}
 

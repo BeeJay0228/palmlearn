@@ -1,5 +1,6 @@
 import type { Category, SubCategory, Region, StateEntity, User, Gender, UserRole } from "@/types";
-import { hashMockPassword, saveUsersToStore, getRawUsers, type StoredUser } from "./auth";
+import { hashMockPassword, saveUsersToStore, getRawUsers, getStoredUser, type StoredUser } from "./auth";
+import { AUTH_STORAGE_KEY } from "@/constants";
 
 const CATEGORIES_KEY = "palmlearn-categories";
 const SUB_CATEGORIES_KEY = "palmlearn-subcategories";
@@ -277,7 +278,7 @@ export function getUserById(id: string): User | null {
 
 export function createManagedUser(data: CreateUserData): { success: boolean; user?: User; error?: string; password?: string } {
   const users = getRawUsers();
-  if (users.some((u) => u.email === data.email)) {
+  if (users.some((u) => u.email.toLowerCase() === data.email.trim().toLowerCase())) {
     return { success: false, error: "A user with this email already exists." };
   }
 
@@ -285,7 +286,7 @@ export function createManagedUser(data: CreateUserData): { success: boolean; use
   const now = new Date().toISOString();
   const newUser: StoredUser = {
     id: generateId(),
-    email: data.email,
+    email: data.email.trim().toLowerCase(),
     name: data.name,
     role: data.role,
     gender: data.gender,
@@ -334,8 +335,8 @@ export function updateManagedUser(id: string, data: Partial<CreateUserData>): { 
   const idx = users.findIndex((u) => u.id === id);
   if (idx === -1) return { success: false, error: "User not found." };
 
-  if (data.name !== undefined) users[idx].name = data.name;
-  if (data.email !== undefined) users[idx].email = data.email;
+  if (data.name !== undefined) users[idx].name = data.name.trim();
+  if (data.email !== undefined) users[idx].email = data.email.trim().toLowerCase();
   if (data.role !== undefined) users[idx].role = data.role;
   if (data.gender !== undefined) users[idx].gender = data.gender;
   if (data.phone !== undefined) users[idx].phone = data.phone;
@@ -346,8 +347,36 @@ export function updateManagedUser(id: string, data: Partial<CreateUserData>): { 
   if (data.subCategoryId !== undefined) users[idx].subCategoryId = data.subCategoryId;
   if (data.regionId !== undefined) users[idx].regionId = data.regionId;
   if (data.stateId !== undefined) users[idx].stateId = data.stateId;
+  if (data.password !== undefined) {
+    users[idx].password = hashMockPassword(data.password);
+    users[idx].mustChangePassword = true;
+  }
 
   saveUsersToStore(users);
+
+  const session = getStoredUser();
+  if (session && session.id === id) {
+    const synced: User = {
+      id: users[idx].id,
+      email: users[idx].email,
+      name: users[idx].name,
+      role: users[idx].role,
+      avatar: users[idx].avatar,
+      bio: users[idx].bio,
+      phone: users[idx].phone,
+      officeAddress: users[idx].officeAddress,
+      homeAddress: users[idx].homeAddress,
+      mustChangePassword: users[idx].mustChangePassword,
+      createdAt: users[idx].createdAt,
+      gender: users[idx].gender,
+      categoryId: users[idx].categoryId,
+      subCategoryId: users[idx].subCategoryId,
+      regionId: users[idx].regionId,
+      stateId: users[idx].stateId,
+      status: users[idx].status || "active",
+    };
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(synced));
+  }
 
   return {
     success: true,
@@ -379,6 +408,10 @@ export function deleteManagedUser(id: string): { success: boolean; error?: strin
     return { success: false, error: "User not found." };
   }
   saveUsersToStore(filtered);
+  const session = getStoredUser();
+  if (session && session.id === id) {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  }
   return { success: true };
 }
 
@@ -389,6 +422,16 @@ export function toggleUserStatus(id: string): { success: boolean; user?: User; e
 
   users[idx].status = users[idx].status === "active" ? "inactive" : "active";
   saveUsersToStore(users);
+
+  const session = getStoredUser();
+  if (session && session.id === id) {
+    if (users[idx].status === "inactive") {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    } else {
+      const synced = { ...session, status: "active" as const };
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(synced));
+    }
+  }
 
   return {
     success: true,
@@ -413,6 +456,12 @@ export function resetUserPassword(id: string): { success: boolean; password?: st
   users[idx].password = hashMockPassword(newPassword);
   users[idx].mustChangePassword = true;
   saveUsersToStore(users);
+
+  const session = getStoredUser();
+  if (session && session.id === id) {
+    const synced = { ...session, mustChangePassword: true };
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(synced));
+  }
 
   return { success: true, password: newPassword };
 }

@@ -105,10 +105,15 @@ export function login(credentials: LoginCredentials): {
   error?: string;
 } {
   const users = getUsers();
-  const found = users.find((u) => u.email === credentials.email);
+  const inputEmail = credentials.email.trim().toLowerCase();
+  const found = users.find((u) => u.email.trim().toLowerCase() === inputEmail);
 
   if (!found) {
     return { success: false, error: "No account found with this email address." };
+  }
+
+  if (found.status === "inactive") {
+    return { success: false, error: "Your account has been deactivated. Please contact an administrator." };
   }
 
   const hashed = hashPassword(credentials.password);

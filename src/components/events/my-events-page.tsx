@@ -4,9 +4,10 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getEvents, updateEvent, deleteEvent, seedEvents } from "@/lib/events";
+import { getEvents, createEvent, updateEvent, deleteEvent, seedEvents } from "@/lib/events";
 import { useAuth } from "@/hooks/use-auth";
 import { EventWizard } from "./event-wizard";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   EVENT_TYPE_LABELS, EVENT_TYPE_COLORS, EVENT_STATUS_LABELS, EVENT_STATUS_COLORS,
   type TrainingEvent,
@@ -30,6 +31,7 @@ export function MyEventsPage(_props: MyEventsPageProps) {
   const { user } = useAuth();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [editEvent, setEditEvent] = useState<TrainingEvent | undefined>(undefined);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   seedEvents();
@@ -46,14 +48,19 @@ export function MyEventsPage(_props: MyEventsPageProps) {
     setWizardOpen(true);
   }
 
-  function handleDelete(id: string) {
-    deleteEvent(id);
-    setRefreshKey((k) => k + 1);
+  function handleDelete() {
+    if (deleteConfirm) {
+      deleteEvent(deleteConfirm);
+      setDeleteConfirm(null);
+      setRefreshKey((k) => k + 1);
+    }
   }
 
   function handleSave(data: Omit<TrainingEvent, "id" | "createdAt" | "updatedAt">) {
     if (editEvent) {
       updateEvent(editEvent.id, data);
+    } else {
+      createEvent({ ...data, createdBy: user?.id || "" });
     }
     setRefreshKey((k) => k + 1);
   }
@@ -106,7 +113,7 @@ export function MyEventsPage(_props: MyEventsPageProps) {
                     <Button variant="secondary" size="sm" className="flex-1" onClick={() => handleEdit(event)}>
                       <Pencil className="h-3 w-3 mr-1" /> Edit
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(event.id)}>
+                    <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(event.id)}>
                       <Trash2 className="h-3 w-3 text-danger" />
                     </Button>
                   </div>
@@ -144,7 +151,7 @@ export function MyEventsPage(_props: MyEventsPageProps) {
                     <Button variant="secondary" size="sm" className="flex-1" onClick={() => handleEdit(event)}>
                       <Pencil className="h-3 w-3 mr-1" /> Continue Editing
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(event.id)}>
+                    <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(event.id)}>
                       <Trash2 className="h-3 w-3 text-danger" />
                     </Button>
                   </div>
@@ -189,6 +196,16 @@ export function MyEventsPage(_props: MyEventsPageProps) {
         onClose={() => { setWizardOpen(false); setEditEvent(undefined); }}
         onSave={handleSave}
         editEvent={editEvent}
+      />
+
+      <ConfirmDialog
+        open={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={handleDelete}
+        title="Delete Event"
+        message="Are you sure you want to delete this event? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   );

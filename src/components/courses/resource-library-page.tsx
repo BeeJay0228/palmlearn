@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useAuth } from "@/hooks/use-auth";
 import { Search, Upload, Trash2, FileText, Video, FileImage, File, Link, Download, ExternalLink, X, FolderOpen, Plus } from "lucide-react";
 
 const RESOURCE_CONFIG: Record<ResourceType, { icon: React.ComponentType<{ className?: string }>; label: string; color: string; bgColor: string }> = {
@@ -24,7 +25,9 @@ const RESOURCE_CONFIG: Record<ResourceType, { icon: React.ComponentType<{ classN
 };
 
 export function ResourceLibraryPage() {
-  const allResources = useMemo(() => getResources(), []);
+  const { user } = useAuth();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const allResources = useMemo(() => getResources(), [refreshKey]);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<ResourceType | "all">("all");
   const [deleteConfirm, setDeleteConfirm] = useState<Resource | null>(null);
@@ -47,6 +50,7 @@ export function ResourceLibraryPage() {
     if (deleteConfirm) {
       deleteResource(deleteConfirm.id);
       setDeleteConfirm(null);
+      setRefreshKey((k) => k + 1);
     }
   };
 
@@ -59,10 +63,11 @@ export function ResourceLibraryPage() {
       url: uploadForm.url,
       size: uploadForm.size || "\u2014",
       tags: uploadForm.tags.split(",").map((t) => t.trim()).filter(Boolean),
-      uploadedBy: "current-user",
+      uploadedBy: user?.name || "Unknown User",
     });
     setUploadForm({ name: "", description: "", type: "pdf", url: "", size: "", tags: "" });
     setShowUpload(false);
+    setRefreshKey((k) => k + 1);
   };
 
   return (
