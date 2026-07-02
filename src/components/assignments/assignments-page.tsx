@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,21 +10,22 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { AssignmentWizard } from "./assignment-wizard";
 import { cn } from "@/lib/utils";
 import {
-  createAssignment, updateAssignment, deleteAssignment, filterAssignments, bulkActionAssignment,
+  createAssignment, updateAssignment, deleteAssignment, duplicateAssignment,
+  getAssignments, bulkActionAssignment,
 } from "@/lib/assignments";
-import { bulkCreateFromAssignment } from "@/lib/learner-assignments";
+import { bulkCreateFromAssignment, getAssignmentsForAssignment } from "@/lib/learner-assignments";
 import { getUsers } from "@/lib/users";
 import { notifyAssignmentCreated } from "@/lib/mock-notifications";
 import {
   ASSIGNMENT_TYPE_LABELS, ASSIGNMENT_TYPE_COLORS,
   ASSIGNMENT_PRIORITY_LABELS, ASSIGNMENT_PRIORITY_COLORS,
   ASSIGNMENT_STATUS_LABELS, ASSIGNMENT_STATUS_COLORS,
-  AUDIENCE_TYPE_LABELS,
-  type Assignment, type AssignmentType, type AssignmentPriority, type AssignmentStatus,
+  type Assignment, type AssignmentType, type AssignmentPriority, type AssignmentStatus, type TargetAudience,
 } from "@/types";
 import {
   Plus, Search, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight,
-  Trash2, Edit,
+  Trash2, Edit, CheckCircle2, Copy, Send, Archive, MoreHorizontal, Loader2, Users,
+  AlertTriangle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -38,39 +39,107 @@ interface AssignmentsPageProps {
 }
 
 export function AssignmentsPage({ role }: AssignmentsPageProps) {
-  void role;
   const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [priorityFilter, setPriorityFilter] = useState<string>("");
+  const [assignedByFilter, setAssignedByFilter] = useState<string>("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [sortKey, setSortKey] = useState<string>("createdAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selected, setSelected] = useState<string[]>([]);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState<Assignment | undefined>();
   const [deleteConfirm, setDeleteConfirm] = useState<Assignment | undefined>();
+  const [contextMenu, setContextMenu] = useState<string | null>(null);
   const [bulkAction, setBulkAction] = useState<string>("");
+  const [bulkConfirmAction, setBulkConfirmAction] = useState<string>("");
   const [refreshKey, setRefreshKey] = useState(0);
-  void refreshKey;
-  const pageSize = 10;
+  const [successMsg, setSuccessMsg] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const showSuccess = (msg: string) => {
+    setSuccessMsg(msg);
+    setTimeout(() => setSuccessMsg(""), 3000);
+  };
 
   const allUsers = getUsers();
 
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 400);
+    return () => clearTimeout(timer);
+  }, []);
+
+  function resolveAudienceToUserIds(audience: TargetAudience): string[] {
+    switch (audience.type) {
+      case "organization":
+        return allUsers.filter((u) => u.role !== "admin").map((u) => u.id);
+      case "single":
+      case "multiple":
+        return audience.userIds;
+      case "category":
+        return allUsers.filter((u) => u.categoryId && audience.categoryIds.includes(u.categoryId)).map((u) => u.id);
+      case "subcategory":
+        return allUsers.filter((u) => u.subCategoryId && audience.subCategoryIds.includes(u.subCategoryId)).map((u) => u.id);
+      case "region":
+        return allUsers.filter((u) => u.regionId && audience.regionIds.includes(u.regionId)).map((u) => u.id);
+      case "state":
+        return allUsers.filter((u) => u.stateId && audience.stateIds.includes(u.stateId)).map((u) => u.id);
+      case "office":
+      case "trainer_group":
+        return audience.userIds;
+      default:
+        return [];
+    }
+  }
+
+  // All filtering, sorting, and pagination in one pass (fixes sort-before-paginate bug)
   const { items, total } = useMemo(() => {
-    const result = filterAssignments({ search: search || undefined, status: (statusFilter as AssignmentStatus) || undefined, type: (typeFilter as AssignmentType) || undefined, priority: (priorityFilter as AssignmentPriority) || undefined, page, pageSize });
-    const sorted = [...result.items];
+    let result = getAssignments();
+
+    // Search (case-insensitive)
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((a) => a.name.toLowerCase().includes(q) || a.description.toLowerCase().includes(q));
+    }
+
+    // Filters
+    if (statusFilter) result = result.filter((a) => a.status === statusFilter);
+    if (typeFilter) result = result.filter((a) => a.type === typeFilter);
+    if (priorityFilter) result = result.filter((a) => a.priority === priorityFilter);
+    if (assignedByFilter) result = result.filter((a) => a.assignedBy === assignedByFilter);
+
+    // Role filter
+    if (role === "trainer" && user) {
+      result = result.filter((a) => a.assignedBy === user.id);
+    }
+
+    // Sort (ALL matching items, not just current page)
     if (sortKey) {
-      sorted.sort((a, b) => {
-        const aVal = String(a[sortKey as keyof Assignment] ?? "");
-        const bVal = String(b[sortKey as keyof Assignment] ?? "");
+      result.sort((a, b) => {
+        let aVal: string, bVal: string;
+        if (sortKey === "dueDate") {
+          aVal = a.schedule.dueDate ?? "";
+          bVal = b.schedule.dueDate ?? "";
+        } else {
+          aVal = String(a[sortKey as keyof Assignment] ?? "");
+          bVal = String(b[sortKey as keyof Assignment] ?? "");
+        }
         const cmp = aVal.localeCompare(bVal);
         return sortDir === "asc" ? cmp : -cmp;
       });
     }
-    return { items: sorted, total: result.total };
-  }, [search, statusFilter, typeFilter, priorityFilter, page, sortKey, sortDir, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Paginate
+    const totalCount = result.length;
+    const start = (page - 1) * pageSize;
+    return { items: result.slice(start, start + pageSize), total: totalCount };
+  }, [search, statusFilter, typeFilter, priorityFilter, assignedByFilter, page, pageSize, sortKey, sortDir, refreshKey, role, user]);
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   function handleSort(key: string) {
     if (sortKey === key) {
@@ -92,24 +161,46 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
   }
 
   function handleWizardSave(data: Omit<Assignment, "id" | "createdAt" | "updatedAt">) {
+    const learnerIds = resolveAudienceToUserIds(data.targetAudience);
     if (editingAssignment) {
       updateAssignment(editingAssignment.id, data);
+      const existing = bulkCreateFromAssignment(editingAssignment.id, learnerIds, data.courseIds);
+      if (existing.length > 0) notifyAssignmentCreated({ ...editingAssignment, ...data }, learnerIds);
+      showSuccess("Assignment updated successfully.");
     } else {
       const newAsgn = createAssignment({ ...data, assignedBy: user?.id || "" });
-      const learnerIds: string[] = [];
-      if (data.targetAudience.type === "organization") {
-        learnerIds.push(...allUsers.filter((u) => u.role !== "admin").map((u) => u.id));
-      } else {
-        learnerIds.push(...data.targetAudience.userIds);
-      }
       if (learnerIds.length > 0) {
         bulkCreateFromAssignment(newAsgn.id, learnerIds, data.courseIds);
         notifyAssignmentCreated(newAsgn, learnerIds);
       }
+      showSuccess("Assignment created successfully.");
     }
     setWizardOpen(false);
     setEditingAssignment(undefined);
     setRefreshKey((k) => k + 1);
+  }
+
+  function handleDuplicate(assignment: Assignment) {
+    const copy = duplicateAssignment(assignment.id);
+    if (copy) {
+      setRefreshKey((k) => k + 1);
+      showSuccess("Assignment duplicated successfully.");
+    }
+    setContextMenu(null);
+  }
+
+  function handlePublish(assignment: Assignment) {
+    updateAssignment(assignment.id, { status: "active" });
+    setRefreshKey((k) => k + 1);
+    showSuccess("Assignment published successfully.");
+    setContextMenu(null);
+  }
+
+  function handleArchive(assignment: Assignment) {
+    updateAssignment(assignment.id, { status: "completed" });
+    setRefreshKey((k) => k + 1);
+    showSuccess("Assignment archived successfully.");
+    setContextMenu(null);
   }
 
   function handleDelete() {
@@ -117,18 +208,55 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
     deleteAssignment(deleteConfirm.id);
     setDeleteConfirm(undefined);
     setRefreshKey((k) => k + 1);
+    showSuccess("Assignment deleted successfully.");
   }
 
   function handleBulkAction(action: string) {
     if (selected.length === 0 || !action) return;
-    const fn = action as "delete" | "activate" | "draft" | "complete" | "cancel";
-    bulkActionAssignment(selected, fn);
-    setSelected([]);
-    setBulkAction("");
-    setRefreshKey((k) => k + 1);
+    if (action === "delete") {
+      setBulkConfirmAction(action);
+      return;
+    }
+    executeBulkAction(action);
   }
 
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  function executeBulkAction(action: string) {
+    const fn = action as "delete" | "activate" | "draft" | "complete" | "cancel";
+    const count = bulkActionAssignment(selected, fn);
+    setSelected([]);
+    setBulkAction("");
+    setBulkConfirmAction("");
+    setRefreshKey((k) => k + 1);
+    showSuccess(`${count} assignment(s) updated successfully.`);
+  }
+
+  function getBulkActionLabel(action: string) {
+    const labels: Record<string, string> = {
+      delete: "Delete", activate: "Set to Active", draft: "Set to Draft",
+      complete: "Complete", cancel: "Cancel",
+    };
+    return labels[action] || action;
+  }
+
+  function getUserName(userId: string): string {
+    const u = allUsers.find((u) => u.id === userId);
+    return u ? u.name : userId;
+  }
+
+  function getLearnerCount(assignmentId: string): number {
+    return getAssignmentsForAssignment(assignmentId).length;
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-5 animate-fade-in">
+        <PageHeader title="Assignments" description="Create and manage learning assignments for your organization." />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-content-tertiary" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5 animate-fade-in">
@@ -142,8 +270,15 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
         }
       />
 
+      {successMsg && (
+        <div className="flex items-center gap-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-800/30 p-4 text-sm text-emerald-700 dark:text-emerald-400 animate-slide-up">
+          <CheckCircle2 className="h-5 w-5 shrink-0" />
+          {successMsg}
+        </div>
+      )}
+
       {/* Filters */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-content-tertiary" />
           <input
@@ -168,6 +303,16 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
           value={priorityFilter}
           onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
           options={[{ value: "", label: "All Priorities" }, ...Object.entries(ASSIGNMENT_PRIORITY_LABELS).map(([v, l]) => ({ value: v, label: l }))]}
+        />
+        <Select
+          value={assignedByFilter}
+          onChange={(e) => { setAssignedByFilter(e.target.value); setPage(1); }}
+          options={[
+            { value: "", label: "All Creators" },
+            ...allUsers
+              .filter((u) => u.role === "admin" || u.role === "trainer")
+              .map((u) => ({ value: u.id, label: u.name })),
+          ]}
         />
       </div>
 
@@ -215,7 +360,13 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
                 <th className="px-4 py-3.5 text-left text-xs font-semibold text-content-secondary uppercase tracking-wider cursor-pointer select-none hover:text-content" onClick={() => handleSort("status")}>
                   <div className="flex items-center gap-1.5">Status <SortIcon col="status" sortKey={sortKey} sortDir={sortDir} /></div>
                 </th>
-                <th className="px-4 py-3.5 text-left text-xs font-semibold text-content-secondary uppercase tracking-wider">Audience</th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold text-content-secondary uppercase tracking-wider">
+                  <div className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> Learners</div>
+                </th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold text-content-secondary uppercase tracking-wider">Created By</th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold text-content-secondary uppercase tracking-wider cursor-pointer select-none hover:text-content" onClick={() => handleSort("dueDate")}>
+                  <div className="flex items-center gap-1.5">Due Date <SortIcon col="dueDate" sortKey={sortKey} sortDir={sortDir} /></div>
+                </th>
                 <th className="px-4 py-3.5 text-left text-xs font-semibold text-content-secondary uppercase tracking-wider cursor-pointer select-none hover:text-content" onClick={() => handleSort("createdAt")}>
                   <div className="flex items-center gap-1.5">Created <SortIcon col="createdAt" sortKey={sortKey} sortDir={sortDir} /></div>
                 </th>
@@ -225,8 +376,21 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
             <tbody className="divide-y divide-border/60">
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-16 text-center">
-                    <EmptyState title="No assignments found" description="Create your first assignment to get started." action={<Button onClick={() => { setEditingAssignment(undefined); setWizardOpen(true); }}><Plus className="h-4 w-4" /> New Assignment</Button>} />
+                  <td colSpan={10} className="px-4 py-16 text-center">
+                    {search || statusFilter || typeFilter || priorityFilter || assignedByFilter ? (
+                      <EmptyState
+                        icon={AlertTriangle}
+                        title="No matching assignments"
+                        description="Try adjusting your search or filters to find what you're looking for."
+                        action={<Button variant="secondary" onClick={() => { setSearch(""); setStatusFilter(""); setTypeFilter(""); setPriorityFilter(""); setAssignedByFilter(""); }}>Clear Filters</Button>}
+                      />
+                    ) : (
+                      <EmptyState
+                        title="No assignments found"
+                        description="Create your first assignment to get started."
+                        action={<Button onClick={() => { setEditingAssignment(undefined); setWizardOpen(true); }}><Plus className="h-4 w-4" /> New Assignment</Button>}
+                      />
+                    )}
                   </td>
                 </tr>
               ) : (
@@ -242,8 +406,8 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
                     </td>
                     <td className="px-4 py-3.5">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-content truncate max-w-[240px]">{assignment.name}</p>
-                        <p className="text-xs text-content-tertiary truncate max-w-[240px]">{assignment.description}</p>
+                        <p className="text-sm font-medium text-content truncate max-w-[200px]">{assignment.name}</p>
+                        <p className="text-xs text-content-tertiary truncate max-w-[200px]">{assignment.description}</p>
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
@@ -255,9 +419,9 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
                     <td className="px-4 py-3.5">
                       <Badge variant="secondary" className={ASSIGNMENT_STATUS_COLORS[assignment.status]}>{ASSIGNMENT_STATUS_LABELS[assignment.status]}</Badge>
                     </td>
-                    <td className="px-4 py-3.5">
-                      <span className="text-xs text-content-secondary">{AUDIENCE_TYPE_LABELS[assignment.targetAudience.type]}</span>
-                    </td>
+                    <td className="px-4 py-3.5 text-sm text-content-secondary">{getLearnerCount(assignment.id)}</td>
+                    <td className="px-4 py-3.5 text-sm text-content-secondary truncate max-w-[120px]">{getUserName(assignment.assignedBy)}</td>
+                    <td className="px-4 py-3.5 text-sm text-content-secondary">{assignment.schedule.dueDate ? new Date(assignment.schedule.dueDate).toLocaleDateString() : "—"}</td>
                     <td className="px-4 py-3.5 text-sm text-content-secondary">{new Date(assignment.createdAt).toLocaleDateString()}</td>
                     <td className="px-4 py-3.5">
                       <div className="flex items-center justify-end gap-1">
@@ -268,13 +432,57 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
                         >
                           <Edit className="h-4 w-4" />
                         </button>
-                        <button
-                          onClick={() => setDeleteConfirm(assignment)}
-                          className="flex h-8 w-8 items-center justify-center rounded-xl text-content-secondary hover:text-danger hover:bg-danger/10 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="relative">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setContextMenu(contextMenu === assignment.id ? null : assignment.id); }}
+                            className="flex h-8 w-8 items-center justify-center rounded-xl text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
+                            title="More actions"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </button>
+                          {contextMenu === assignment.id && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setContextMenu(null)} />
+                              <div className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-xl border border-border bg-surface shadow-xl p-1.5 animate-scale-in origin-top-right">
+                              <button
+                                onClick={() => { setEditingAssignment(assignment); setWizardOpen(true); setContextMenu(null); }}
+                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
+                              >
+                                <Edit className="h-4 w-4" /> Edit
+                              </button>
+                              <button
+                                onClick={() => handleDuplicate(assignment)}
+                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
+                              >
+                                <Copy className="h-4 w-4" /> Duplicate
+                              </button>
+                              {assignment.status === "draft" && (
+                                <button
+                                  onClick={() => handlePublish(assignment)}
+                                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
+                                >
+                                  <Send className="h-4 w-4" /> Publish
+                                </button>
+                              )}
+                              {assignment.status === "active" && (
+                                <button
+                                  onClick={() => handleArchive(assignment)}
+                                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
+                                >
+                                  <Archive className="h-4 w-4" /> Archive
+                                </button>
+                              )}
+                              <hr className="my-1 border-border/60" />
+                              <button
+                                onClick={() => { setDeleteConfirm(assignment); setContextMenu(null); }}
+                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-danger hover:bg-danger/10 transition-colors"
+                              >
+                                <Trash2 className="h-4 w-4" /> Delete
+                              </button>
+                            </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -286,22 +494,49 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-1">
-          <p className="text-sm text-content-tertiary">Showing {(page - 1) * pageSize + 1}&ndash;{Math.min(page * pageSize, total)} of {total}</p>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="flex h-9 w-9 items-center justify-center rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:pointer-events-none transition-colors">
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button key={i} onClick={() => setPage(i + 1)} className={cn("flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-all", i + 1 === page ? "bg-primary-600 text-white shadow-sm" : "text-content-secondary hover:text-content hover:bg-surface-hover")}>
-                {i + 1}
-              </button>
-            ))}
-            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex h-9 w-9 items-center justify-center rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:pointer-events-none transition-colors">
-              <ChevronRight className="h-4 w-4" />
-            </button>
+      {total > 0 && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-1">
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-content-tertiary">
+              Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
+            </p>
+            <Select
+              value={String(pageSize)}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+              options={[
+                { value: "10", label: "10 / page" },
+                { value: "25", label: "25 / page" },
+                { value: "50", label: "50 / page" },
+              ]}
+            />
           </div>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="flex h-9 w-9 items-center justify-center rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:pointer-events-none transition-colors">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              {Array.from({ length: Math.min(totalPages, 7) }).map((_, i) => {
+                let pageNum = i + 1;
+                if (totalPages <= 7) {
+                  pageNum = i + 1;
+                } else if (page <= 4) {
+                  pageNum = i + 1;
+                } else if (page >= totalPages - 3) {
+                  pageNum = totalPages - 6 + i;
+                } else {
+                  pageNum = page - 3 + i;
+                }
+                return (
+                  <button key={pageNum} onClick={() => setPage(pageNum)} className={cn("flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-all", pageNum === page ? "bg-primary-600 text-white shadow-sm" : "text-content-secondary hover:text-content hover:bg-surface-hover")}>
+                    {pageNum}
+                  </button>
+                );
+              })}
+              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex h-9 w-9 items-center justify-center rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover disabled:opacity-30 disabled:pointer-events-none transition-colors">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -317,6 +552,17 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
         message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
         confirmLabel="Delete"
         variant="danger"
+      />
+
+      {/* Bulk Delete Confirm */}
+      <ConfirmDialog
+        open={!!bulkConfirmAction}
+        onClose={() => setBulkConfirmAction("")}
+        onConfirm={() => executeBulkAction(bulkConfirmAction)}
+        title="Confirm Bulk Action"
+        message={`Are you sure you want to ${getBulkActionLabel(bulkConfirmAction).toLowerCase()} ${selected.length} selected assignment(s)?`}
+        confirmLabel={bulkConfirmAction === "delete" ? "Delete" : "Confirm"}
+        variant={bulkConfirmAction === "delete" ? "danger" : "warning"}
       />
     </div>
   );

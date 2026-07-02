@@ -1,4 +1,5 @@
 import type { Campaign, CampaignStatus } from "@/types";
+import { getCourseIdByTitle, ensureCoursesSeeded } from "./courses";
 
 const STORAGE_KEY = "palmlearn-campaigns";
 
@@ -32,41 +33,44 @@ function setStored(items: Campaign[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
-const SEED_CAMPAIGNS: Campaign[] = [
-  {
-    id: "camp_seed_1",
-    name: "Q2 2026 Compliance Blitz",
-    description: "A comprehensive compliance campaign covering AML, KYC, and data protection for all staff. Completes by end of Q2.",
-    courseIds: ["course_1", "course_6"],
-    status: "active",
-    createdAt: pastDate(14),
-    updatedAt: pastDate(14),
-  },
-  {
-    id: "camp_seed_2",
-    name: "New Manager Accelerator",
-    description: "Fast-track program for newly promoted team leads and managers. Covers leadership, product knowledge, and team management.",
-    courseIds: ["course_2", "course_3"],
-    status: "active",
-    createdAt: pastDate(30),
-    updatedAt: pastDate(7),
-  },
-  {
-    id: "camp_seed_3",
-    name: "Engineering Excellence Program",
-    description: "Advanced technical training path for the engineering organization. Currently in draft planning.",
-    courseIds: ["course_4", "course_5"],
-    status: "draft",
-    createdAt: pastDate(2),
-    updatedAt: pastDate(2),
-  },
-];
+function getSeedCampaigns(): Campaign[] {
+  ensureCoursesSeeded();
+  return [
+    {
+      id: "camp_seed_1",
+      name: "Q2 2026 Compliance Blitz",
+      description: "A comprehensive compliance campaign covering AML, KYC, and data protection for all staff. Completes by end of Q2.",
+      courseIds: [getCourseIdByTitle("Advanced Financial Analytics"), getCourseIdByTitle("Effective Communication Skills")].filter(Boolean) as string[],
+      status: "active",
+      createdAt: pastDate(14),
+      updatedAt: pastDate(14),
+    },
+    {
+      id: "camp_seed_2",
+      name: "New Manager Accelerator",
+      description: "Fast-track program for newly promoted team leads and managers. Covers leadership, product knowledge, and team management.",
+      courseIds: [getCourseIdByTitle("Digital Transformation Leadership"), getCourseIdByTitle("Python for Data Science")].filter(Boolean) as string[],
+      status: "active",
+      createdAt: pastDate(30),
+      updatedAt: pastDate(7),
+    },
+    {
+      id: "camp_seed_3",
+      name: "Engineering Excellence Program",
+      description: "Advanced technical training path for the engineering organization. Currently in draft planning.",
+      courseIds: [getCourseIdByTitle("Cybersecurity Fundamentals"), getCourseIdByTitle("Machine Learning Engineering")].filter(Boolean) as string[],
+      status: "draft",
+      createdAt: pastDate(2),
+      updatedAt: pastDate(2),
+    },
+  ];
+}
 
 export function seedCampaigns(): void {
   if (typeof window === "undefined") return;
   const existing = getStored();
   if (existing.length === 0) {
-    setStored(SEED_CAMPAIGNS);
+    setStored(getSeedCampaigns());
   }
 }
 

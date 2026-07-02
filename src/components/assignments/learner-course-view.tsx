@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { getCourseProgress } from "@/lib/learner-assignments";
+import { getCourseProgress, updateLearnerAssignment, getAssignmentsForCourse } from "@/lib/learner-assignments";
 import { getCourseById } from "@/lib/courses";
 import {
   DIFFICULTY_LABELS, DIFFICULTY_COLORS,
@@ -15,7 +16,7 @@ import {
 } from "@/types";
 import {
   PlayCircle, Clock, BookOpen, FileText, MessageCircle, FileDown,
-  ArrowLeft,
+  ArrowLeft, Loader2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -25,15 +26,38 @@ interface LearnerCourseViewProps {
 
 export function LearnerCourseView({ courseId }: LearnerCourseViewProps) {
   const { user } = useAuth();
+  const router = useRouter();
+  const [updating, setUpdating] = useState(false);
 
   const data = useMemo(() => {
-    if (!user) return { course: null as Course | null, progress: 0, loading: false };
+    if (!user) return { course: null as Course | null, progress: 0, laId: "", loading: false };
     const found = getCourseById(courseId);
     const cp = getCourseProgress(user.id, courseId);
-    return { course: found || null, progress: cp?.progress || 0, loading: !found };
+    return { course: found || null, progress: cp?.progress || 0, laId: cp?.id || "", loading: !found };
   }, [user, courseId]);
 
-  const { course, progress, loading } = data;
+  const { course, progress, laId, loading } = data;
+
+  function handleContinue() {
+    if (!user || !laId) return;
+    setUpdating(true);
+    setTimeout(() => {
+      const current = getCourseProgress(user.id, courseId);
+      if (current) {
+        const newProgress = current.status === "not_started" ? 10 : Math.min(100, (current.progress || 0) + 15);
+        updateLearnerAssignment(laId, {
+          progress: newProgress,
+          status: newProgress >= 100 ? "completed" : "in_progress",
+          firstOpened: current.firstOpened || new Date().toISOString(),
+          lastActivity: new Date().toISOString(),
+          completedDate: newProgress >= 100 ? new Date().toISOString() : current.completedDate,
+          timeSpent: (current.timeSpent || 0) + 15,
+        });
+      }
+      setUpdating(false);
+      router.refresh();
+    }, 500);
+  }
 
   if (loading) {
     return (
@@ -94,9 +118,9 @@ export function LearnerCourseView({ courseId }: LearnerCourseViewProps) {
       </div>
 
       {/* Continue / Start Button */}
-      <Button size="xl" className="w-full sm:w-auto">
-        <PlayCircle className="h-5 w-5" />
-        {progress > 0 ? "Continue Learning" : "Start Course"}
+      <Button size="xl" className="w-full sm:w-auto" onClick={handleContinue} disabled={updating || !laId}>
+        {updating ? <Loader2 className="h-5 w-5 animate-spin" /> : <PlayCircle className="h-5 w-5" />}
+        {updating ? "Working..." : progress > 0 ? "Continue Learning" : "Start Course"}
       </Button>
 
       {/* Course Info */}

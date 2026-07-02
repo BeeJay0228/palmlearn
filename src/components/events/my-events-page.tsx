@@ -12,7 +12,7 @@ import {
   EVENT_TYPE_LABELS, EVENT_TYPE_COLORS, EVENT_STATUS_LABELS, EVENT_STATUS_COLORS,
   type TrainingEvent,
 } from "@/types";
-import { Plus, CalendarDays, Clock, MapPin, Video, Globe, Pencil, Trash2 } from "lucide-react";
+import { Plus, CalendarDays, Clock, MapPin, Video, Globe, Pencil, Trash2, CheckCircle2 } from "lucide-react";
 
 interface MyEventsPageProps {
   role: "admin" | "trainer";
@@ -33,6 +33,12 @@ export function MyEventsPage(_props: MyEventsPageProps) {
   const [editEvent, setEditEvent] = useState<TrainingEvent | undefined>(undefined);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [successMsg, setSuccessMsg] = useState("");
+
+  const showSuccess = (msg: string) => {
+    setSuccessMsg(msg);
+    setTimeout(() => setSuccessMsg(""), 3000);
+  };
 
   seedEvents();
 
@@ -53,14 +59,17 @@ export function MyEventsPage(_props: MyEventsPageProps) {
       deleteEvent(deleteConfirm);
       setDeleteConfirm(null);
       setRefreshKey((k) => k + 1);
+      showSuccess("Event deleted successfully.");
     }
   }
 
   function handleSave(data: Omit<TrainingEvent, "id" | "createdAt" | "updatedAt">) {
     if (editEvent) {
       updateEvent(editEvent.id, data);
+      showSuccess("Event updated successfully.");
     } else {
       createEvent({ ...data, createdBy: user?.id || "" });
+      showSuccess("Event created successfully.");
     }
     setRefreshKey((k) => k + 1);
   }
@@ -134,7 +143,14 @@ export function MyEventsPage(_props: MyEventsPageProps) {
             {draft.map((event) => (
               <div key={event.id} className="rounded-2xl border border-dashed border-border/50 bg-surface/50 overflow-hidden transition-all card-hover group">
                 <div className="p-4 space-y-2">
-                  <div className="flex items-center justify-between">
+      {successMsg && (
+        <div className="flex items-center gap-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-800/30 p-4 text-sm text-emerald-700 dark:text-emerald-400 animate-slide-up">
+          <CheckCircle2 className="h-5 w-5 shrink-0" />
+          {successMsg}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
                     <Badge variant="glass" className={EVENT_STATUS_COLORS[event.status]}>
                       {EVENT_STATUS_LABELS[event.status]}
                     </Badge>

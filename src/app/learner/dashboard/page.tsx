@@ -27,13 +27,6 @@ const notifications = [
   { id: "3", title: "Achievement earned", description: "You earned the 'Fast Learner' badge", time: "1d ago", unread: false },
 ];
 
-const continueLearning = [
-  { title: "Advanced Mathematics", progress: 65, instructor: "Dr. Sarah Chen", category: "Mathematics", thumbnail: "" },
-  { title: "Data Structures & Algorithms", progress: 42, instructor: "Prof. James Wilson", category: "Computer Science", thumbnail: "" },
-  { title: "Python for Data Science", progress: 88, instructor: "Dr. Emily Roberts", category: "Data Science", thumbnail: "" },
-  { title: "Machine Learning Fundamentals", progress: 15, instructor: "Dr. Alan Turing", category: "AI & ML", thumbnail: "" },
-];
-
 const achievements = [
   { label: "Day Streak", value: "12", icon: Flame, color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-950/30" },
   { label: "Courses Done", value: "5", icon: Trophy, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30" },
@@ -74,7 +67,7 @@ export default function LearnerDashboard() {
               variant="glass-primary"
               size="lg"
               className="text-white border-white/20 hover:bg-white/15"
-              onClick={() => router.push("/learner/courses")}
+              onClick={() => router.push("/learner/continue-learning")}
             >
               <PlayCircle className="h-4 w-4" />
               Continue Learning
@@ -130,56 +123,6 @@ export default function LearnerDashboard() {
       <LearnerDueSoon />
       <LearnerContinueLearning />
       <LearnerCompleted />
-
-      {/* Continue Learning - Netflix Style */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <PlayCircle className="h-5 w-5 text-primary-600" />
-            <h2 className="text-lg font-bold text-content">Continue Learning</h2>
-          </div>
-          <button className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors">
-            View all courses
-          </button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {continueLearning.map((course) => (
-            <div
-              key={course.title}
-              className="group relative overflow-hidden rounded-2xl border border-border/50 bg-surface transition-all duration-300 card-hover cursor-pointer"
-            >
-              {/* Course Banner Placeholder */}
-              <div className="relative h-32 bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-60" />
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/90 dark:bg-surface/90 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <PlayCircle className="h-6 w-6 text-primary-600" />
-                </div>
-                {/* Progress bar on banner */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-surface-tertiary">
-                  <div
-                    className="h-full bg-primary-600 transition-all duration-500"
-                    style={{ width: `${course.progress}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="p-4">
-                <span className="text-[10px] font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-wider">
-                  {course.category}
-                </span>
-                <h3 className="text-sm font-semibold text-content mt-1 line-clamp-1">{course.title}</h3>
-                <p className="text-xs text-content-tertiary mt-0.5">{course.instructor}</p>
-                <div className="flex items-center justify-between mt-3">
-                  <span className="text-xs font-semibold text-content-secondary">{course.progress}% complete</span>
-                  <button className="rounded-lg p-1.5 text-content-tertiary hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all opacity-0 group-hover:opacity-100">
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Activity & Notifications */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

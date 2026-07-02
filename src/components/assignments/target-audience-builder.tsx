@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -21,10 +21,6 @@ export function TargetAudienceBuilder({ value, onChange }: TargetAudienceBuilder
   const categories = getCategories();
   const regions = getRegions();
   const users = getUsers();
-
-  useEffect(() => {
-    onChange({ ...value, type: audienceType });
-  }, [audienceType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const allItems = useMemo(() => {
     let items: { id: string; label: string }[] = [];
@@ -131,11 +127,11 @@ export function TargetAudienceBuilder({ value, onChange }: TargetAudienceBuilder
         <label className="text-sm font-medium text-content mb-2 block">Audience Type</label>
         <div className="grid grid-cols-3 gap-2">
           {(["single", "multiple", "category", "subcategory", "region", "state", "office", "trainer_group", "organization"] as AudienceType[]).map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => setAudienceType(type)}
-              className={cn(
+              <button
+                key={type}
+                type="button"
+                onClick={() => { setAudienceType(type); onChange({ ...value, type }); }}
+                className={cn(
                 "rounded-xl px-3 py-2.5 text-xs font-medium transition-all duration-200 border text-left",
                 audienceType === type
                   ? "bg-primary-50 border-primary-300 text-primary-700 dark:bg-primary-950/30 dark:border-primary-700 dark:text-primary-400"

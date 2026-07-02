@@ -133,8 +133,20 @@ export function CoursePreview({ course, className }: CoursePreviewProps) {
         </section>
       )}
 
+      {/* Tags */}
+      {course.tags && course.tags.length > 0 && (
+        <section>
+          <h2 className="text-lg font-semibold text-content mb-3">Tags</h2>
+          <div className="flex flex-wrap gap-2">
+            {course.tags.map((tag) => (
+              <span key={tag} className="px-2.5 py-1 rounded-lg bg-surface-secondary text-xs font-medium text-content-secondary border border-border/50">{tag}</span>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Analytics */}
-      {course.analytics && (
+      {course.analytics && (course.analytics.views > 0 || course.analytics.assignedLearners > 0) && (
         <section className="rounded-xl border border-border bg-surface p-5">
           <h2 className="text-sm font-semibold text-content mb-3">Course Analytics</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

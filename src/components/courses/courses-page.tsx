@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import type { Course, CourseStatus, Difficulty } from "@/types";
 import { DIFFICULTY_LABELS, DIFFICULTY_COLORS, COURSE_STATUS_COLORS } from "@/types";
-import { getCourses, deleteCourse, updateCourseStatus } from "@/lib/courses";
+import { getCourses, deleteCourse, duplicateCourse, updateCourseStatus } from "@/lib/courses";
 import { getCategories } from "@/lib/organization";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { CourseBuilder } from "./course-builder";
 import { CoursePreview } from "./course-preview";
-import { Search, Plus, Eye, Edit3, Trash2, BookOpen, BookCopy, ChevronUp, ChevronDown, X, ArrowUpDown, Clock, User } from "lucide-react";
+import { Search, Plus, Eye, Edit3, Trash2, Copy, BookOpen, BookCopy, ChevronUp, ChevronDown, X, ArrowUpDown, Clock, User, CheckCircle2 } from "lucide-react";
 
 type SortField = "title" | "difficulty" | "status" | "updatedAt" | "estimatedDuration";
 
@@ -47,6 +47,7 @@ export function CoursesPage() {
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [previewCourse, setPreviewCourse] = useState<Course | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<Course | null>(null);
+  const [successMsg, setSuccessMsg] = useState("");
   const pageSize = 10;
 
   const filtered = useMemo(() => {
@@ -91,17 +92,32 @@ export function CoursesPage() {
     }
   };
 
+  const showSuccess = (msg: string) => {
+    setSuccessMsg(msg);
+    setTimeout(() => setSuccessMsg(""), 3000);
+  };
+
   const handleDelete = () => {
     if (deleteConfirm) {
       deleteCourse(deleteConfirm.id);
       setDeleteConfirm(null);
       setRefreshKey((k) => k + 1);
+      showSuccess("Course deleted successfully.");
+    }
+  };
+
+  const handleDuplicate = (course: Course) => {
+    const copy = duplicateCourse(course.id);
+    if (copy) {
+      setRefreshKey((k) => k + 1);
+      showSuccess(`"${copy.title}" created.`);
     }
   };
 
   const handleStatusChange = (course: Course, status: CourseStatus) => {
     updateCourseStatus(course.id, status);
     setRefreshKey((k) => k + 1);
+    showSuccess(`Course ${status === "published" ? "published" : status === "archived" ? "archived" : "status updated"} successfully.`);
   };
 
   const getCategoryName = (id: string): string => {
@@ -125,6 +141,13 @@ export function CoursesPage() {
           </Button>
         }
       />
+
+      {successMsg && (
+        <div className="flex items-center gap-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-800/30 p-4 text-sm text-emerald-700 dark:text-emerald-400 animate-slide-up">
+          <CheckCircle2 className="h-5 w-5 shrink-0" />
+          {successMsg}
+        </div>
+      )}
 
       {/* Filters */}
       <Card variant="default" padding="md">
@@ -288,6 +311,14 @@ export function CoursesPage() {
                           title="Edit"
                         >
                           <Edit3 className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDuplicate(course)}
+                          className="rounded-xl p-2 text-content-tertiary hover:text-content hover:bg-surface-hover transition-all"
+                          title="Duplicate"
+                        >
+                          <Copy className="h-4 w-4" />
                         </button>
                         <button
                           type="button"

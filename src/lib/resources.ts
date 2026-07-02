@@ -1,6 +1,7 @@
 import type { Resource, ResourceType } from "@/types";
 
 const RESOURCES_KEY = "palmlearn-resources";
+const SEEDED_KEY = "palmlearn-resources-seeded";
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
@@ -74,8 +75,12 @@ export function searchResources(query: string): Resource[] {
 }
 
 function ensureSeeded(): void {
+  if (typeof window === "undefined") return;
+  const seeded = localStorage.getItem(SEEDED_KEY);
+  if (seeded) return;
   const existing = getStore();
   if (existing.length === 0) {
     setStore(seedResources);
   }
+  localStorage.setItem(SEEDED_KEY, "1");
 }

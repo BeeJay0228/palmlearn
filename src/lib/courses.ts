@@ -1,6 +1,7 @@
 import type { Course, Module, Lesson, CourseStatus } from "@/types";
 
 const COURSES_KEY = "palmlearn-courses";
+const SEEDED_KEY = "palmlearn-courses-seeded";
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
@@ -171,12 +172,16 @@ function seedIfEmpty(): void {
 }
 
 export function getCourses(): Course[] {
-  ensureSeeded();
+  ensureCoursesSeeded();
   return getStore();
 }
 
 export function getCourseById(id: string): Course | null {
   return getStore().find((c) => c.id === id) ?? null;
+}
+
+export function getCourseIdByTitle(title: string): string | undefined {
+  return getStore().find((c) => c.title === title)?.id;
 }
 
 export function createCourse(data: Partial<Course>): Course {
@@ -225,6 +230,26 @@ export function deleteCourse(id: string): boolean {
   if (filtered.length === courses.length) return false;
   setStore(filtered);
   return true;
+}
+
+export function duplicateCourse(id: string): Course | null {
+  const courses = getStore();
+  const original = courses.find((c) => c.id === id);
+  if (!original) return null;
+  const now = new Date().toISOString();
+  const copy: Course = {
+    ...original,
+    id: generateId(),
+    title: `${original.title} (Copy)`,
+    status: "draft",
+    version: 0,
+    createdAt: now,
+    updatedAt: now,
+    analytics: { views: 0, assignedLearners: 0, completionRate: 0, averageScore: 0 },
+  };
+  courses.push(copy);
+  setStore(courses);
+  return copy;
 }
 
 export function updateCourseStatus(id: string, status: CourseStatus): Course | null {
@@ -327,6 +352,12 @@ export function reorderLessons(courseId: string, moduleId: string, lessonIds: st
   return courses[idx];
 }
 
-function ensureSeeded(): void {
+export function ensureCoursesSeeded(): void {
+  if (typeof window === "undefined") return;
+  const seeded = localStorage.getItem(SEEDED_KEY);
+  if (seeded) return;
   seedIfEmpty();
+  localStorage.setItem(SEEDED_KEY, "1");
 }
+
+

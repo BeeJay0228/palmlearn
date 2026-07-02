@@ -48,7 +48,7 @@ const SEED_LEARNER_ASSIGNMENTS: LearnerAssignment[] = [
   { id: "la_seed_7", assignmentId: "asgn_seed_1", learnerId: "user_learner_2", courseId: "course_1", progress: 100, status: "completed", assignedDate: pastDate(7), firstOpened: pastDate(6), lastActivity: pastDate(2), completedDate: pastDate(2), timeSpent: 300 },
   { id: "la_seed_8", assignmentId: "asgn_seed_2", learnerId: "user_learner_2", courseId: "course_2", progress: 50, status: "in_progress", assignedDate: pastDate(3), firstOpened: pastDate(2), lastActivity: pastDate(1), timeSpent: 90 },
   { id: "la_seed_9", assignmentId: "asgn_seed_3", learnerId: "user_learner_1", courseId: "course_5", progress: 20, status: "in_progress", assignedDate: pastDate(14), firstOpened: pastDate(10), lastActivity: pastDate(5), timeSpent: 60 },
-  { id: "la_seed_10", assignmentId: "asgn_seed_1", learnerId: "user_learner_1", courseId: "course_1", progress: 0, status: "overdue", assignedDate: pastDate(30), firstOpened: pastDate(28), timeSpent: 5 },
+  { id: "la_seed_10", assignmentId: "asgn_seed_5", learnerId: "user_learner_1", courseId: "course_6", progress: 0, status: "overdue", assignedDate: pastDate(30), firstOpened: pastDate(28), timeSpent: 5 },
 ];
 
 export function seedLearnerAssignments(): void {
@@ -109,9 +109,12 @@ export function deleteLearnerAssignment(id: string): boolean {
 }
 
 export function bulkCreateFromAssignment(assignmentId: string, learnerIds: string[], courseIds: string[]): LearnerAssignment[] {
+  const existing = getStored();
   const created: LearnerAssignment[] = [];
   for (const learnerId of learnerIds) {
     for (const courseId of courseIds) {
+      const exists = existing.find((la) => la.assignmentId === assignmentId && la.learnerId === learnerId && la.courseId === courseId);
+      if (exists) continue;
       const la = createLearnerAssignment({ assignmentId, learnerId, courseId, progress: 0, status: "not_started", timeSpent: 0 });
       created.push(la);
     }

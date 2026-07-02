@@ -83,7 +83,7 @@ export function EventWizard({ open, onClose, onSave, editEvent }: EventWizardPro
 
   const currentStepIndex = steps.findIndex((s) => s.key === step);
 
-  function validateStep(s: WizardStep): boolean {
+  function getStepErrors(s: WizardStep): Record<string, string> {
     const errs: Record<string, string> = {};
     if (s === "basic") {
       if (!title.trim()) errs.title = "Title is required";
@@ -118,6 +118,11 @@ export function EventWizard({ open, onClose, onSave, editEvent }: EventWizardPro
       if (audience.type === "region" && audience.regionIds.length === 0) errs.audience = "Select at least one region";
       if (audience.type === "state" && audience.stateIds.length === 0) errs.audience = "Select at least one state";
     }
+    return errs;
+  }
+
+  function validateStep(s: WizardStep): boolean {
+    const errs = getStepErrors(s);
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -135,9 +140,12 @@ export function EventWizard({ open, onClose, onSave, editEvent }: EventWizardPro
   }
 
   function handleSave() {
-    for (const s of steps) validateStep(s.key);
-    const allValid = steps.every((s) => validateStep(s.key));
-    if (!allValid) return;
+    const firstInvalid = steps.find((s) => {
+      const errs = getStepErrors(s.key);
+      if (Object.keys(errs).length > 0) { setErrors(errs); return true; }
+      return false;
+    });
+    if (firstInvalid) { setStep(firstInvalid.key); return; }
     onSave({
       title: title.trim(),
       description: description.trim(),
@@ -547,6 +555,9 @@ export function EventWizard({ open, onClose, onSave, editEvent }: EventWizardPro
                 value={audience}
                 onChange={setAudience}
               />
+              {errors.audience && (
+                <p className="text-xs text-danger mt-1">{errors.audience}</p>
+              )}
             </div>
           )}
 

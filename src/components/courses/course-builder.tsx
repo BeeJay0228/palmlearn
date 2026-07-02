@@ -11,7 +11,7 @@ import { StepStructure } from "./step-structure";
 import { StepResources } from "./step-resources";
 import { CoursePreview } from "./course-preview";
 import { StepPublish } from "./step-publish";
-import { X, ArrowLeft, ArrowRight, Save, Eye } from "lucide-react";
+import { X, ArrowLeft, ArrowRight, Save, Eye, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface CourseBuilderProps {
   initialData?: Course;
@@ -53,23 +53,45 @@ export function CourseBuilder({ initialData, onClose }: CourseBuilderProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saveError, setSaveError] = useState("");
+
+  const validate = useCallback((): boolean => {
+    const errs: Record<string, string> = {};
+    if (!courseData.title?.trim()) errs.title = "Title is required";
+    if (!courseData.description?.trim()) errs.description = "Description is required";
+    if (!courseData.instructor?.trim()) errs.instructor = "Instructor is required";
+    if (!courseData.categoryId) errs.categoryId = "Category is required";
+    if (!courseData.estimatedDuration || courseData.estimatedDuration < 1) errs.estimatedDuration = "Duration is required";
+    if (!courseData.difficulty) errs.difficulty = "Difficulty is required";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }, [courseData]);
 
   const handleSave = useCallback(async (status?: CourseStatus) => {
+    if (!validate()) {
+      setCurrentStep(0);
+      return;
+    }
     setSaving(true);
+    setSaveError("");
     try {
       if (initialData) {
         const updated = updateCourse(initialData.id, { ...courseData, ...(status ? { status } : {}) });
-        if (updated) setCourseData(updated);
+        if (!updated) { setSaveError("Failed to save course."); return; }
+        setCourseData(updated);
       } else {
         const created = createCourse({ ...courseData, ...(status ? { status } : {}), createdBy: user?.id || "" });
         setCourseData(created);
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+    } catch {
+      setSaveError("An unexpected error occurred while saving.");
     } finally {
       setSaving(false);
     }
-  }, [courseData, initialData, user?.id]);
+  }, [courseData, initialData, user?.id, validate]);
 
   const handleStatusChange = useCallback((status: CourseStatus) => {
     setCourseData((prev) => ({ ...prev, status }));
@@ -159,7 +181,19 @@ export function CourseBuilder({ initialData, onClose }: CourseBuilderProps) {
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-        {currentStep === 0 && <StepBasicInfo data={courseData} onChange={setCourseData} />}
+        {saveError && (
+          <div className="flex items-center gap-2.5 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200/50 dark:border-red-800/30 p-4 text-sm text-red-700 dark:text-red-400 mb-4">
+            <AlertCircle className="h-5 w-5 shrink-0" />
+            {saveError}
+          </div>
+        )}
+        {Object.keys(errors).length > 0 && currentStep === 0 && (
+          <div className="flex items-center gap-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-800/30 p-4 text-sm text-amber-700 dark:text-amber-400 mb-4">
+            <AlertCircle className="h-5 w-5 shrink-0" />
+            Please fill in all required fields.
+          </div>
+        )}
+        {currentStep === 0 && <StepBasicInfo data={courseData} onChange={setCourseData} errors={errors} />}
         {currentStep === 1 && <StepStructure course={course} onChange={(c) => setCourseData(c)} />}
         {currentStep === 2 && <StepResources course={course} onChange={(c) => setCourseData(c)} />}
         {currentStep === 3 && <CoursePreview course={course} />}

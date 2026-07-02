@@ -17,7 +17,7 @@ import {
 } from "@/types";
 import { getCourses } from "@/lib/courses";
 import { getCampaigns } from "@/lib/campaigns";
-import { X, Check, ArrowLeft, ArrowRight, BookOpen, Users, Calendar, Bell, Eye } from "lucide-react";
+import { X, Check, ArrowLeft, ArrowRight, FileText, BookOpen, Users, Calendar, Bell, Eye } from "lucide-react";
 
 interface AssignmentWizardProps {
   open: boolean;
@@ -29,7 +29,7 @@ interface AssignmentWizardProps {
 type WizardStep = "name-type" | "content" | "audience" | "schedule" | "notifications" | "review";
 
 const steps: { key: WizardStep; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { key: "name-type", label: "Details", icon: BookOpen },
+  { key: "name-type", label: "Details", icon: FileText },
   { key: "content", label: "Content", icon: BookOpen },
   { key: "audience", label: "Audience", icon: Users },
   { key: "schedule", label: "Schedule", icon: Calendar },

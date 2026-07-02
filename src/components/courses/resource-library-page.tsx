@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useAuth } from "@/hooks/use-auth";
-import { Search, Upload, Trash2, FileText, Video, FileImage, File, Link, Download, ExternalLink, X, FolderOpen, Plus } from "lucide-react";
+import { Search, Upload, Trash2, FileText, Video, FileImage, File, Link, Download, ExternalLink, X, FolderOpen, Plus, CheckCircle2 } from "lucide-react";
 
 const RESOURCE_CONFIG: Record<ResourceType, { icon: React.ComponentType<{ className?: string }>; label: string; color: string; bgColor: string }> = {
   video: { icon: Video, label: "Video", color: "text-blue-600", bgColor: "bg-blue-50 dark:bg-blue-950/30" },
@@ -33,6 +33,12 @@ export function ResourceLibraryPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<Resource | null>(null);
   const [showUpload, setShowUpload] = useState(false);
   const [uploadForm, setUploadForm] = useState({ name: "", description: "", type: "pdf" as ResourceType, url: "", size: "", tags: "" });
+  const [successMsg, setSuccessMsg] = useState("");
+
+  const showSuccess = (msg: string) => {
+    setSuccessMsg(msg);
+    setTimeout(() => setSuccessMsg(""), 3000);
+  };
 
   const filtered = useMemo(() => {
     let result = [...allResources];
@@ -51,6 +57,15 @@ export function ResourceLibraryPage() {
       deleteResource(deleteConfirm.id);
       setDeleteConfirm(null);
       setRefreshKey((k) => k + 1);
+      showSuccess("Resource deleted successfully.");
+    }
+  };
+
+  const handleDownload = (resource: Resource) => {
+    if (resource.type === "link") {
+      window.open(resource.url, "_blank", "noopener");
+    } else {
+      showSuccess(`Downloading "${resource.name}"...`);
     }
   };
 
@@ -68,6 +83,7 @@ export function ResourceLibraryPage() {
     setUploadForm({ name: "", description: "", type: "pdf", url: "", size: "", tags: "" });
     setShowUpload(false);
     setRefreshKey((k) => k + 1);
+    showSuccess("Resource uploaded successfully.");
   };
 
   return (
@@ -82,6 +98,13 @@ export function ResourceLibraryPage() {
           </Button>
         }
       />
+
+      {successMsg && (
+        <div className="flex items-center gap-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-800/30 p-4 text-sm text-emerald-700 dark:text-emerald-400 animate-slide-up">
+          <CheckCircle2 className="h-5 w-5 shrink-0" />
+          {successMsg}
+        </div>
+      )}
 
       {/* Filters */}
       <Card variant="default" padding="md">
@@ -165,7 +188,7 @@ export function ResourceLibraryPage() {
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>
                     ) : (
-                      <button type="button" className="rounded-xl p-2 text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors">
+                      <button type="button" onClick={() => handleDownload(resource)} className="rounded-xl p-2 text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors">
                         <Download className="h-3.5 w-3.5" />
                       </button>
                     )}
@@ -189,8 +212,8 @@ export function ResourceLibraryPage() {
 
       {/* Upload Modal */}
       {showUpload && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setShowUpload(false)}>
-          <div className="w-full max-w-lg rounded-2xl border border-border/50 bg-surface shadow-2xl animate-scale-in-sm" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/20 backdrop-blur-sm p-4 py-8 animate-fade-in" onClick={() => setShowUpload(false)}>
+          <div className="w-full max-w-lg my-auto rounded-2xl border border-border/50 bg-surface shadow-2xl animate-scale-in-sm" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
               <h3 className="text-base font-semibold text-content">Upload Resource</h3>
               <button type="button" onClick={() => setShowUpload(false)} className="rounded-xl p-2 text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors">

@@ -181,7 +181,7 @@ export function deleteAssignment(id: string): boolean {
   return true;
 }
 
-export function filterAssignments(opts: { search?: string; status?: AssignmentStatus; type?: AssignmentType; priority?: AssignmentPriority; page?: number; pageSize?: number }): { items: Assignment[]; total: number } {
+export function filterAssignments(opts: { search?: string; status?: AssignmentStatus; type?: AssignmentType; priority?: AssignmentPriority; assignedBy?: string; page?: number; pageSize?: number }): { items: Assignment[]; total: number } {
   let items = getStored();
   if (opts.search) {
     const q = opts.search.toLowerCase();
@@ -190,11 +190,29 @@ export function filterAssignments(opts: { search?: string; status?: AssignmentSt
   if (opts.status) items = items.filter((a) => a.status === opts.status);
   if (opts.type) items = items.filter((a) => a.type === opts.type);
   if (opts.priority) items = items.filter((a) => a.priority === opts.priority);
+  if (opts.assignedBy) items = items.filter((a) => a.assignedBy === opts.assignedBy);
   const page = opts.page ?? 1;
   const pageSize = opts.pageSize ?? 10;
   const total = items.length;
   const start = (page - 1) * pageSize;
   return { items: items.slice(start, start + pageSize), total };
+}
+
+export function duplicateAssignment(id: string): Assignment | undefined {
+  const list = getStored();
+  const source = list.find((a) => a.id === id);
+  if (!source) return undefined;
+  const copy: Assignment = {
+    ...source,
+    id: generateId(),
+    name: `${source.name} (Copy)`,
+    status: "draft",
+    createdAt: now(),
+    updatedAt: now(),
+  };
+  list.push(copy);
+  setStored(list);
+  return copy;
 }
 
 export function bulkActionAssignment(ids: string[], action: "delete" | "activate" | "draft" | "complete" | "cancel"): number {
