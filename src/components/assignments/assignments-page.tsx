@@ -73,6 +73,21 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
     return () => clearTimeout(timer);
   }, []);
 
+  // Close context menu on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      const target = e.target as Node;
+      const menuEl = document.querySelector("[data-context-menu]");
+      if (menuEl && !menuEl.contains(target)) {
+        setContextMenu(null);
+      }
+    }
+    if (contextMenu) {
+      document.addEventListener("mousedown", handleClick);
+      return () => document.removeEventListener("mousedown", handleClick);
+    }
+  }, [contextMenu]);
+
   function resolveAudienceToUserIds(audience: TargetAudience): string[] {
     switch (audience.type) {
       case "organization":
@@ -441,9 +456,7 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
                           {contextMenu === assignment.id && (
-                            <>
-                              <div className="fixed inset-0 z-40" onClick={() => setContextMenu(null)} />
-                              <div className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-xl border border-border bg-surface shadow-xl p-1.5 animate-scale-in origin-top-right">
+                            <div data-context-menu className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-xl border border-border bg-surface shadow-xl p-1.5 animate-scale-in origin-top-right">
                               <button
                                 onClick={() => { setEditingAssignment(assignment); setWizardOpen(true); setContextMenu(null); }}
                                 className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
@@ -480,7 +493,6 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
                                 <Trash2 className="h-4 w-4" /> Delete
                               </button>
                             </div>
-                            </>
                           )}
                         </div>
                       </div>

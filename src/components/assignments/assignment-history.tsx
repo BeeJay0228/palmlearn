@@ -35,11 +35,10 @@ export function AssignmentHistory({ role }: AssignmentHistoryProps) {
   const items = useMemo(() => {
     let data = allRecords;
     if (role === "trainer" && user) {
-      const trainerUser = allUsers.find((u) => u.id === user.id);
-      const trainerCategoryIds = trainerUser?.categoryId
-        ? allUsers.filter((u) => u.categoryId === trainerUser.categoryId).map((u) => u.id)
-        : [];
-      data = data.filter((la) => trainerCategoryIds.includes(la.learnerId));
+      const trainerAssignmentIds = assignments
+        .filter((a) => a.assignedBy === user.id)
+        .map((a) => a.id);
+      data = data.filter((la) => trainerAssignmentIds.includes(la.assignmentId));
     }
     if (search) {
       const q = search.toLowerCase();
