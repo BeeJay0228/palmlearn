@@ -179,6 +179,22 @@ export function notifyAssignmentCompleted(assignment: Assignment, learnerId: str
   setStored(list);
 }
 
+export function notifyProgrammeCompleted(programmeName: string, programmeId: string, learnerId: string): void {
+  const notification: AppNotification = {
+    id: generateId(),
+    title: "Training Programme Completed",
+    message: `Congratulations! You have completed '${programmeName}'.`,
+    type: "completion",
+    read: false,
+    userId: learnerId,
+    link: `/learner/programmes/${programmeId}`,
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
 export function deleteNotification(id: string): void {
   const list = getStored();
   setStored(list.filter((n) => n.id !== id));

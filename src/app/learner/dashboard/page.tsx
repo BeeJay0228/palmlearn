@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { RoleGreeting } from "@/components/dashboard/role-greeting";
@@ -11,8 +12,11 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LearnerContinueLearning, LearnerMandatoryLearning, LearnerDueSoon, LearnerCompleted } from "@/components/assignments/learner-assignments";
 import { TodaysEvents, UpcomingLiveSessions, MissedEvents, CompletedEvents } from "@/components/events/learner-events";
-import { BookOpen, Clock, Award, TrendingUp, PlayCircle, CheckCircle, Star, Trophy, ChevronRight, Sparkles, BarChart3, Flame } from "lucide-react";
+import { BookOpen, Clock, Award, TrendingUp, PlayCircle, CheckCircle, Star, Trophy, ChevronRight, Sparkles, BarChart3, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getAssignmentsForLearner, getAssignmentsForLearnerAll } from "@/lib/learner-assignments";
+import { getProgrammes, getProgrammeProgress } from "@/lib/programmes";
+import { getCourses } from "@/lib/courses";
 
 const recentActivity = [
   { id: "1", icon: PlayCircle, iconBg: "bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400", title: "Course resumed", description: "Continued Advanced Mathematics - Module 4", time: "30m ago" },
@@ -21,16 +25,49 @@ const recentActivity = [
   { id: "4", icon: Award, iconBg: "bg-purple-100 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400", title: "Certificate earned", description: "Python for Data Science certification", time: "2d ago" },
 ];
 
-const achievements = [
-  { label: "Day Streak", value: "12", icon: Flame, color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-950/30" },
-  { label: "Courses Done", value: "5", icon: Trophy, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30" },
-  { label: "Certificates", value: "3", icon: Award, color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950/30" },
-  { label: "Top Score", value: "98%", icon: Star, color: "text-yellow-500", bg: "bg-yellow-50 dark:bg-yellow-950/30" },
-];
-
 export default function LearnerDashboard() {
   const { user } = useAuth();
   const router = useRouter();
+
+  const metrics = useMemo(() => {
+    if (!user) return null;
+    const allRecords = getAssignmentsForLearnerAll(user.id);
+    const standaloneRecords = getAssignmentsForLearner(user.id);
+
+    const courses = getCourses();
+
+    // Enrolled courses (any record with a courseId)
+    const enrolledCourseIds = new Set(allRecords.map((r) => r.courseId).filter(Boolean));
+    const enrolledCourses = enrolledCourseIds.size;
+
+    // Programmes assigned
+    const allProgrammes = getProgrammes();
+    const assignedProgrammes = allProgrammes.filter((p) => {
+      const progress = getProgrammeProgress(user.id, p);
+      return progress.totalCourses > 0 || progress.totalAssignments > 0;
+    });
+    const programmesActive = assignedProgrammes.filter((p) => p.status === "active" || (p.status !== "completed" && getProgrammeProgress(user.id, p).progress > 0 && getProgrammeProgress(user.id, p).progress < 100));
+    const programmesCompleted = assignedProgrammes.filter((p) => p.status === "completed" || getProgrammeProgress(user.id, p).progress >= 100);
+    const totalProgrammes = assignedProgrammes.length;
+
+    // Assignments
+    const standaloneAssignments = allRecords.filter((r) => r.assignmentId && !r.campaignId);
+    const completedAssignments = standaloneAssignments.filter((r) => r.status === "completed").length;
+    const inProgressAssignments = standaloneAssignments.filter((r) => r.status === "in_progress").length;
+
+    // Courses completed
+    const completedCourses = allRecords.filter((r) => r.courseId && r.status === "completed").length;
+
+    return {
+      enrolledCourses,
+      totalProgrammes,
+      programmesActive: programmesActive.length,
+      programmesCompleted: programmesCompleted.length,
+      completedCourses,
+      completedAssignments: completedAssignments,
+      inProgressAssignments,
+    };
+  }, [user]);
 
   if (!user) return null;
 
@@ -70,9 +107,9 @@ export default function LearnerDashboard() {
           </div>
           <div className="grid grid-cols-3 gap-6">
             {[
-              { label: "Streak", value: "12 days", icon: Flame },
-              { label: "Courses", value: "8", icon: BookOpen },
-              { label: "Avg. Score", value: "87%", icon: Award },
+              { label: "Programmes", value: metrics?.totalProgrammes ?? 0, icon: GraduationCap },
+              { label: "Completed", value: metrics?.completedCourses ?? 0, icon: CheckCircle },
+              { label: "Courses Enrolled", value: metrics?.enrolledCourses ?? 0, icon: Award },
             ].map((s) => (
               <div key={s.label} className="text-center">
                 <p className="text-2xl lg:text-3xl font-bold text-white">{s.value}</p>
@@ -85,7 +122,12 @@ export default function LearnerDashboard() {
 
       {/* Achievements Bar */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {achievements.map((a) => (
+        {[
+          { label: "Assigned Programmes", value: metrics?.totalProgrammes ?? 0, icon: GraduationCap, color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950/30" },
+          { label: "Active Programmes", value: metrics?.programmesActive ?? 0, icon: PlayCircle, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
+          { label: "Courses Completed", value: metrics?.completedCourses ?? 0, icon: CheckCircle, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30" },
+          { label: "Assignments Done", value: metrics?.completedAssignments ?? 0, icon: Trophy, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" },
+        ].map((a) => (
           <div key={a.label} className="flex items-center gap-3 p-4 rounded-2xl border border-border/50 bg-surface transition-all card-hover">
             <div className={cn("flex h-11 w-11 items-center justify-center rounded-xl", a.bg)}>
               <a.icon className={cn("h-5 w-5", a.color)} />

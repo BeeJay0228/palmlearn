@@ -1,4 +1,5 @@
 import type { LearnerAssignment, LearnerAssignmentStatus, Assignment } from "@/types";
+import { checkAndMarkProgrammeCompletion } from "./programmes";
 
 const STORAGE_KEY = "palmlearn-learner-assignments";
 
@@ -151,12 +152,18 @@ export function markAssignmentInProgress(id: string): LearnerAssignment | undefi
 }
 
 export function markAssignmentCompleted(id: string): LearnerAssignment | undefined {
-  return updateLearnerAssignment(id, {
+  const record = getLearnerAssignment(id);
+  if (!record) return undefined;
+  const updated = updateLearnerAssignment(id, {
     status: "completed",
     progress: 100,
     completedDate: new Date().toISOString(),
     lastActivity: new Date().toISOString(),
   });
+  if (updated && record.campaignId) {
+    checkAndMarkProgrammeCompletion(record.learnerId, record.campaignId);
+  }
+  return updated;
 }
 
 export function checkAndUpdateOverdueStatus(learnerId: string, assignments: Assignment[]): void {

@@ -301,6 +301,7 @@ export interface Programme {
   status: ProgrammeStatus;
   publishedAt?: string;
   publishedBy?: string;
+  completedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

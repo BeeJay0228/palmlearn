@@ -98,7 +98,7 @@ export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Lear
           </Link>
         ))}
         {programmeItems.slice(0, maxItems).map((item) => (
-          <Link key={item.id} href="/learner/programmes" className="group relative overflow-hidden rounded-2xl border border-border/50 bg-surface transition-all duration-300 card-hover cursor-pointer block">
+          <Link key={item.id} href={`/learner/programmes/${item.id}`} className="group relative overflow-hidden rounded-2xl border border-border/50 bg-surface transition-all duration-300 card-hover cursor-pointer block">
             <div className="relative h-28 bg-gradient-to-br from-purple-600/20 to-purple-800/20 flex items-center justify-center overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-60" />
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/90 dark:bg-surface/90 shadow-lg group-hover:scale-110 transition-transform duration-300">

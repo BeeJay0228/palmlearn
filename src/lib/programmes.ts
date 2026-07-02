@@ -3,7 +3,7 @@ import { getCourseIdByTitle, ensureCoursesSeeded } from "./courses";
 import { getAssignments } from "./assignments";
 import { getAssignmentsForProgramme, createLearnerAssignment, getLearnerAssignments } from "./learner-assignments";
 import { getAllUsers } from "./auth";
-import { notifyProgrammeCreated, notifyProgrammeUpdated } from "./mock-notifications";
+import { notifyProgrammeCreated, notifyProgrammeUpdated, notifyProgrammeCompleted } from "./mock-notifications";
 
 const STORAGE_KEY = "palmlearn-campaigns";
 
@@ -26,7 +26,14 @@ function getStored(): Programme[] {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return [];
   try {
-    return JSON.parse(raw) as Programme[];
+    const list = JSON.parse(raw) as Programme[];
+    return list.map((p) => ({
+      ...p,
+      courseIds: Array.isArray(p.courseIds) ? p.courseIds : [],
+      assignmentIds: Array.isArray(p.assignmentIds) ? p.assignmentIds : [],
+      assignedBy: p.assignedBy || "",
+      createdBy: p.createdBy || "",
+    }));
   } catch {
     return [];
   }
@@ -171,34 +178,31 @@ export function updatePublishedProgramme(id: string, data: Partial<Programme>): 
   const idx = list.findIndex((c) => c.id === id);
   if (idx === -1) return undefined;
   const old = list[idx];
-  if (old.status !== "active") {
-    list[idx] = { ...old, ...data, updatedAt: now() };
-    setStored(list);
-    return list[idx];
-  }
   list[idx] = { ...old, ...data, updatedAt: now() };
   setStored(list);
   const programme = list[idx];
-  const learnerIds = getProgrammeLearnerIds(programme);
-  if (learnerIds.length > 0 && data.courseIds && data.courseIds.length > 0) {
-    const newCourses = data.courseIds.filter((cid) => !old.courseIds.includes(cid));
-    if (newCourses.length > 0) {
+  if (old.status === "active") {
+    const learnerIds = getProgrammeLearnerIds(programme);
+    if (learnerIds.length > 0) {
       const existing = getLearnerAssignments();
-      for (const learnerId of learnerIds) {
-        for (const courseId of newCourses) {
-          const already = existing.find(
-            (la) => la.learnerId === learnerId && la.courseId === courseId && la.campaignId === programme.id
-          );
-          if (already) continue;
-          createLearnerAssignment({
-            assignmentId: "",
-            campaignId: programme.id,
-            learnerId,
-            courseId,
-            progress: 0,
-            status: "not_started",
-            timeSpent: 0,
-          });
+      if (data.courseIds) {
+        const newCourses = data.courseIds.filter((cid) => !old.courseIds.includes(cid));
+        for (const learnerId of learnerIds) {
+          for (const courseId of newCourses) {
+            const already = existing.find(
+              (la) => la.learnerId === learnerId && la.courseId === courseId && la.campaignId === programme.id
+            );
+            if (already) continue;
+            createLearnerAssignment({
+              assignmentId: "",
+              campaignId: programme.id,
+              learnerId,
+              courseId,
+              progress: 0,
+              status: "not_started",
+              timeSpent: 0,
+            });
+          }
         }
       }
       notifyProgrammeUpdated(programme, learnerIds);
@@ -317,4 +321,34 @@ export function assignmentIdsForProgramme(programme: Programme): string[] {
   const linked = getAssignments().filter((a) => a.campaignId === programme.id).map((a) => a.id);
   const all = [...new Set([...programme.assignmentIds, ...linked])];
   return all;
+}
+
+export function isProgrammeComplete(learnerId: string, programme: Programme): boolean {
+  if (programme.courseIds.length === 0 && assignmentIdsForProgramme(programme).length === 0) return false;
+  const progress = getProgrammeProgress(learnerId, programme);
+  return progress.progress >= 100;
+}
+
+export function markProgrammeCompleted(learnerId: string, programmeId: string): Programme | undefined {
+  const list = getStored();
+  const idx = list.findIndex((p) => p.id === programmeId);
+  if (idx === -1) return undefined;
+  if (list[idx].completedAt) return list[idx];
+  list[idx] = {
+    ...list[idx],
+    status: "completed",
+    completedAt: now(),
+    updatedAt: now(),
+  };
+  setStored(list);
+  notifyProgrammeCompleted(list[idx].name, programmeId, learnerId);
+  return list[idx];
+}
+
+export function checkAndMarkProgrammeCompletion(learnerId: string, programmeId: string): void {
+  const programme = getProgramme(programmeId);
+  if (!programme || programme.status !== "active") return;
+  if (isProgrammeComplete(learnerId, programme)) {
+    markProgrammeCompleted(learnerId, programmeId);
+  }
 }

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { getCourseProgress, updateLearnerAssignment, getAssignmentsForCourse } from "@/lib/learner-assignments";
+import { getCourseProgress, updateLearnerAssignment, markAssignmentCompleted, getAssignmentsForCourse } from "@/lib/learner-assignments";
 import { getCourseById } from "@/lib/courses";
 import {
   DIFFICULTY_LABELS, DIFFICULTY_COLORS,
@@ -45,14 +45,17 @@ export function LearnerCourseView({ courseId }: LearnerCourseViewProps) {
       const current = getCourseProgress(user.id, courseId);
       if (current) {
         const newProgress = current.status === "not_started" ? 10 : Math.min(100, (current.progress || 0) + 15);
-        updateLearnerAssignment(laId, {
-          progress: newProgress,
-          status: newProgress >= 100 ? "completed" : "in_progress",
-          firstOpened: current.firstOpened || new Date().toISOString(),
-          lastActivity: new Date().toISOString(),
-          completedDate: newProgress >= 100 ? new Date().toISOString() : current.completedDate,
-          timeSpent: (current.timeSpent || 0) + 15,
-        });
+        if (newProgress >= 100) {
+          markAssignmentCompleted(laId);
+        } else {
+          updateLearnerAssignment(laId, {
+            progress: newProgress,
+            status: "in_progress",
+            firstOpened: current.firstOpened || new Date().toISOString(),
+            lastActivity: new Date().toISOString(),
+            timeSpent: (current.timeSpent || 0) + 15,
+          });
+        }
       }
       setUpdating(false);
       router.refresh();
