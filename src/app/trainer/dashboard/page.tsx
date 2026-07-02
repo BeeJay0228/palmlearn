@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 import { RoleGreeting } from "@/components/dashboard/role-greeting";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { ActivityTimeline } from "@/components/dashboard/activity-timeline";
@@ -34,6 +35,7 @@ const topLearners = [
 
 export default function TrainerDashboard() {
   const { user } = useAuth();
+  const router = useRouter();
 
   if (!user) return null;
 
@@ -119,7 +121,7 @@ export default function TrainerDashboard() {
                 </div>
               ))}
             </div>
-            <button className="w-full mt-4 rounded-xl py-2 text-xs font-medium text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors">
+            <button onClick={() => router.push("/trainer/my-learners")} className="w-full mt-4 rounded-xl py-2 text-xs font-medium text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors">
               View all learners
             </button>
           </CardContent>

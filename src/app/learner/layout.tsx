@@ -11,12 +11,14 @@ import {
   CalendarDays,
   Trophy,
   Bell,
+  ClipboardList,
 } from "lucide-react";
 
 const learnerNavItems: NavItem[] = [
   { label: "Main", href: "", isSection: true },
   { label: "Dashboard", href: "/learner/dashboard", icon: LayoutDashboard },
   { label: "Continue Learning", href: "/learner/continue-learning", icon: PlayCircle },
+  { label: "My Assignments", href: "/learner/assignments", icon: ClipboardList },
   { label: "My Courses", href: "/learner/my-courses", icon: BookOpen },
   { label: "Certificates", href: "/learner/certificates", icon: Award },
   { label: "Events", href: "/learner/events", icon: CalendarDays },

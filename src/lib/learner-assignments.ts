@@ -1,4 +1,4 @@
-import type { LearnerAssignment, LearnerAssignmentStatus } from "@/types";
+import type { LearnerAssignment, LearnerAssignmentStatus, Assignment } from "@/types";
 
 const STORAGE_KEY = "palmlearn-learner-assignments";
 
@@ -135,4 +135,43 @@ export function getLearnerStats(learnerId: string): { total: number; completed: 
 
 export function getCourseProgress(learnerId: string, courseId: string): LearnerAssignment | undefined {
   return getStored().find((la) => la.learnerId === learnerId && la.courseId === courseId);
+}
+
+export function markAssignmentInProgress(id: string): LearnerAssignment | undefined {
+  return updateLearnerAssignment(id, {
+    status: "in_progress",
+    firstOpened: new Date().toISOString(),
+    lastActivity: new Date().toISOString(),
+    progress: 10,
+  });
+}
+
+export function markAssignmentCompleted(id: string): LearnerAssignment | undefined {
+  return updateLearnerAssignment(id, {
+    status: "completed",
+    progress: 100,
+    completedDate: new Date().toISOString(),
+    lastActivity: new Date().toISOString(),
+  });
+}
+
+export function checkAndUpdateOverdueStatus(learnerId: string, assignments: Assignment[]): void {
+  const records = getAssignmentsForLearner(learnerId);
+  const now = new Date();
+  for (const record of records) {
+    if (record.status === "completed" || record.status === "overdue") continue;
+    const assignment = assignments.find((a) => a.id === record.assignmentId);
+    if (!assignment?.schedule?.dueDate) continue;
+    const dueDate = new Date(assignment.schedule.dueDate);
+    if (dueDate < now) {
+      updateLearnerAssignment(record.id, { status: "overdue", lastActivity: now.toISOString() });
+    }
+  }
+}
+
+export function getDaysLeft(assignment: Assignment): number | null {
+  if (!assignment.schedule?.dueDate) return null;
+  const now = new Date();
+  const due = new Date(assignment.schedule.dueDate);
+  return Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 }

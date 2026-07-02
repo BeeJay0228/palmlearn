@@ -281,6 +281,8 @@ export interface Assignment {
   status: AssignmentStatus;
   createdAt: string;
   updatedAt: string;
+  publishedAt?: string;
+  publishedBy?: string;
 }
 
 export interface Campaign {

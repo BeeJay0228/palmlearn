@@ -113,6 +113,56 @@ export function notifyCampaignCreated(campaign: Campaign, learnerIds: string[]):
   setStored(list);
 }
 
+export function notifyAssignmentDueSoon(assignment: Assignment, learnerIds: string[], daysLeft: number): void {
+  const notifications: AppNotification[] = learnerIds.map((userId) => ({
+    id: generateId(),
+    title: "Assignment Due Soon",
+    message: `'${assignment.name}' is due in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}.`,
+    type: "due_reminder",
+    read: false,
+    userId,
+    link: "/learner/assignments",
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyAssignmentOverdue(assignment: Assignment, learnerIds: string[]): void {
+  const notifications: AppNotification[] = learnerIds.map((userId) => ({
+    id: generateId(),
+    title: "Overdue Assignment",
+    message: `'${assignment.name}' is now overdue. Please complete it as soon as possible.`,
+    type: "overdue",
+    read: false,
+    userId,
+    link: "/learner/assignments",
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyAssignmentCompleted(assignment: Assignment, learnerId: string, courseTitle?: string): void {
+  const notification: AppNotification = {
+    id: generateId(),
+    title: "Course Completed",
+    message: courseTitle
+      ? `Congratulations! You completed '${courseTitle}' in '${assignment.name}'.`
+      : `Congratulations! You completed an assignment '${assignment.name}'.`,
+    type: "completion",
+    read: false,
+    userId: learnerId,
+    link: "/learner/assignments",
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
 export function createSystemNotification(title: string, message: string, userIds?: string[]): void {
   if (userIds && userIds.length > 0) {
     const notifications: AppNotification[] = userIds.map((userId) => ({

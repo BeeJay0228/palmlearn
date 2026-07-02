@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { WelcomeCard } from "@/components/dashboard/welcome-card";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -8,8 +9,16 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, BookOpen, Award, Activity, ArrowRight } from "lucide-react";
 
+const QUICK_ACTIONS_ADMIN: { label: string; href: string }[] = [
+  { label: "Create Course", href: "/admin/courses" },
+  { label: "Add Users", href: "/admin/users" },
+  { label: "View Reports", href: "/admin/reports" },
+  { label: "System Settings", href: "/admin/settings" },
+];
+
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const router = useRouter();
 
   return (
     <AuthGuard requiredRole="admin">
@@ -105,12 +114,13 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                {["Create Course", "Add Users", "View Reports", "System Settings"].map((action) => (
+                {QUICK_ACTIONS_ADMIN.map((action) => (
                   <button
-                    key={action}
+                    key={action.label}
+                    onClick={() => router.push(action.href)}
                     className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-surface-secondary hover:bg-surface-hover hover:border-border-strong transition-all text-sm font-medium text-content-secondary hover:text-content"
                   >
-                    {action}
+                    {action.label}
                   </button>
                 ))}
               </div>

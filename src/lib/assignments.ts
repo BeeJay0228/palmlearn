@@ -157,7 +157,15 @@ export function getAssignment(id: string): Assignment | undefined {
 }
 
 export function createAssignment(data: Omit<Assignment, "id" | "createdAt" | "updatedAt">): Assignment {
-  const assignment: Assignment = { ...data, id: generateId(), createdAt: now(), updatedAt: now() };
+  const isActive = data.status === "active";
+  const assignment: Assignment = {
+    ...data,
+    id: generateId(),
+    publishedAt: isActive ? now() : undefined,
+    publishedBy: isActive ? data.assignedBy : undefined,
+    createdAt: now(),
+    updatedAt: now(),
+  };
   const list = getStored();
   list.push(assignment);
   setStored(list);
@@ -168,7 +176,15 @@ export function updateAssignment(id: string, data: Partial<Assignment>): Assignm
   const list = getStored();
   const idx = list.findIndex((a) => a.id === id);
   if (idx === -1) return undefined;
-  list[idx] = { ...list[idx], ...data, updatedAt: now() };
+  const wasDraft = list[idx].status !== "active";
+  const becomingActive = data.status === "active";
+  list[idx] = {
+    ...list[idx],
+    ...data,
+    publishedAt: becomingActive && wasDraft ? (data.publishedAt || now()) : list[idx].publishedAt,
+    publishedBy: becomingActive && wasDraft ? (data.publishedBy || list[idx].assignedBy) : list[idx].publishedBy,
+    updatedAt: now(),
+  };
   setStored(list);
   return list[idx];
 }
@@ -198,6 +214,21 @@ export function filterAssignments(opts: { search?: string; status?: AssignmentSt
   return { items: items.slice(start, start + pageSize), total };
 }
 
+export function publishAssignment(id: string, userId: string): Assignment | undefined {
+  const list = getStored();
+  const idx = list.findIndex((a) => a.id === id);
+  if (idx === -1) return undefined;
+  list[idx] = {
+    ...list[idx],
+    status: "active" as AssignmentStatus,
+    publishedAt: list[idx].publishedAt || now(),
+    publishedBy: list[idx].publishedBy || userId,
+    updatedAt: now(),
+  };
+  setStored(list);
+  return list[idx];
+}
+
 export function duplicateAssignment(id: string): Assignment | undefined {
   const list = getStored();
   const source = list.find((a) => a.id === id);
@@ -207,6 +238,8 @@ export function duplicateAssignment(id: string): Assignment | undefined {
     id: generateId(),
     name: `${source.name} (Copy)`,
     status: "draft",
+    publishedAt: undefined,
+    publishedBy: undefined,
     createdAt: now(),
     updatedAt: now(),
   };
@@ -222,7 +255,7 @@ export function bulkActionAssignment(ids: string[], action: "delete" | "activate
     if (ids.includes(a.id)) {
       count++;
       if (action === "delete") return null;
-      if (action === "activate") return { ...a, status: "active" as AssignmentStatus, updatedAt: now() };
+      if (action === "activate") return { ...a, status: "active" as AssignmentStatus, publishedAt: a.publishedAt || now(), updatedAt: now() };
       if (action === "draft") return { ...a, status: "draft" as AssignmentStatus, updatedAt: now() };
       if (action === "complete") return { ...a, status: "completed" as AssignmentStatus, updatedAt: now() };
       if (action === "cancel") return { ...a, status: "cancelled" as AssignmentStatus, updatedAt: now() };

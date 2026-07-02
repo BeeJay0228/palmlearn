@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { WelcomeCard } from "@/components/dashboard/welcome-card";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -8,8 +9,16 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Award, Clock, Play, CheckCircle, ArrowRight } from "lucide-react";
 
+const QUICK_ACTIONS_LEARNER: { label: string; href: string }[] = [
+  { label: "Browse Courses", href: "/learner/my-courses" },
+  { label: "View Schedule", href: "/learner/events" },
+  { label: "My Progress", href: "/learner/continue-learning" },
+  { label: "Certificates", href: "/learner/certificates" },
+];
+
 export default function LearnerDashboard() {
   const { user } = useAuth();
+  const router = useRouter();
 
   return (
     <AuthGuard requiredRole="learner">
@@ -119,12 +128,13 @@ export default function LearnerDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                {["Browse Courses", "View Schedule", "My Progress", "Certificates"].map((action) => (
+                {QUICK_ACTIONS_LEARNER.map((action) => (
                   <button
-                    key={action}
+                    key={action.label}
+                    onClick={() => router.push(action.href)}
                     className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-surface-secondary hover:bg-surface-hover hover:border-border-strong transition-all text-sm font-medium text-content-secondary hover:text-content"
                   >
-                    {action}
+                    {action.label}
                   </button>
                 ))}
               </div>

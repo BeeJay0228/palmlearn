@@ -222,21 +222,21 @@ export function TopNav({ className, onMenuToggle, title }: TopNavProps) {
 
               <div className="py-1">
                 <button
-                  onClick={() => { setDropdownOpen(false); router.push("/admin/profile"); }}
+                  onClick={() => { setDropdownOpen(false); router.push(`/${user?.role || "admin"}/profile`); }}
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
                 >
                   <User className="h-4 w-4" />
                   My Profile
                 </button>
                 <button
-                  onClick={() => { setDropdownOpen(false); router.push("/admin/settings"); }}
+                  onClick={() => { setDropdownOpen(false); router.push(`/${user?.role || "admin"}/settings`); }}
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
                 >
                   <Settings className="h-4 w-4" />
                   Settings
                 </button>
                 <button
-                  onClick={() => { setDropdownOpen(false); router.push("/admin/profile?changePassword=true"); }}
+                  onClick={() => { setDropdownOpen(false); router.push(`/${user?.role || "admin"}/profile?changePassword=true`); }}
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
                 >
                   <KeyRound className="h-4 w-4" />

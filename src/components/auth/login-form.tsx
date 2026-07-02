@@ -137,6 +137,7 @@ export function LoginForm() {
           </label>
           <button
             type="button"
+            onClick={() => setError("Please contact your administrator to reset your password.")}
             className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors focus-ring rounded px-1"
           >
             Forgot password?

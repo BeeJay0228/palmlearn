@@ -5,12 +5,13 @@ import { PageHeader } from "@/components/ui/page-header";
 import { EventCalendar } from "@/components/events/event-calendar";
 import { getEvents, seedEvents } from "@/lib/events";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 
 export default function TrainerEventsCalendarPage() {
   const router = useRouter();
   const { user } = useAuth();
-  seedEvents();
+
+  useEffect(() => { seedEvents(); }, []);
 
   const events = useMemo(() => {
     const all = getEvents();

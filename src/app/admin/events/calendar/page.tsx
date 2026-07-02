@@ -4,10 +4,13 @@ import { PageHeader } from "@/components/ui/page-header";
 import { EventCalendar } from "@/components/events/event-calendar";
 import { getEvents, seedEvents } from "@/lib/events";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function AdminEventsCalendarPage() {
   const router = useRouter();
-  seedEvents();
+
+  useEffect(() => { seedEvents(); }, []);
+
   const events = getEvents();
 
   return (
