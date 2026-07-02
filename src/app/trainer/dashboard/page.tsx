@@ -21,12 +21,6 @@ const recentActivity = [
   { id: "5", icon: Star, iconBg: "bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400", title: "Top performer", description: "Adaobi scored 98% on advanced assessment", time: "6h ago" },
 ];
 
-const notifications = [
-  { id: "1", title: "New learner request", description: "3 pending enrollment approvals", time: "20m ago", unread: true },
-  { id: "2", title: "Curriculum update", description: "Data Science module 3 revised", time: "2h ago", unread: true },
-  { id: "3", title: "Meeting reminder", description: "Faculty sync at 3 PM tomorrow", time: "5h ago", unread: false },
-];
-
 const topLearners = [
   { name: "Adaobi Okonkwo", score: 98, course: "Data Science", avatar: "AO" },
   { name: "Chidi Eze", score: 95, course: "Mathematics", avatar: "CE" },
@@ -139,7 +133,7 @@ export default function TrainerDashboard() {
 
         {/* Notifications */}
         <div className="lg:col-span-1">
-          <NotificationsWidget notifications={notifications} title="Notifications" />
+          <NotificationsWidget />
         </div>
       </div>
 

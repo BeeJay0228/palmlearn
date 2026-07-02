@@ -41,7 +41,7 @@ const adminNavItems: NavItem[] = [
   { label: "Event Analytics", href: "/admin/events/analytics", icon: LineChart },
   { label: "Learning Delivery", href: "", isSection: true },
   { label: "Assignments", href: "/admin/assignments", icon: ClipboardList },
-  { label: "Learning Campaigns", href: "/admin/learning-campaigns", icon: Megaphone },
+  { label: "Training Programmes", href: "/admin/programmes", icon: Megaphone },
   { label: "Assignment History", href: "/admin/assignments/history", icon: History },
   { label: "Learning Library", href: "", isSection: true },
   { label: "Courses", href: "/admin/courses", icon: Library },

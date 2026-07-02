@@ -21,12 +21,6 @@ const recentActivity = [
   { id: "4", icon: Award, iconBg: "bg-purple-100 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400", title: "Certificate earned", description: "Python for Data Science certification", time: "2d ago" },
 ];
 
-const notifications = [
-  { id: "1", title: "New course available", description: "Machine Learning Fundamentals is now open", time: "1h ago", unread: true },
-  { id: "2", title: "Assignment deadline", description: "Week 5 project due in 2 days", time: "5h ago", unread: true },
-  { id: "3", title: "Achievement earned", description: "You earned the 'Fast Learner' badge", time: "1d ago", unread: false },
-];
-
 const achievements = [
   { label: "Day Streak", value: "12", icon: Flame, color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-950/30" },
   { label: "Courses Done", value: "5", icon: Trophy, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30" },
@@ -127,7 +121,7 @@ export default function LearnerDashboard() {
       {/* Activity & Notifications */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ActivityTimeline activities={recentActivity} title="Recent Activity" />
-        <NotificationsWidget notifications={notifications} title="Notifications" />
+        <NotificationsWidget />
       </div>
 
       {/* Quick Actions + Progress */}

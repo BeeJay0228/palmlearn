@@ -68,6 +68,10 @@ export function getLearnerAssignment(id: string): LearnerAssignment | undefined 
 }
 
 export function getAssignmentsForLearner(learnerId: string): LearnerAssignment[] {
+  return getStored().filter((la) => la.learnerId === learnerId && (!la.campaignId || la.assignmentId));
+}
+
+export function getAssignmentsForLearnerAll(learnerId: string): LearnerAssignment[] {
   return getStored().filter((la) => la.learnerId === learnerId);
 }
 
@@ -79,8 +83,8 @@ export function getAssignmentsForAssignment(assignmentId: string): LearnerAssign
   return getStored().filter((la) => la.assignmentId === assignmentId);
 }
 
-export function getAssignmentsForCampaign(campaignId: string): LearnerAssignment[] {
-  return getStored().filter((la) => la.campaignId === campaignId);
+export function getAssignmentsForProgramme(programmeId: string): LearnerAssignment[] {
+  return getStored().filter((la) => la.campaignId === programmeId);
 }
 
 export function createLearnerAssignment(data: Omit<LearnerAssignment, "id" | "assignedDate">): LearnerAssignment {
@@ -123,7 +127,7 @@ export function bulkCreateFromAssignment(assignmentId: string, learnerIds: strin
 }
 
 export function getLearnerStats(learnerId: string): { total: number; completed: number; inProgress: number; notStarted: number; overdue: number } {
-  const items = getAssignmentsForLearner(learnerId);
+  const items = getAssignmentsForLearnerAll(learnerId);
   return {
     total: items.length,
     completed: items.filter((i) => i.status === "completed").length,

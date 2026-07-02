@@ -35,7 +35,7 @@ const trainerNavItems: NavItem[] = [
   { label: "Event Analytics", href: "/trainer/events/analytics", icon: LineChart },
   { label: "Learning Delivery", href: "", isSection: true },
   { label: "Assignments", href: "/trainer/assignments", icon: ClipboardList },
-  { label: "Learning Campaigns", href: "/trainer/learning-campaigns", icon: Megaphone },
+  { label: "Training Programmes", href: "/trainer/programmes", icon: Megaphone },
   { label: "Assignment History", href: "/trainer/assignments/history", icon: History },
   { label: "Learning Library", href: "", isSection: true },
   { label: "Courses", href: "/trainer/courses", icon: Library },

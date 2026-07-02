@@ -231,7 +231,7 @@ export const COURSE_STATUS_COLORS: Record<CourseStatus, string> = {
   archived: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400",
 };
 
-// --- Assignment & Campaign Types ---
+// --- Assignment & Programme Types ---
 
 export type AssignmentType = "mandatory" | "optional" | "recommended" | "refresher";
 export type AssignmentPriority = "low" | "medium" | "high" | "critical";
@@ -240,7 +240,7 @@ export type AudienceType = "single" | "multiple" | "category" | "subcategory" | 
 export type ScheduleType = "immediate" | "scheduled";
 export type ReminderSchedule = "none" | "daily" | "weekly";
 export type LearnerAssignmentStatus = "not_started" | "in_progress" | "completed" | "overdue" | "expired" | "locked";
-export type CampaignStatus = "draft" | "active" | "completed" | "archived";
+export type ProgrammeStatus = "draft" | "active" | "completed" | "archived";
 
 export interface TargetAudience {
   type: AudienceType;
@@ -285,7 +285,7 @@ export interface Assignment {
   publishedBy?: string;
 }
 
-export interface Campaign {
+export interface Programme {
   id: string;
   name: string;
   description: string;
@@ -296,8 +296,9 @@ export interface Campaign {
   startDate?: string;
   endDate?: string;
   image?: string;
+  createdBy?: string;
   assignedBy?: string;
-  status: CampaignStatus;
+  status: ProgrammeStatus;
   publishedAt?: string;
   publishedBy?: string;
   createdAt: string;
@@ -379,14 +380,14 @@ export const LEARNER_ASSIGNMENT_STATUS_COLORS: Record<LearnerAssignmentStatus, s
   locked: "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400",
 };
 
-export const CAMPAIGN_STATUS_LABELS: Record<CampaignStatus, string> = {
+export const PROGRAMME_STATUS_LABELS: Record<ProgrammeStatus, string> = {
   draft: "Draft",
   active: "Active",
   completed: "Completed",
   archived: "Archived",
 };
 
-export const CAMPAIGN_STATUS_COLORS: Record<CampaignStatus, string> = {
+export const PROGRAMME_STATUS_COLORS: Record<ProgrammeStatus, string> = {
   draft: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
   active: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
   completed: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",

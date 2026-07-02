@@ -1,4 +1,4 @@
-import type { Assignment, Campaign } from "@/types";
+import type { Assignment, Programme } from "@/types";
 
 const STORAGE_KEY = "palmlearn-notifications";
 
@@ -6,7 +6,7 @@ export interface AppNotification {
   id: string;
   title: string;
   message: string;
-  type: "assignment" | "campaign" | "due_reminder" | "completion" | "overdue" | "system";
+  type: "assignment" | "programme" | "due_reminder" | "completion" | "overdue" | "system";
   read: boolean;
   userId: string;
   link?: string;
@@ -42,7 +42,7 @@ const SEED_NOTIFICATIONS: AppNotification[] = [
   { id: "notif_seed_2", title: "Assignment Due Soon", message: "'Product Knowledge Refresh - Q2' is due in 7 days.", type: "due_reminder", read: false, userId: "user_learner_1", link: "/learner/assignments", createdAt: now() },
   { id: "notif_seed_3", title: "Course Completed", message: "Congratulations! You completed 'Compliance Fundamentals'.", type: "completion", read: false, userId: "user_learner_2", link: "/learner/my-courses", createdAt: now() },
   { id: "notif_seed_4", title: "Overdue Assignment", message: "'New Hire Onboarding - Compliance Training' is now overdue.", type: "overdue", read: false, userId: "user_learner_1", link: "/learner/assignments", createdAt: now() },
-  { id: "notif_seed_5", title: "New Campaign", message: "New campaign 'Q2 2026 Compliance Blitz' has been launched.", type: "campaign", read: false, userId: "user_learner_2", link: "/learner/assignments", createdAt: now() },
+  { id: "notif_seed_5", title: "New Training Programme", message: "New training programme 'Q2 2026 Compliance Blitz' has been launched.", type: "programme", read: false, userId: "user_learner_2", link: "/learner/programmes", createdAt: now() },
 ];
 
 export function seedNotifications(): void {
@@ -97,15 +97,31 @@ export function notifyAssignmentCreated(assignment: Assignment, learnerIds: stri
   setStored(list);
 }
 
-export function notifyCampaignCreated(campaign: Campaign, learnerIds: string[]): void {
+export function notifyProgrammeCreated(programme: Programme, learnerIds: string[]): void {
   const notifications: AppNotification[] = learnerIds.map((userId) => ({
     id: generateId(),
-    title: "New Campaign",
-    message: `Campaign '${campaign.name}' has been launched with new courses for you.`,
-    type: "campaign",
+    title: "New Training Programme",
+    message: `Training Programme '${programme.name}' has been assigned to you.`,
+    type: "programme",
     read: false,
     userId,
-    link: "/learner/assignments",
+    link: `/learner/programmes/${programme.id}`,
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyProgrammeUpdated(programme: Programme, learnerIds: string[]): void {
+  const notifications: AppNotification[] = learnerIds.map((userId) => ({
+    id: generateId(),
+    title: "Training Programme Updated",
+    message: `Training Programme '${programme.name}' has been updated. Check for new content.`,
+    type: "programme",
+    read: false,
+    userId,
+    link: `/learner/programmes/${programme.id}`,
     createdAt: now(),
   }));
   const list = getStored();
@@ -161,6 +177,11 @@ export function notifyAssignmentCompleted(assignment: Assignment, learnerId: str
   const list = getStored();
   list.push(notification);
   setStored(list);
+}
+
+export function deleteNotification(id: string): void {
+  const list = getStored();
+  setStored(list.filter((n) => n.id !== id));
 }
 
 export function createSystemNotification(title: string, message: string, userIds?: string[]): void {

@@ -11,7 +11,7 @@ import { AssignmentWizard } from "./assignment-wizard";
 import { cn } from "@/lib/utils";
 import {
   createAssignment, updateAssignment, deleteAssignment, duplicateAssignment,
-  getAssignments, bulkActionAssignment,
+  getAssignments, bulkActionAssignment, resolveAssignmentAudience,
 } from "@/lib/assignments";
 import { bulkCreateFromAssignment, getAssignmentsForAssignment } from "@/lib/learner-assignments";
 import { getUsers } from "@/lib/users";
@@ -88,29 +88,6 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
     }
   }, [contextMenu]);
 
-  function resolveAudienceToUserIds(audience: TargetAudience): string[] {
-    switch (audience.type) {
-      case "organization":
-        return allUsers.filter((u) => u.role !== "admin").map((u) => u.id);
-      case "single":
-      case "multiple":
-        return audience.userIds;
-      case "category":
-        return allUsers.filter((u) => u.categoryId && audience.categoryIds.includes(u.categoryId)).map((u) => u.id);
-      case "subcategory":
-        return allUsers.filter((u) => u.subCategoryId && audience.subCategoryIds.includes(u.subCategoryId)).map((u) => u.id);
-      case "region":
-        return allUsers.filter((u) => u.regionId && audience.regionIds.includes(u.regionId)).map((u) => u.id);
-      case "state":
-        return allUsers.filter((u) => u.stateId && audience.stateIds.includes(u.stateId)).map((u) => u.id);
-      case "office":
-      case "trainer_group":
-        return audience.userIds;
-      default:
-        return [];
-    }
-  }
-
   // All filtering, sorting, and pagination in one pass (fixes sort-before-paginate bug)
   const { items, total } = useMemo(() => {
     let result = getAssignments();
@@ -176,7 +153,7 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
   }
 
   function handleWizardSave(data: Omit<Assignment, "id" | "createdAt" | "updatedAt">) {
-    const learnerIds = resolveAudienceToUserIds(data.targetAudience);
+    const learnerIds = data.targetAudience ? resolveAssignmentAudience(data.targetAudience) : [];
     if (editingAssignment) {
       updateAssignment(editingAssignment.id, data);
       const existing = bulkCreateFromAssignment(editingAssignment.id, learnerIds, data.courseIds);

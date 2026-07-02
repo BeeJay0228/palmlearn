@@ -8,27 +8,27 @@ import { getCourses } from "@/lib/courses";
 import { getAssignments } from "@/lib/assignments";
 import { TargetAudienceBuilder } from "./target-audience-builder";
 import { Check, X, BookOpen } from "lucide-react";
-import type { Campaign, TargetAudience } from "@/types";
+import type { Programme, TargetAudience } from "@/types";
 
-interface CampaignBuilderProps {
+interface ProgrammeBuilderProps {
   open: boolean;
   onClose: () => void;
-  onSave: (data: Omit<Campaign, "id" | "createdAt" | "updatedAt">) => void;
-  editCampaign?: Campaign;
+  onSave: (data: Omit<Programme, "id" | "createdAt" | "updatedAt">) => void;
+  editProgramme?: Programme;
 }
 
 function defaultTargetAudience(): TargetAudience {
   return { type: "organization", userIds: [], categoryIds: [], subCategoryIds: [], regionIds: [], stateIds: [] };
 }
 
-export function CampaignBuilder({ open, onClose, onSave, editCampaign }: CampaignBuilderProps) {
-  const [name, setName] = useState(editCampaign?.name || "");
-  const [description, setDescription] = useState(editCampaign?.description || "");
-  const [courseIds, setCourseIds] = useState<string[]>(editCampaign?.courseIds || []);
-  const [assignmentIds, setAssignmentIds] = useState<string[]>(editCampaign?.assignmentIds || []);
-  const [targetAudience, setTargetAudience] = useState<TargetAudience>(editCampaign?.targetAudience || defaultTargetAudience());
-  const [startDate, setStartDate] = useState(editCampaign?.startDate?.split("T")[0] || "");
-  const [endDate, setEndDate] = useState(editCampaign?.endDate?.split("T")[0] || "");
+export function ProgrammeBuilder({ open, onClose, onSave, editProgramme }: ProgrammeBuilderProps) {
+  const [name, setName] = useState(editProgramme?.name || "");
+  const [description, setDescription] = useState(editProgramme?.description || "");
+  const [courseIds, setCourseIds] = useState<string[]>(editProgramme?.courseIds || []);
+  const [assignmentIds, setAssignmentIds] = useState<string[]>(editProgramme?.assignmentIds || []);
+  const [targetAudience, setTargetAudience] = useState<TargetAudience>(editProgramme?.targetAudience || defaultTargetAudience());
+  const [startDate, setStartDate] = useState(editProgramme?.startDate?.split("T")[0] || "");
+  const [endDate, setEndDate] = useState(editProgramme?.endDate?.split("T")[0] || "");
   const [error, setError] = useState("");
 
   const courses = getCourses().filter((c) => c.status === "published");
@@ -54,7 +54,7 @@ export function CampaignBuilder({ open, onClose, onSave, editCampaign }: Campaig
       targetAudience,
       startDate: startDate ? new Date(startDate).toISOString() : undefined,
       endDate: endDate ? new Date(endDate).toISOString() : undefined,
-      status: editCampaign?.status || "draft",
+      status: editProgramme?.status || "draft",
     });
     onClose();
   }
@@ -66,7 +66,7 @@ export function CampaignBuilder({ open, onClose, onSave, editCampaign }: Campaig
       <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-2xl border border-border bg-surface shadow-2xl animate-scale-in">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-surface z-10">
-          <h2 className="text-lg font-semibold text-content">{editCampaign ? "Edit Campaign" : "Create Campaign"}</h2>
+          <h2 className="text-lg font-semibold text-content">{editProgramme ? "Edit Training Programme" : "Create Training Programme"}</h2>
           <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-xl text-content-secondary hover:text-content hover:bg-surface-hover transition-colors">
             <X className="h-4 w-4" />
           </button>
@@ -74,13 +74,13 @@ export function CampaignBuilder({ open, onClose, onSave, editCampaign }: Campaig
         <div className="p-6 space-y-5">
           {error && <p className="text-xs text-danger bg-danger/5 rounded-xl px-3 py-2">{error}</p>}
 
-          <Input label="Campaign Name" value={name} onChange={(e) => { setName(e.target.value); setError(""); }} floating placeholder="e.g. Q2 Compliance Blitz" />
+          <Input label="Programme Name" value={name} onChange={(e) => { setName(e.target.value); setError(""); }} floating placeholder="e.g. Q2 Compliance Blitz" />
           <div>
             <label className="text-sm font-medium text-content mb-1.5 block">Description (optional)</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the campaign..."
+              placeholder="Describe the training programme..."
               rows={3}
               className="flex w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all resize-none"
             />
@@ -179,7 +179,7 @@ export function CampaignBuilder({ open, onClose, onSave, editCampaign }: Campaig
         </div>
         <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border sticky bottom-0 bg-surface z-10">
           <Button variant="tertiary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave}>{editCampaign ? "Update" : "Create"} Campaign</Button>
+          <Button onClick={handleSave}>{editProgramme ? "Update" : "Create"} Training Programme</Button>
         </div>
       </div>
     </div>

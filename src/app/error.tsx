@@ -1,6 +1,7 @@
 "use client";
 
 export default function Error({
+  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -12,10 +13,13 @@ export default function Error({
         <span className="text-4xl font-bold text-danger">!</span>
       </div>
       <h1 className="text-3xl font-bold tracking-tight text-content">
-        Something went wrong
+        Page Load Error
       </h1>
       <p className="text-content-secondary max-w-md text-balance">
-        An unexpected error occurred. Please try again.
+        {error?.message || "An unexpected error occurred while loading this page."}
+      </p>
+      <p className="text-xs text-content-tertiary max-w-sm">
+        If the problem persists, try refreshing the page or contact support.
       </p>
       <button
         onClick={reset}

@@ -1,8 +1,9 @@
-import type { Campaign, CampaignStatus, TargetAudience } from "@/types";
+import type { Programme, ProgrammeStatus, TargetAudience } from "@/types";
 import { getCourseIdByTitle, ensureCoursesSeeded } from "./courses";
 import { getAssignments } from "./assignments";
-import { getAssignmentsForCampaign, createLearnerAssignment, getLearnerAssignments } from "./learner-assignments";
+import { getAssignmentsForProgramme, createLearnerAssignment, getLearnerAssignments } from "./learner-assignments";
 import { getAllUsers } from "./auth";
+import { notifyProgrammeCreated, notifyProgrammeUpdated } from "./mock-notifications";
 
 const STORAGE_KEY = "palmlearn-campaigns";
 
@@ -20,29 +21,29 @@ function pastDate(days: number): string {
   return d.toISOString();
 }
 
-function getStored(): Campaign[] {
+function getStored(): Programme[] {
   if (typeof window === "undefined") return [];
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return [];
   try {
-    return JSON.parse(raw) as Campaign[];
+    return JSON.parse(raw) as Programme[];
   } catch {
     return [];
   }
 }
 
-function setStored(items: Campaign[]): void {
+function setStored(items: Programme[]): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
-function getSeedCampaigns(): Campaign[] {
+function getSeedProgrammes(): Programme[] {
   ensureCoursesSeeded();
   return [
     {
       id: "camp_seed_1",
       name: "Q2 2026 Compliance Blitz",
-      description: "A comprehensive compliance campaign covering AML, KYC, and data protection for all staff. Completes by end of Q2.",
+      description: "A comprehensive compliance programme covering AML, KYC, and data protection for all staff. Completes by end of Q2.",
       courseIds: [getCourseIdByTitle("Advanced Financial Analytics"), getCourseIdByTitle("Effective Communication Skills")].filter(Boolean) as string[],
       assignmentIds: [],
       targetAudience: { type: "organization", userIds: [], categoryIds: [], subCategoryIds: [], regionIds: [], stateIds: [] },
@@ -56,7 +57,7 @@ function getSeedCampaigns(): Campaign[] {
     {
       id: "camp_seed_2",
       name: "New Manager Accelerator",
-      description: "Fast-track program for newly promoted team leads and managers. Covers leadership, product knowledge, and team management.",
+      description: "Fast-track programme for newly promoted team leads and managers. Covers leadership, product knowledge, and team management.",
       courseIds: [getCourseIdByTitle("Digital Transformation Leadership"), getCourseIdByTitle("Python for Data Science")].filter(Boolean) as string[],
       assignmentIds: [],
       targetAudience: { type: "organization", userIds: [], categoryIds: [], subCategoryIds: [], regionIds: [], stateIds: [] },
@@ -82,22 +83,22 @@ function getSeedCampaigns(): Campaign[] {
   ];
 }
 
-export function bulkCreateForCampaign(campaignId: string): void {
-  const campaign = getCampaign(campaignId);
-  if (!campaign || campaign.status !== "active") return;
-  const learnerIds = getCampaignLearnerIds(campaign);
+export function bulkCreateForProgramme(programmeId: string): void {
+  const programme = getProgramme(programmeId);
+  if (!programme || programme.status !== "active") return;
+  const learnerIds = getProgrammeLearnerIds(programme);
   if (learnerIds.length === 0) return;
   const existing = getLearnerAssignments();
   const created: { learnerId: string; courseId: string }[] = [];
   for (const learnerId of learnerIds) {
-    for (const courseId of campaign.courseIds) {
+    for (const courseId of programme.courseIds) {
       const already = existing.find(
-        (la) => la.learnerId === learnerId && la.courseId === courseId && la.campaignId === campaignId
+        (la) => la.learnerId === learnerId && la.courseId === courseId && la.campaignId === programmeId
       );
       if (already) continue;
       createLearnerAssignment({
         assignmentId: "",
-        campaignId,
+        campaignId: programmeId,
         learnerId,
         courseId,
         progress: 0,
@@ -107,44 +108,48 @@ export function bulkCreateForCampaign(campaignId: string): void {
       created.push({ learnerId, courseId });
     }
   }
-}
-
-export function seedCampaigns(): void {
-  if (typeof window === "undefined") return;
-  const existing = getStored();
-  if (existing.length === 0) {
-    setStored(getSeedCampaigns());
+  if (created.length > 0) {
+    notifyProgrammeCreated(programme, learnerIds);
   }
 }
 
-export function getCampaigns(): Campaign[] {
+export function seedProgrammes(): void {
+  if (typeof window === "undefined") return;
+  const existing = getStored();
+  if (existing.length === 0) {
+    setStored(getSeedProgrammes());
+  }
+}
+
+export function getProgrammes(): Programme[] {
   return getStored();
 }
 
-export function getCampaign(id: string): Campaign | undefined {
+export function getProgramme(id: string): Programme | undefined {
   return getStored().find((c) => c.id === id);
 }
 
-export function createCampaign(data: Omit<Campaign, "id" | "createdAt" | "updatedAt">): Campaign {
+export function createProgramme(data: Omit<Programme, "id" | "createdAt" | "updatedAt">): Programme {
   const isActive = data.status === "active";
-  const campaign: Campaign = {
+  const programme: Programme = {
     ...data,
     id: generateId(),
+    createdBy: data.createdBy || data.assignedBy,
     publishedAt: isActive ? now() : undefined,
     publishedBy: isActive ? data.assignedBy : undefined,
     createdAt: now(),
     updatedAt: now(),
   };
   const list = getStored();
-  list.push(campaign);
+  list.push(programme);
   setStored(list);
   if (isActive) {
-    bulkCreateForCampaign(campaign.id);
+    bulkCreateForProgramme(programme.id);
   }
-  return campaign;
+  return programme;
 }
 
-export function updateCampaign(id: string, data: Partial<Campaign>): Campaign | undefined {
+export function updateProgramme(id: string, data: Partial<Programme>): Programme | undefined {
   const list = getStored();
   const idx = list.findIndex((c) => c.id === id);
   if (idx === -1) return undefined;
@@ -161,7 +166,48 @@ export function updateCampaign(id: string, data: Partial<Campaign>): Campaign | 
   return list[idx];
 }
 
-export function deleteCampaign(id: string): boolean {
+export function updatePublishedProgramme(id: string, data: Partial<Programme>): Programme | undefined {
+  const list = getStored();
+  const idx = list.findIndex((c) => c.id === id);
+  if (idx === -1) return undefined;
+  const old = list[idx];
+  if (old.status !== "active") {
+    list[idx] = { ...old, ...data, updatedAt: now() };
+    setStored(list);
+    return list[idx];
+  }
+  list[idx] = { ...old, ...data, updatedAt: now() };
+  setStored(list);
+  const programme = list[idx];
+  const learnerIds = getProgrammeLearnerIds(programme);
+  if (learnerIds.length > 0 && data.courseIds && data.courseIds.length > 0) {
+    const newCourses = data.courseIds.filter((cid) => !old.courseIds.includes(cid));
+    if (newCourses.length > 0) {
+      const existing = getLearnerAssignments();
+      for (const learnerId of learnerIds) {
+        for (const courseId of newCourses) {
+          const already = existing.find(
+            (la) => la.learnerId === learnerId && la.courseId === courseId && la.campaignId === programme.id
+          );
+          if (already) continue;
+          createLearnerAssignment({
+            assignmentId: "",
+            campaignId: programme.id,
+            learnerId,
+            courseId,
+            progress: 0,
+            status: "not_started",
+            timeSpent: 0,
+          });
+        }
+      }
+      notifyProgrammeUpdated(programme, learnerIds);
+    }
+  }
+  return programme;
+}
+
+export function deleteProgramme(id: string): boolean {
   const list = getStored();
   const filtered = list.filter((c) => c.id !== id);
   if (filtered.length === list.length) return false;
@@ -169,7 +215,7 @@ export function deleteCampaign(id: string): boolean {
   return true;
 }
 
-export function publishCampaign(id: string, userId: string): Campaign | undefined {
+export function publishProgramme(id: string, userId: string): Programme | undefined {
   const list = getStored();
   const idx = list.findIndex((a) => a.id === id);
   if (idx === -1) return undefined;
@@ -181,15 +227,15 @@ export function publishCampaign(id: string, userId: string): Campaign | undefine
     updatedAt: now(),
   };
   setStored(list);
-  bulkCreateForCampaign(list[idx].id);
+  bulkCreateForProgramme(list[idx].id);
   return list[idx];
 }
 
-export function duplicateCampaign(id: string): Campaign | undefined {
+export function duplicateProgramme(id: string): Programme | undefined {
   const list = getStored();
   const source = list.find((c) => c.id === id);
   if (!source) return undefined;
-  const copy: Campaign = {
+  const copy: Programme = {
     ...source,
     id: generateId(),
     name: `${source.name} (Copy)`,
@@ -204,14 +250,14 @@ export function duplicateCampaign(id: string): Campaign | undefined {
   return copy;
 }
 
-export function filterCampaigns(opts: {
+export function filterProgrammes(opts: {
   search?: string;
-  status?: CampaignStatus;
+  status?: ProgrammeStatus;
   categoryId?: string;
   assignedBy?: string;
   page?: number;
   pageSize?: number;
-}): { items: Campaign[]; total: number } {
+}): { items: Programme[]; total: number } {
   let items = getStored();
   if (opts.search) {
     const q = opts.search.toLowerCase();
@@ -227,10 +273,10 @@ export function filterCampaigns(opts: {
   return { items: items.slice(start, start + pageSize), total };
 }
 
-export function getCampaignLearnerIds(campaign: Campaign): string[] {
-  if (campaign.targetAudience) {
+export function getProgrammeLearnerIds(programme: Programme): string[] {
+  if (programme.targetAudience) {
     const allUsers = getAllUsers();
-    const { type, userIds, categoryIds, subCategoryIds, regionIds, stateIds } = campaign.targetAudience;
+    const { type, userIds, categoryIds, subCategoryIds, regionIds, stateIds } = programme.targetAudience;
     if (type === "organization") return allUsers.filter((u) => u.role !== "admin").map((u) => u.id);
     if (type === "multiple" || type === "single") return userIds;
     if (type === "category") return allUsers.filter((u) => u.categoryId && categoryIds.includes(u.categoryId)).map((u) => u.id);
@@ -242,20 +288,20 @@ export function getCampaignLearnerIds(campaign: Campaign): string[] {
   return [];
 }
 
-export function getCampaignProgress(learnerId: string, campaign: Campaign): {
+export function getProgrammeProgress(learnerId: string, programme: Programme): {
   progress: number;
   completedCourses: number;
   totalCourses: number;
   completedAssignments: number;
   totalAssignments: number;
 } {
-  const records = getAssignmentsForCampaign(campaign.id).filter((la) => la.learnerId === learnerId);
+  const records = getAssignmentsForProgramme(programme.id).filter((la) => la.learnerId === learnerId);
   const completedCourses = records.filter((r) => r.status === "completed").length;
-  const totalCourses = campaign.courseIds.length;
-  const completedAssignments = assignmentIdsForCampaign(campaign).filter((asgnId) =>
+  const totalCourses = programme.courseIds.length;
+  const completedAssignments = assignmentIdsForProgramme(programme).filter((asgnId) =>
     records.some((r) => r.assignmentId === asgnId && r.status === "completed")
   ).length;
-  const totalAssignments = assignmentIdsForCampaign(campaign).length;
+  const totalAssignments = assignmentIdsForProgramme(programme).length;
   const totalItems = totalCourses + totalAssignments;
   const completedItems = completedCourses + completedAssignments;
   return {
@@ -267,8 +313,8 @@ export function getCampaignProgress(learnerId: string, campaign: Campaign): {
   };
 }
 
-export function assignmentIdsForCampaign(campaign: Campaign): string[] {
-  const linked = getAssignments().filter((a) => a.campaignId === campaign.id).map((a) => a.id);
-  const all = [...new Set([...campaign.assignmentIds, ...linked])];
+export function assignmentIdsForProgramme(programme: Programme): string[] {
+  const linked = getAssignments().filter((a) => a.campaignId === programme.id).map((a) => a.id);
+  const all = [...new Set([...programme.assignmentIds, ...linked])];
   return all;
 }

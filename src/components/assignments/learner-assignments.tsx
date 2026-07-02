@@ -5,11 +5,13 @@ import { cn } from "@/lib/utils";
 import { getAssignmentsForLearner } from "@/lib/learner-assignments";
 import { getAssignments } from "@/lib/assignments";
 import { getCourses } from "@/lib/courses";
+import { getProgrammes, getProgrammeProgress } from "@/lib/programmes";
 import { useAuth } from "@/hooks/use-auth";
 import type { LearnerAssignment } from "@/types";
 import type { Course } from "@/types";
 import type { Assignment } from "@/types";
-import { PlayCircle, Clock, AlertCircle, CheckCircle, BookOpen, ChevronRight } from "lucide-react";
+import type { Programme } from "@/types";
+import { PlayCircle, Clock, AlertCircle, CheckCircle, BookOpen, ChevronRight, GraduationCap } from "lucide-react";
 import Link from "next/link";
 
 interface EnrichedItem extends LearnerAssignment {
@@ -18,22 +20,52 @@ interface EnrichedItem extends LearnerAssignment {
   daysLeft?: number | null;
 }
 
+interface ProgrammeCard {
+  type: "programme";
+  id: string;
+  name: string;
+  description: string;
+  progress: number;
+  totalCourses: number;
+  completedCourses: number;
+}
+
 export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Learning" }: { maxItems?: number; heading?: string }) {
   const { user } = useAuth();
 
-  const inProgress = useMemo(() => {
+  const items = useMemo(() => {
     if (!user) return [];
     const records = getAssignmentsForLearner(user.id).filter((r) => r.status === "in_progress" || r.status === "not_started");
     const courses = getCourses();
     const assignments = getAssignments();
-    return records.map<EnrichedItem>((r) => {
+    const enriched: EnrichedItem[] = records.map((r) => {
       const course = courses.find((c) => c.id === r.courseId);
       const asgn = assignments.find((a) => a.id === r.assignmentId);
       return { ...r, course, assignment: asgn };
     });
+    return enriched;
   }, [user]);
 
-  if (inProgress.length === 0) return null;
+  const programmeItems = useMemo(() => {
+    if (!user) return [];
+    if (items.length > 0) return [];
+    const programmes = getProgrammes().filter((p) => p.status === "active");
+    const withProgress = programmes.map((p) => {
+      const progress = getProgrammeProgress(user.id, p);
+      return { ...p, prog: progress };
+    }).filter((p) => p.prog.totalCourses > 0);
+    return withProgress.map<ProgrammeCard>((p) => ({
+      type: "programme",
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      progress: p.prog.progress,
+      totalCourses: p.prog.totalCourses,
+      completedCourses: p.prog.completedCourses,
+    }));
+  }, [user, items]);
+
+  if (items.length === 0 && programmeItems.length === 0) return null;
 
   return (
     <div className="space-y-4">
@@ -42,7 +74,7 @@ export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Lear
         <h2 className="text-lg font-bold text-content">{heading}</h2>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {inProgress.slice(0, maxItems).map((item) => (
+        {items.slice(0, maxItems).map((item) => (
           <Link key={item.id} href={item.course ? `/learner/course-view/${item.course.id}` : "#"} className="group relative overflow-hidden rounded-2xl border border-border/50 bg-surface transition-all duration-300 card-hover cursor-pointer block">
             <div className="relative h-28 bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-60" />
@@ -60,6 +92,29 @@ export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Lear
               <h3 className="text-sm font-semibold text-content mt-0.5 line-clamp-1">{item.course?.title || "Unknown Course"}</h3>
               <div className="flex items-center justify-between mt-2">
                 <span className="text-xs font-semibold text-content-secondary">{item.progress}%</span>
+                <ChevronRight className="h-3.5 w-3.5 text-content-tertiary opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </div>
+          </Link>
+        ))}
+        {programmeItems.slice(0, maxItems).map((item) => (
+          <Link key={item.id} href="/learner/programmes" className="group relative overflow-hidden rounded-2xl border border-border/50 bg-surface transition-all duration-300 card-hover cursor-pointer block">
+            <div className="relative h-28 bg-gradient-to-br from-purple-600/20 to-purple-800/20 flex items-center justify-center overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-60" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/90 dark:bg-surface/90 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <GraduationCap className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-surface-tertiary">
+                <div className="h-full bg-purple-600 transition-all duration-500" style={{ width: `${item.progress}%` }} />
+              </div>
+            </div>
+            <div className="p-3.5">
+              <p className="text-[10px] font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider truncate">
+                Training Programme
+              </p>
+              <h3 className="text-sm font-semibold text-content mt-0.5 line-clamp-1">{item.name}</h3>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs font-semibold text-content-secondary">{item.completedCourses}/{item.totalCourses} courses</span>
                 <ChevronRight className="h-3.5 w-3.5 text-content-tertiary opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </div>

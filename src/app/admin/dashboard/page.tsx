@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGreeting } from "@/components/dashboard/role-greeting";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -9,35 +10,52 @@ import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { AssignmentSummaryCards, RegionalPerformanceWidget, RecentAssignmentsWidget } from "@/components/assignments/assignment-analytics";
 import { AdminEventDashboardCards } from "@/components/events/event-dashboard-cards";
-import { Users, BookOpen, CalendarDays, TrendingUp, UserPlus, FileText, Bell, UserCheck, BarChart3, GraduationCap, Award, Clock, Activity, ClipboardList } from "lucide-react";
+import { getAllUsers } from "@/lib/auth";
+import { getCourses } from "@/lib/courses";
+import { getAssignments } from "@/lib/assignments";
+import { getLearnerAssignments } from "@/lib/learner-assignments";
+import { getProgrammes } from "@/lib/programmes";
+import { getEvents } from "@/lib/events";
+import { Users, BookOpen, CalendarDays, TrendingUp, UserPlus, FileText, BarChart3, GraduationCap, Award, Clock, Activity, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const recentActivity = [
-  { id: "1", icon: UserPlus, iconBg: "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400", title: "New user registered", description: "Sarah Johnson created a trainer account", time: "5m ago" },
-  { id: "2", icon: FileText, iconBg: "bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400", title: "Course updated", description: "Advanced Mathematics curriculum revised", time: "1h ago" },
-  { id: "3", icon: Bell, iconBg: "bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400", title: "System notification", description: "Scheduled maintenance tonight at 2 AM", time: "2h ago" },
-  { id: "4", icon: UserCheck, iconBg: "bg-purple-100 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400", title: "Bulk import complete", description: "150 learners added from CSV upload", time: "3h ago" },
-  { id: "5", icon: Award, iconBg: "bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400", title: "Certification batch", description: "45 certificates issued for Q2 completions", time: "6h ago" },
-];
-
-const notifications = [
-  { id: "1", title: "New registration request", description: "5 pending user approvals", time: "10m ago", unread: true },
-  { id: "2", title: "Course report ready", description: "Q2 learning analytics generated", time: "1h ago", unread: true },
-  { id: "3", title: "System update", description: "Platform version 2.4.0 deployed", time: "3h ago", unread: false },
-  { id: "4", title: "Storage warning", description: "Resource library at 82% capacity", time: "8h ago", unread: true },
-];
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+
+  const stats = useMemo(() => {
+    const allUsers = getAllUsers();
+    const courses = getCourses();
+    const assignments = getAssignments();
+    const programmes = getProgrammes();
+    const events = getEvents();
+    const learnerAssignments = getLearnerAssignments();
+    const learners = allUsers.filter((u) => u.role === "learner");
+    const thisMonth = new Date().getMonth();
+    const thisMonthEvents = events.filter((e) => new Date(e.schedule.startDate).getMonth() === thisMonth);
+    const completedAssignments = learnerAssignments.filter((la) => la.status === "completed").length;
+    const inProgressAssignments = learnerAssignments.filter((la) => la.status === "in_progress" || la.status === "not_started").length;
+    const totalLearnerAssignments = learnerAssignments.length;
+    const completionRate = totalLearnerAssignments > 0 ? Math.round((completedAssignments / totalLearnerAssignments) * 100) : 0;
+    return {
+      totalUsers: allUsers.length,
+      learners: learners.length,
+      totalCourses: courses.length,
+      assignments: assignments.length,
+      programmes: programmes.length,
+      eventsThisMonth: thisMonthEvents.length,
+      completionRate,
+      inProgressAssignments,
+      completedAssignments,
+      totalLearnerAssignments,
+    };
+  }, []);
 
   if (!user) return null;
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
-      {/* Header */}
       <RoleGreeting user={user} />
 
-      {/* Hero Section - Welcome + Quick Stats */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 p-6 lg:p-8">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-white/5 blur-3xl animate-float" />
@@ -60,9 +78,9 @@ export default function AdminDashboard() {
           </div>
           <div className="grid grid-cols-3 gap-6">
             {[
-              { label: "Active Users", value: "1,284", icon: Users },
-              { label: "Completion", value: "87%", icon: Award },
-              { label: "Growth", value: "+12%", icon: TrendingUp },
+              { label: "Total Users", value: String(stats.totalUsers), icon: Users },
+              { label: "Completion", value: `${stats.completionRate}%`, icon: Award },
+              { label: "Programmes", value: String(stats.programmes), icon: TrendingUp },
             ].map((s) => (
               <div key={s.label} className="text-center">
                 <p className="text-2xl lg:text-3xl font-bold text-white">{s.value}</p>
@@ -73,46 +91,37 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Assignment Summary */}
       <AssignmentSummaryCards role="admin" />
 
-      {/* Event Analytics Dashboard Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <AdminEventDashboardCards />
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Users" value="1,284" icon={Users} trend="+12% this month" trendUp iconColor="text-emerald-600 dark:text-emerald-400" bgColor="bg-emerald-50 dark:bg-emerald-950/30" />
-        <StatCard title="Active Courses" value="48" icon={BookOpen} trend="+4 new this week" trendUp iconColor="text-blue-600 dark:text-blue-400" bgColor="bg-blue-50 dark:bg-blue-950/30" />
-        <StatCard title="Events This Month" value="23" icon={CalendarDays} trend="+8 upcoming" trendUp iconColor="text-amber-600 dark:text-amber-400" bgColor="bg-amber-50 dark:bg-amber-950/30" />
-        <StatCard title="Engagement Rate" value="87%" icon={TrendingUp} trend="+5% vs last month" trendUp iconColor="text-purple-600 dark:text-purple-400" bgColor="bg-purple-50 dark:bg-purple-950/30" />
+        <StatCard title="Total Users" value={String(stats.totalUsers)} icon={Users} trend={`${stats.learners} learners`} trendUp iconColor="text-emerald-600 dark:text-emerald-400" bgColor="bg-emerald-50 dark:bg-emerald-950/30" />
+        <StatCard title="Active Courses" value={String(stats.totalCourses)} icon={BookOpen} trend={`${stats.assignments} assignments`} trendUp iconColor="text-blue-600 dark:text-blue-400" bgColor="bg-blue-50 dark:bg-blue-950/30" />
+        <StatCard title="Events This Month" value={String(stats.eventsThisMonth)} icon={CalendarDays} trend="This month" trendUp iconColor="text-amber-600 dark:text-amber-400" bgColor="bg-amber-50 dark:bg-amber-950/30" />
+        <StatCard title="Completion Rate" value={`${stats.completionRate}%`} icon={TrendingUp} trend={`${stats.completedAssignments}/${stats.totalLearnerAssignments}`} trendUp iconColor="text-purple-600 dark:text-purple-400" bgColor="bg-purple-50 dark:bg-purple-950/30" />
       </div>
 
-      {/* Charts & Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Regional Assignment Performance */}
         <div className="lg:col-span-1">
           <RegionalPerformanceWidget />
         </div>
 
-        {/* Recent Assignments */}
         <div className="lg:col-span-1">
           <RecentAssignmentsWidget />
         </div>
 
-        {/* Recent Activity */}
         <div className="lg:col-span-1">
-          <ActivityTimeline activities={recentActivity} title="Recent Activity" />
+          <ActivityTimeline activities={[]} title="Recent Activity" />
         </div>
 
-        {/* Notifications */}
         <div className="lg:col-span-1">
-          <NotificationsWidget notifications={notifications} title="Notifications" />
+          <NotificationsWidget />
         </div>
       </div>
 
-      {/* Quick Actions + Learning Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <QuickActions
           className="lg:col-span-1"
@@ -125,7 +134,6 @@ export default function AdminDashboard() {
           ]}
         />
 
-        {/* Learning Stats */}
         <div className="lg:col-span-2">
           <Card variant="default" padding="none">
             <div className="px-5 py-4 border-b border-border/50">
@@ -137,10 +145,10 @@ export default function AdminDashboard() {
             <CardContent className="p-5">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                  { label: "Course Completion", value: "87%", sub: "2.4% vs last month", icon: Award, up: true },
-                  { label: "Avg. Time Spent", value: "14.2h", sub: "1.8h vs last month", icon: Clock, up: true },
-                  { label: "Active Learners", value: "892", sub: "64% of total users", icon: Users, up: true },
-                  { label: "Certificates Issued", value: "156", sub: "This quarter", icon: Award, up: true },
+                  { label: "Course Completion", value: `${stats.completionRate}%`, sub: `${stats.completedAssignments} completed`, icon: Award, up: true },
+                  { label: "In Progress", value: String(stats.inProgressAssignments), sub: "active assignments", icon: Clock, up: true },
+                  { label: "Learners", value: String(stats.learners), sub: "total users", icon: Users, up: true },
+                  { label: "Programmes", value: String(stats.programmes), sub: "active programmes", icon: Award, up: true },
                 ].map((m) => (
                   <div key={m.label} className="text-center">
                     <div className="flex justify-center mb-2">

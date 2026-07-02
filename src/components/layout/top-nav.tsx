@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useMounted } from "@/hooks/use-mounted";
 import { ROLE_LABELS } from "@/constants";
+import { getNotifications, getUnreadCount, markAsRead, seedNotifications } from "@/lib/mock-notifications";
 import {
   Sun,
   Moon,
@@ -35,8 +36,34 @@ export function TopNav({ className, onMenuToggle, title }: TopNavProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [notifRefreshKey, setNotifRefreshKey] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    seedNotifications();
+  }, []);
+
+  const notifications = useMemo(() => {
+    if (!user) return [];
+    return getNotifications(user.id).slice(0, 5);
+  }, [user, notifRefreshKey]);
+
+  const unreadCount = useMemo(() => {
+    if (!user) return 0;
+    return getUnreadCount(user.id);
+  }, [user, notifRefreshKey]);
+
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "now";
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -129,42 +156,58 @@ export function TopNav({ className, onMenuToggle, title }: TopNavProps) {
             aria-label="Notifications"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-danger animate-badge-pulse" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-danger text-[9px] font-bold text-white px-1">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
 
           {notifOpen && (
             <div className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-border/50 bg-surface shadow-xl shadow-black/5 animate-scale-in-sm origin-top-right overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
                 <h3 className="text-sm font-semibold text-content">Notifications</h3>
-                <span className="text-[11px] text-content-tertiary">3 unread</span>
+                <span className="text-[11px] text-content-tertiary">{unreadCount} unread</span>
               </div>
               <div className="max-h-72 overflow-y-auto p-2 flex flex-col gap-1">
-                {[
-                  { title: "New course available", desc: "ML Fundamentals is now open", time: "1h ago", unread: true },
-                  { title: "Achievement unlocked", desc: "You earned 'Fast Learner'", time: "1d ago", unread: false },
-                  { title: "Assignment deadline", desc: "Project due in 2 days", time: "5h ago", unread: true },
-                ].map((n) => (
-                  <div
-                    key={n.title}
-                    className={cn(
-                      "flex items-start gap-3 p-3 rounded-xl transition-colors cursor-pointer",
-                      n.unread ? "bg-primary-50/60 dark:bg-primary-950/20" : "hover:bg-surface-hover",
-                    )}
-                  >
-                    <div className={cn("h-2 w-2 mt-1.5 rounded-full shrink-0", n.unread ? "bg-primary-600" : "bg-transparent")} />
-                    <div className="flex-1 min-w-0">
-                      <p className={cn("text-sm", n.unread ? "font-semibold text-content" : "text-content")}>{n.title}</p>
-                      <p className="text-xs text-content-tertiary mt-0.5">{n.desc}</p>
-                    </div>
-                    <span className="text-[11px] text-content-tertiary shrink-0">{n.time}</span>
+                {notifications.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <p className="text-sm text-content-secondary">No notifications</p>
+                    <p className="text-xs text-content-tertiary mt-1">You&apos;re all caught up!</p>
                   </div>
-                ))}
+                ) : (
+                  notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => {
+                        if (!n.read) { markAsRead(n.id); setNotifRefreshKey((k) => k + 1); }
+                        if (n.link) { setNotifOpen(false); router.push(n.link); }
+                      }}
+                      className={cn(
+                        "flex items-start gap-3 p-3 rounded-xl transition-colors cursor-pointer",
+                        !n.read ? "bg-primary-50/60 dark:bg-primary-950/20" : "hover:bg-surface-hover",
+                      )}
+                    >
+                      <div className={cn("h-2 w-2 mt-1.5 rounded-full shrink-0", !n.read ? "bg-primary-600" : "bg-transparent")} />
+                      <div className="flex-1 min-w-0">
+                        <p className={cn("text-sm", !n.read ? "font-semibold text-content" : "text-content")}>{n.title}</p>
+                        <p className="text-xs text-content-tertiary mt-0.5 line-clamp-1">{n.message}</p>
+                      </div>
+                      <span className="text-[11px] text-content-tertiary shrink-0 whitespace-nowrap">{timeAgo(n.createdAt)}</span>
+                    </div>
+                  ))
+                )}
               </div>
-              <div className="border-t border-border/50 p-2">
-                <button className="w-full rounded-xl py-2 text-xs font-medium text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors">
-                  View all notifications
-                </button>
-              </div>
+              {user && (
+                <div className="border-t border-border/50 p-2">
+                  <button
+                    onClick={() => { setNotifOpen(false); router.push(`/${user.role}/notifications`); }}
+                    className="w-full rounded-xl py-2 text-xs font-medium text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors"
+                  >
+                    View all notifications
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

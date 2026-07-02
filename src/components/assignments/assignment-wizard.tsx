@@ -17,7 +17,7 @@ import {
   type TargetAudience, type AssignmentSchedule, type AssignmentNotifications,
 } from "@/types";
 import { getCourses } from "@/lib/courses";
-import { getCampaigns } from "@/lib/campaigns";
+import { getProgrammes } from "@/lib/programmes";
 import { getUsers } from "@/lib/users";
 import {
   X, Check, ArrowLeft, ArrowRight, FileText, BookOpen, Users, Calendar, Bell, Eye,
@@ -75,7 +75,7 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
   const [dirty, setDirty] = useState(false);
 
   const courses = useMemo(() => getCourses().filter((c) => c.status === "published"), []);
-  const campaigns = useMemo(() => getCampaigns(), []);
+  const programmes = useMemo(() => getProgrammes(), []);
   const allUsers = useMemo(() => getUsers(), []);
 
   const currentStepIndex = STEPS.findIndex((s) => s.key === step);
@@ -343,14 +343,14 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
             <div className="space-y-4">
               <div className="space-y-1">
                 <h3 className="text-base font-semibold text-content">Learning Content</h3>
-                <p className="text-sm text-content-secondary">Select courses and optionally link a campaign.</p>
+                <p className="text-sm text-content-secondary">Select courses and optionally link a training programme.</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-content mb-2 block">Campaign <span className="text-content-tertiary font-normal">(optional)</span></label>
+                <label className="text-sm font-medium text-content mb-2 block">Training Programme <span className="text-content-tertiary font-normal">(optional)</span></label>
                 <Select
                   value={campaignId}
                   onChange={(e) => { setCampaignId(e.target.value); markDirty(); }}
-                  options={[{ value: "", label: "No campaign" }, ...campaigns.map((c) => ({ value: c.id, label: c.name }))]}
+                  options={[{ value: "", label: "No programme" }, ...programmes.map((c) => ({ value: c.id, label: c.name }))]}
                 />
               </div>
               <div>
@@ -696,12 +696,12 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
                     </p>
                   </div>
                 </div>
-                {campaignId && campaigns.find((c) => c.id === campaignId) && (
+                {campaignId && programmes.find((c) => c.id === campaignId) && (
                   <>
                     <hr className="border-border/50" />
                     <div>
-                      <p className="text-xs text-content-tertiary mb-1">Campaign</p>
-                      <p className="text-sm font-medium text-content">{campaigns.find((c) => c.id === campaignId)?.name}</p>
+                      <p className="text-xs text-content-tertiary mb-1">Training Programme</p>
+                      <p className="text-sm font-medium text-content">{programmes.find((c) => c.id === campaignId)?.name}</p>
                     </div>
                   </>
                 )}

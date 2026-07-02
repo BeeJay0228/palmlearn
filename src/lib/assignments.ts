@@ -1,4 +1,20 @@
-import type { Assignment, AssignmentType, AssignmentPriority, AssignmentStatus, TargetAudience, AssignmentSchedule, AssignmentNotifications } from "@/types";
+import type { Assignment, AssignmentType, AssignmentPriority, AssignmentStatus, AssignmentSchedule, AssignmentNotifications } from "@/types";
+import type { TargetAudience } from "@/types";
+import { getAllUsers } from "./auth";
+import { notifyAssignmentCreated } from "./mock-notifications";
+import { bulkCreateFromAssignment } from "./learner-assignments";
+
+export function resolveAssignmentAudience(audience: TargetAudience): string[] {
+  const allUsers = getAllUsers();
+  const { type, userIds, categoryIds, subCategoryIds, regionIds, stateIds } = audience;
+  if (type === "organization") return allUsers.filter((u) => u.role === "learner").map((u) => u.id);
+  if (type === "multiple" || type === "single") return userIds;
+  if (type === "category") return allUsers.filter((u) => u.categoryId && categoryIds.includes(u.categoryId)).map((u) => u.id);
+  if (type === "subcategory") return allUsers.filter((u) => u.subCategoryId && subCategoryIds.includes(u.subCategoryId)).map((u) => u.id);
+  if (type === "region") return allUsers.filter((u) => u.regionId && regionIds.includes(u.regionId)).map((u) => u.id);
+  if (type === "state") return allUsers.filter((u) => u.stateId && stateIds.includes(u.stateId)).map((u) => u.id);
+  return userIds;
+}
 
 const STORAGE_KEY = "palmlearn-assignments";
 
@@ -226,7 +242,16 @@ export function publishAssignment(id: string, userId: string): Assignment | unde
     updatedAt: now(),
   };
   setStored(list);
-  return list[idx];
+  const assignment = list[idx];
+  if (assignment.targetAudience) {
+    const learnerIds = resolveAssignmentAudience(assignment.targetAudience);
+    const courseIds = assignment.courseIds || [];
+    if (learnerIds.length > 0) {
+      bulkCreateFromAssignment(assignment.id, learnerIds, courseIds);
+      notifyAssignmentCreated(assignment, learnerIds);
+    }
+  }
+  return assignment;
 }
 
 export function duplicateAssignment(id: string): Assignment | undefined {
