@@ -11,7 +11,7 @@ import { ProgrammeBuilder } from "./programme-builder";
 import { getProgrammes, createProgramme, updateProgramme, updatePublishedProgramme, deleteProgramme, publishProgramme, duplicateProgramme } from "@/lib/programmes";
 import { getCourses } from "@/lib/courses";
 import { PROGRAMME_STATUS_LABELS, PROGRAMME_STATUS_COLORS, type Programme } from "@/types";
-import { Plus, Trash2, Edit, BookOpen, CheckCircle2, Send, Archive, Eye, Copy, BarChart3 } from "lucide-react";
+import { Plus, Trash2, Edit, BookOpen, CheckCircle2, Send, Archive, Eye, Copy, BarChart3, Users } from "lucide-react";
 
 export function TrainingProgrammesPage() {
   const { user } = useAuth();
@@ -52,7 +52,10 @@ export function TrainingProgrammesPage() {
     if (status === "active") {
       publishProgramme(programme.id, user?.id || programme.assignedBy || "admin");
     } else {
-      updateProgramme(programme.id, { status });
+      updateProgramme(programme.id, {
+        status,
+        ...(status === "completed" ? { completedAt: new Date().toISOString() } : {}),
+      });
     }
     setRefreshKey((k) => k + 1);
     showSuccess(`Training Programme ${status === "active" ? "published" : status} successfully.`);
@@ -149,6 +152,13 @@ export function TrainingProgrammesPage() {
                     title="Analytics"
                   >
                     <BarChart3 className="h-3.5 w-3.5" />
+                  </a>
+                  <a
+                    href={`/${user?.role || "admin"}/programmes/${programme.id}/progress`}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-content-secondary hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors"
+                    title="View Progress"
+                  >
+                    <Users className="h-3.5 w-3.5" />
                   </a>
                   <button
                     onClick={() => handleDuplicate(programme)}

@@ -43,6 +43,12 @@ export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Lear
       const asgn = assignments.find((a) => a.id === r.assignmentId);
       return { ...r, course, assignment: asgn };
     });
+    // Sort: assignments first, then standalone courses
+    enriched.sort((a, b) => {
+      if (a.assignmentId && !b.assignmentId) return -1;
+      if (!a.assignmentId && b.assignmentId) return 1;
+      return 0;
+    });
     return enriched;
   }, [user]);
 
@@ -53,7 +59,7 @@ export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Lear
     const withProgress = programmes.map((p) => {
       const progress = getProgrammeProgress(user.id, p);
       return { ...p, prog: progress };
-    }).filter((p) => p.prog.totalCourses > 0);
+    }).filter((p) => p.prog.totalCourses > 0 && p.prog.progress < 100);
     return withProgress.map<ProgrammeCard>((p) => ({
       type: "programme",
       id: p.id,
@@ -65,7 +71,25 @@ export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Lear
     }));
   }, [user, items]);
 
-  if (items.length === 0 && programmeItems.length === 0) return null;
+  const allDone = items.length === 0 && programmeItems.length === 0;
+
+  if (allDone) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <CheckCircle className="h-5 w-5 text-emerald-500" />
+          <h2 className="text-lg font-bold text-content">{heading}</h2>
+        </div>
+        <div className="flex flex-col items-center justify-center py-12 rounded-2xl border border-border/50 bg-surface">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 mb-4">
+            <CheckCircle className="h-7 w-7 text-emerald-500" />
+          </div>
+          <p className="text-lg font-semibold text-content">You&apos;re all caught up!</p>
+          <p className="text-sm text-content-tertiary mt-1">No pending courses, assignments, or programmes.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

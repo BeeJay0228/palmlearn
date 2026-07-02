@@ -52,6 +52,7 @@ export default function LearnerDashboard() {
 
     // Assignments
     const standaloneAssignments = allRecords.filter((r) => r.assignmentId && !r.campaignId);
+    const assignedAssignments = standaloneAssignments.length;
     const completedAssignments = standaloneAssignments.filter((r) => r.status === "completed").length;
     const inProgressAssignments = standaloneAssignments.filter((r) => r.status === "in_progress").length;
 
@@ -64,7 +65,8 @@ export default function LearnerDashboard() {
       programmesActive: programmesActive.length,
       programmesCompleted: programmesCompleted.length,
       completedCourses,
-      completedAssignments: completedAssignments,
+      assignedAssignments,
+      completedAssignments,
       inProgressAssignments,
     };
   }, [user]);
@@ -125,8 +127,8 @@ export default function LearnerDashboard() {
         {[
           { label: "Assigned Programmes", value: metrics?.totalProgrammes ?? 0, icon: GraduationCap, color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950/30" },
           { label: "Active Programmes", value: metrics?.programmesActive ?? 0, icon: PlayCircle, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
-          { label: "Courses Completed", value: metrics?.completedCourses ?? 0, icon: CheckCircle, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30" },
-          { label: "Assignments Done", value: metrics?.completedAssignments ?? 0, icon: Trophy, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" },
+          { label: "Completed Programmes", value: metrics?.programmesCompleted ?? 0, icon: CheckCircle, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" },
+          { label: "Assignments Done", value: metrics?.completedAssignments ?? 0, icon: Trophy, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30" },
         ].map((a) => (
           <div key={a.label} className="flex items-center gap-3 p-4 rounded-2xl border border-border/50 bg-surface transition-all card-hover">
             <div className={cn("flex h-11 w-11 items-center justify-center rounded-xl", a.bg)}>
@@ -142,10 +144,10 @@ export default function LearnerDashboard() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Enrolled Courses" value="8" icon={BookOpen} trend="+2 this month" trendUp iconColor="text-emerald-600 dark:text-emerald-400" bgColor="bg-emerald-50 dark:bg-emerald-950/30" />
-        <StatCard title="Hours This Week" value="14.5" icon={Clock} trend="+2.5 vs last week" trendUp iconColor="text-blue-600 dark:text-blue-400" bgColor="bg-blue-50 dark:bg-blue-950/30" />
-        <StatCard title="Certificates" value="3" icon={Award} trend="+1 new" trendUp iconColor="text-amber-600 dark:text-amber-400" bgColor="bg-amber-50 dark:bg-amber-950/30" />
-        <StatCard title="Avg. Score" value="87%" icon={TrendingUp} trend="+3% improvement" trendUp iconColor="text-purple-600 dark:text-purple-400" bgColor="bg-purple-50 dark:bg-purple-950/30" />
+        <StatCard title="Enrolled Courses" value={String(metrics?.enrolledCourses ?? 0)} icon={BookOpen} trend={`${metrics?.completedCourses ?? 0} completed`} trendUp iconColor="text-emerald-600 dark:text-emerald-400" bgColor="bg-emerald-50 dark:bg-emerald-950/30" />
+        <StatCard title="Assigned Assignments" value={String(metrics?.assignedAssignments ?? 0)} icon={Clock} trend={`${metrics?.completedAssignments ?? 0} completed`} trendUp iconColor="text-blue-600 dark:text-blue-400" bgColor="bg-blue-50 dark:bg-blue-950/30" />
+        <StatCard title="Courses Completed" value={String(metrics?.completedCourses ?? 0)} icon={Award} trend="real-time" trendUp iconColor="text-amber-600 dark:text-amber-400" bgColor="bg-amber-50 dark:bg-amber-950/30" />
+        <StatCard title="Active Programmes" value={String(metrics?.programmesActive ?? 0)} icon={TrendingUp} trend={`${metrics?.programmesCompleted ?? 0} completed`} trendUp iconColor="text-purple-600 dark:text-purple-400" bgColor="bg-purple-50 dark:bg-purple-950/30" />
       </div>
 
       {/* Event-based Learning Widgets */}

@@ -276,6 +276,12 @@ export function ProgrammeDetail({ programmeId }: ProgrammeDetailProps) {
                   {PROGRAMME_STATUS_LABELS[currentProgramme.status]}
                 </Badge>
               </div>
+              {currentProgramme.completedAt && (
+                <div>
+                  <span className="text-content-tertiary text-xs">Completed</span>
+                  <p className="text-content font-medium">{new Date(currentProgramme.completedAt).toLocaleDateString()}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -287,16 +293,24 @@ export function ProgrammeDetail({ programmeId }: ProgrammeDetailProps) {
                 <Clock className="h-4 w-4 text-primary-600" />
                 Overall Progress
               </h3>
-              <div className="text-center mb-3">
-                <div className={cn(
-                  "flex h-20 w-20 items-center justify-center rounded-2xl text-xl font-bold mx-auto",
-                  myProgress.progress >= 100 ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600" :
-                  myProgress.progress > 0 ? "bg-primary-50 dark:bg-primary-950/30 text-primary-600" :
-                  "bg-surface-tertiary text-content-secondary"
-                )}>
-                  {myProgress.progress}%
+              {currentProgramme.completedAt ? (
+                <div className="text-center mb-3">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl text-xl font-bold mx-auto bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600">
+                    <CheckCircle className="h-8 w-8" />
+                  </div>
+                  <p className="text-xs text-emerald-600 font-medium mt-2">Completed {new Date(currentProgramme.completedAt).toLocaleDateString()}</p>
                 </div>
-              </div>
+              ) : (
+                <div className="text-center mb-3">
+                  <div className={cn(
+                    "flex h-20 w-20 items-center justify-center rounded-2xl text-xl font-bold mx-auto",
+                    myProgress.progress > 0 ? "bg-primary-50 dark:bg-primary-950/30 text-primary-600" :
+                    "bg-surface-tertiary text-content-secondary"
+                  )}>
+                    {myProgress.progress}%
+                  </div>
+                </div>
+              )}
               <div className="h-2 rounded-full bg-surface-tertiary overflow-hidden mb-4">
                 <div
                   className={cn(
@@ -320,34 +334,67 @@ export function ProgrammeDetail({ programmeId }: ProgrammeDetailProps) {
           )}
 
           {isAdminOrTrainer && (
-            <div className="rounded-2xl border border-border/50 bg-surface p-5">
-              <h3 className="text-sm font-semibold text-content mb-3 flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary-600" />
-                Analytics
-              </h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-content-tertiary">Completion Rate</span>
-                  <span className="text-content font-medium">
-                    {assignedLearners.length > 0
-                      ? Math.round((learnerProgress.filter((p) => p.progress.progress >= 100).length / assignedLearners.length) * 100)
-                      : 0}%
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-content-tertiary">In Progress</span>
-                  <span className="text-content font-medium">
-                    {learnerProgress.filter((p) => p.progress.progress > 0 && p.progress.progress < 100).length}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-content-tertiary">Not Started</span>
-                  <span className="text-content font-medium">
-                    {learnerProgress.filter((p) => p.progress.progress === 0).length}
-                  </span>
+            <>
+              <div className="rounded-2xl border border-border/50 bg-surface p-5">
+                <h3 className="text-sm font-semibold text-content mb-3 flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary-600" />
+                  Analytics
+                </h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-content-tertiary">Completion Rate</span>
+                    <span className="text-content font-medium">
+                      {assignedLearners.length > 0
+                        ? Math.round((learnerProgress.filter((p) => p.progress.progress >= 100).length / assignedLearners.length) * 100)
+                        : 0}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-content-tertiary">In Progress</span>
+                    <span className="text-content font-medium">
+                      {learnerProgress.filter((p) => p.progress.progress > 0 && p.progress.progress < 100).length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-content-tertiary">Not Started</span>
+                    <span className="text-content font-medium">
+                      {learnerProgress.filter((p) => p.progress.progress === 0).length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-content-tertiary">Total Learners</span>
+                    <span className="text-content font-medium">{assignedLearners.length}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+              {learnerProgress.length > 0 && (
+                <div className="rounded-2xl border border-border/50 bg-surface p-5">
+                  <h3 className="text-sm font-semibold text-content mb-3">Learner Progress</h3>
+                  <div className="space-y-2">
+                    {learnerProgress.map((lp) => (
+                      <div key={lp.learner.id} className="flex items-center gap-3 p-2 rounded-xl bg-surface-tertiary/50">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 dark:bg-primary-950/30 text-xs font-bold text-primary-600">
+                          {lp.learner.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-content truncate">{lp.learner.name}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <div className="flex-1 max-w-[100px] h-1.5 rounded-full bg-surface-tertiary overflow-hidden">
+                              <div className={cn("h-full rounded-full", lp.progress.progress >= 100 ? "bg-emerald-500" : "bg-primary-600")} style={{ width: `${lp.progress.progress}%` }} />
+                            </div>
+                            <span className="text-xs text-content-tertiary">{lp.progress.progress}%</span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-content-tertiary text-right shrink-0">
+                          <div>{lp.progress.completedCourses}/{lp.progress.totalCourses} courses</div>
+                          <div>{lp.progress.completedAssignments}/{lp.progress.totalAssignments} assignments</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {programmeCourses.length > 0 && (

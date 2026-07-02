@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 export default function LearnerProgrammesPage() {
   const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<"active" | "completed">("active");
 
   useEffect(() => {
     seedProgrammes();
@@ -21,7 +22,7 @@ export default function LearnerProgrammesPage() {
 
   const items = useMemo(() => {
     if (!user) return [];
-    const allProgrammes = getProgrammes().filter((p) => p.status === "active");
+    const allProgrammes = getProgrammes().filter((p) => tab === "active" ? p.status === "active" : p.status === "completed");
     const courses = getCourses();
     const items: { programme: typeof allProgrammes[number]; isAssigned: boolean; progress: ReturnType<typeof getProgrammeProgress>; courses: typeof courses }[] = [];
     for (const programme of allProgrammes) {
@@ -37,7 +38,7 @@ export default function LearnerProgrammesPage() {
       }
     }
     return items;
-  }, [user]);
+  }, [user, tab]);
 
   if (!user) return null;
 
@@ -50,6 +51,28 @@ export default function LearnerProgrammesPage() {
         <p className="text-sm text-content-secondary mt-1">
           View and track your enrolled training programmes.
         </p>
+      </div>
+
+      {/* Tab selector */}
+      <div className="flex items-center gap-1 bg-surface-tertiary/50 p-1 rounded-xl w-fit">
+        <button
+          onClick={() => setTab("active")}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-lg transition-colors",
+            tab === "active" ? "bg-surface text-content shadow-sm" : "text-content-tertiary hover:text-content"
+          )}
+        >
+          Active
+        </button>
+        <button
+          onClick={() => setTab("completed")}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-lg transition-colors",
+            tab === "completed" ? "bg-surface text-content shadow-sm" : "text-content-tertiary hover:text-content"
+          )}
+        >
+          Completed
+        </button>
       </div>
 
       {assignedItems.length === 0 ? (

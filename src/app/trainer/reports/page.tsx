@@ -1,7 +1,7 @@
 "use client";
 
-import { PlaceholderPage } from "@/components/pages/placeholder-page";
+import { TrainingReports } from "@/components/reports/training-reports";
 
 export default function TrainerReportsPage() {
-  return <PlaceholderPage title="Reports" description="View performance reports, completion rates, and learner analytics." />;
+  return <TrainingReports isSuperAdmin={false} />;
 }
