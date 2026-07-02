@@ -12,6 +12,7 @@ import {
   Trophy,
   Bell,
   ClipboardList,
+  BookMarked,
 } from "lucide-react";
 
 const learnerNavItems: NavItem[] = [
@@ -19,6 +20,7 @@ const learnerNavItems: NavItem[] = [
   { label: "Dashboard", href: "/learner/dashboard", icon: LayoutDashboard },
   { label: "Continue Learning", href: "/learner/continue-learning", icon: PlayCircle },
   { label: "My Assignments", href: "/learner/assignments", icon: ClipboardList },
+  { label: "Training Programmes", href: "/learner/programmes", icon: BookMarked },
   { label: "My Courses", href: "/learner/my-courses", icon: BookOpen },
   { label: "Certificates", href: "/learner/certificates", icon: Award },
   { label: "Events", href: "/learner/events", icon: CalendarDays },

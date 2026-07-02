@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getCourses } from "@/lib/courses";
-import { Check, X } from "lucide-react";
-import type { Campaign } from "@/types";
+import { getAssignments } from "@/lib/assignments";
+import { TargetAudienceBuilder } from "./target-audience-builder";
+import { Check, X, BookOpen } from "lucide-react";
+import type { Campaign, TargetAudience } from "@/types";
 
 interface CampaignBuilderProps {
   open: boolean;
@@ -15,16 +17,29 @@ interface CampaignBuilderProps {
   editCampaign?: Campaign;
 }
 
+function defaultTargetAudience(): TargetAudience {
+  return { type: "organization", userIds: [], categoryIds: [], subCategoryIds: [], regionIds: [], stateIds: [] };
+}
+
 export function CampaignBuilder({ open, onClose, onSave, editCampaign }: CampaignBuilderProps) {
   const [name, setName] = useState(editCampaign?.name || "");
   const [description, setDescription] = useState(editCampaign?.description || "");
   const [courseIds, setCourseIds] = useState<string[]>(editCampaign?.courseIds || []);
+  const [assignmentIds, setAssignmentIds] = useState<string[]>(editCampaign?.assignmentIds || []);
+  const [targetAudience, setTargetAudience] = useState<TargetAudience>(editCampaign?.targetAudience || defaultTargetAudience());
+  const [startDate, setStartDate] = useState(editCampaign?.startDate?.split("T")[0] || "");
+  const [endDate, setEndDate] = useState(editCampaign?.endDate?.split("T")[0] || "");
   const [error, setError] = useState("");
 
   const courses = getCourses().filter((c) => c.status === "published");
+  const assignments = getAssignments().filter((a) => a.status === "active");
 
   function toggleCourse(id: string) {
     setCourseIds((prev) => prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]);
+  }
+
+  function toggleAssignment(id: string) {
+    setAssignmentIds((prev) => prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]);
   }
 
   function handleSave() {
@@ -35,6 +50,10 @@ export function CampaignBuilder({ open, onClose, onSave, editCampaign }: Campaig
       name: name.trim(),
       description: description.trim(),
       courseIds,
+      assignmentIds,
+      targetAudience,
+      startDate: startDate ? new Date(startDate).toISOString() : undefined,
+      endDate: endDate ? new Date(endDate).toISOString() : undefined,
       status: editCampaign?.status || "draft",
     });
     onClose();
@@ -45,14 +64,16 @@ export function CampaignBuilder({ open, onClose, onSave, editCampaign }: Campaig
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-2xl border border-border bg-surface shadow-2xl animate-scale-in">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+      <div className="relative z-10 w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-2xl border border-border bg-surface shadow-2xl animate-scale-in">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-surface z-10">
           <h2 className="text-lg font-semibold text-content">{editCampaign ? "Edit Campaign" : "Create Campaign"}</h2>
           <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-xl text-content-secondary hover:text-content hover:bg-surface-hover transition-colors">
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-5">
+          {error && <p className="text-xs text-danger bg-danger/5 rounded-xl px-3 py-2">{error}</p>}
+
           <Input label="Campaign Name" value={name} onChange={(e) => { setName(e.target.value); setError(""); }} floating placeholder="e.g. Q2 Compliance Blitz" />
           <div>
             <label className="text-sm font-medium text-content mb-1.5 block">Description (optional)</label>
@@ -64,10 +85,11 @@ export function CampaignBuilder({ open, onClose, onSave, editCampaign }: Campaig
               className="flex w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all resize-none"
             />
           </div>
+
+          {/* Course selection */}
           <div>
             <label className="text-sm font-medium text-content mb-2 block">Courses ({courseIds.length} selected)</label>
-            {error && <p className="text-xs text-danger mb-2">{error}</p>}
-            <div className="max-h-48 overflow-y-auto rounded-xl border border-border divide-y divide-border/60">
+            <div className="max-h-36 overflow-y-auto rounded-xl border border-border divide-y divide-border/60">
               {courses.length === 0 ? (
                 <div className="p-4 text-center text-sm text-content-tertiary">No published courses</div>
               ) : (
@@ -79,14 +101,11 @@ export function CampaignBuilder({ open, onClose, onSave, editCampaign }: Campaig
                       type="button"
                       onClick={() => toggleCourse(course.id)}
                       className={cn(
-                        "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-secondary/60",
+                        "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-secondary/60",
                         selected && "bg-primary-50/50 dark:bg-primary-950/20",
                       )}
                     >
-                      <div className={cn(
-                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors",
-                        selected ? "bg-primary-600 border-primary-600" : "border-border",
-                      )}>
+                      <div className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors", selected ? "bg-primary-600 border-primary-600" : "border-border")}>
                         {selected && <Check className="h-3 w-3 text-white" />}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -99,8 +118,66 @@ export function CampaignBuilder({ open, onClose, onSave, editCampaign }: Campaig
               )}
             </div>
           </div>
+
+          {/* Assignment selection */}
+          <div>
+            <label className="text-sm font-medium text-content mb-2 block">Assignments ({assignmentIds.length} selected) <span className="text-content-tertiary font-normal">(optional)</span></label>
+            <div className="max-h-36 overflow-y-auto rounded-xl border border-border divide-y divide-border/60">
+              {assignments.length === 0 ? (
+                <div className="p-4 text-center text-sm text-content-tertiary">No active assignments</div>
+              ) : (
+                assignments.map((asgn) => {
+                  const selected = assignmentIds.includes(asgn.id);
+                  return (
+                    <button
+                      key={asgn.id}
+                      type="button"
+                      onClick={() => toggleAssignment(asgn.id)}
+                      className={cn(
+                        "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-secondary/60",
+                        selected && "bg-primary-50/50 dark:bg-primary-950/20",
+                      )}
+                    >
+                      <div className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors", selected ? "bg-primary-600 border-primary-600" : "border-border")}>
+                        {selected && <Check className="h-3 w-3 text-white" />}
+                      </div>
+                      <p className="text-sm font-medium text-content truncate">{asgn.name}</p>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Dates */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-content mb-1.5 block">Start Date (optional)</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="flex w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-content mb-1.5 block">End Date (optional)</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="flex w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Target Audience */}
+          <div>
+            <label className="text-sm font-medium text-content mb-2 block">Target Audience</label>
+            <TargetAudienceBuilder value={targetAudience} onChange={setTargetAudience} />
+          </div>
         </div>
-        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border">
+        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border sticky bottom-0 bg-surface z-10">
           <Button variant="tertiary" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave}>{editCampaign ? "Update" : "Create"} Campaign</Button>
         </div>

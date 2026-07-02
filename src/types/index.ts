@@ -290,7 +290,16 @@ export interface Campaign {
   name: string;
   description: string;
   courseIds: string[];
+  assignmentIds: string[];
+  targetAudience?: TargetAudience;
+  categoryId?: string;
+  startDate?: string;
+  endDate?: string;
+  image?: string;
+  assignedBy?: string;
   status: CampaignStatus;
+  publishedAt?: string;
+  publishedBy?: string;
   createdAt: string;
   updatedAt: string;
 }
