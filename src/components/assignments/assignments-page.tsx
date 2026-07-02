@@ -15,7 +15,7 @@ import {
 } from "@/lib/assignments";
 import { bulkCreateFromAssignment, getAssignmentsForAssignment } from "@/lib/learner-assignments";
 import { getUsers } from "@/lib/users";
-import { notifyAssignmentCreated } from "@/lib/mock-notifications";
+import { notifyAssignmentUnlocked } from "@/lib/mock-notifications";
 import {
   ASSIGNMENT_TYPE_LABELS, ASSIGNMENT_TYPE_COLORS,
   ASSIGNMENT_PRIORITY_LABELS, ASSIGNMENT_PRIORITY_COLORS,
@@ -157,13 +157,13 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
     if (editingAssignment) {
       updateAssignment(editingAssignment.id, data);
       const existing = bulkCreateFromAssignment(editingAssignment.id, learnerIds, data.courseIds);
-      if (existing.length > 0) notifyAssignmentCreated({ ...editingAssignment, ...data }, learnerIds);
+      if (existing.length > 0) notifyAssignmentUnlocked({ ...editingAssignment, ...data }, learnerIds);
       showSuccess("Assignment updated successfully.");
     } else {
       const newAsgn = createAssignment({ ...data, assignedBy: user?.id || "" });
       if (learnerIds.length > 0) {
         bulkCreateFromAssignment(newAsgn.id, learnerIds, data.courseIds);
-        notifyAssignmentCreated(newAsgn, learnerIds);
+        notifyAssignmentUnlocked(newAsgn, learnerIds);
       }
       showSuccess("Assignment created successfully.");
     }

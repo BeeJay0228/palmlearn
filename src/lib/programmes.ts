@@ -3,7 +3,7 @@ import { getCourseIdByTitle, ensureCoursesSeeded } from "./courses";
 import { getAssignments } from "./assignments";
 import { getAssignmentsForProgramme, createLearnerAssignment, getLearnerAssignments } from "./learner-assignments";
 import { getAllUsers } from "./auth";
-import { notifyProgrammeCreated, notifyProgrammeUpdated, notifyProgrammeCompleted } from "./mock-notifications";
+import { notifyTrainingProgrammeAssigned, notifyTrainingProgrammeUpdated, notifyProgrammeCompleted } from "./mock-notifications";
 
 const STORAGE_KEY = "palmlearn-campaigns";
 
@@ -116,7 +116,7 @@ export function bulkCreateForProgramme(programmeId: string): void {
     }
   }
   if (created.length > 0) {
-    notifyProgrammeCreated(programme, learnerIds);
+    notifyTrainingProgrammeAssigned(programme, learnerIds);
   }
 }
 
@@ -205,7 +205,7 @@ export function updatePublishedProgramme(id: string, data: Partial<Programme>): 
           }
         }
       }
-      notifyProgrammeUpdated(programme, learnerIds);
+      notifyTrainingProgrammeUpdated(programme, learnerIds);
     }
   }
   return programme;

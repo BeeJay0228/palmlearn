@@ -1,7 +1,7 @@
 import type { Assignment, AssignmentType, AssignmentPriority, AssignmentStatus, AssignmentSchedule, AssignmentNotifications } from "@/types";
 import type { TargetAudience } from "@/types";
 import { getAllUsers } from "./auth";
-import { notifyAssignmentCreated } from "./mock-notifications";
+import { notifyAssignmentUnlocked } from "./mock-notifications";
 import { bulkCreateFromAssignment } from "./learner-assignments";
 
 export function resolveAssignmentAudience(audience: TargetAudience): string[] {
@@ -248,7 +248,7 @@ export function publishAssignment(id: string, userId: string): Assignment | unde
     const courseIds = assignment.courseIds || [];
     if (learnerIds.length > 0) {
       bulkCreateFromAssignment(assignment.id, learnerIds, courseIds);
-      notifyAssignmentCreated(assignment, learnerIds);
+      notifyAssignmentUnlocked(assignment, learnerIds);
     }
   }
   return assignment;

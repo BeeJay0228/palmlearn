@@ -2,15 +2,62 @@ import type { Assignment, Programme } from "@/types";
 
 const STORAGE_KEY = "palmlearn-notifications";
 
+export type NotificationCategory =
+  | "training"
+  | "course"
+  | "assignment"
+  | "event"
+  | "resource"
+  | "system";
+
+export type NotificationType =
+  | "training_programme_assigned"
+  | "training_programme_updated"
+  | "course_assigned"
+  | "course_completed"
+  | "assignment_unlocked"
+  | "assignment_submitted"
+  | "event_created"
+  | "event_reminder"
+  | "event_today"
+  | "event_updated"
+  | "resource_added"
+  | "welcome"
+  | "password_changed"
+  | "profile_updated"
+  | "announcement";
+
 export interface AppNotification {
   id: string;
   title: string;
   message: string;
-  type: "assignment" | "programme" | "due_reminder" | "completion" | "overdue" | "system";
+  type: NotificationType;
   read: boolean;
   userId: string;
   link?: string;
   createdAt: string;
+}
+
+const CATEGORY_MAP: Record<NotificationType, NotificationCategory> = {
+  training_programme_assigned: "training",
+  training_programme_updated: "training",
+  course_assigned: "course",
+  course_completed: "course",
+  assignment_unlocked: "assignment",
+  assignment_submitted: "assignment",
+  event_created: "event",
+  event_reminder: "event",
+  event_today: "event",
+  event_updated: "event",
+  resource_added: "resource",
+  welcome: "system",
+  password_changed: "system",
+  profile_updated: "system",
+  announcement: "system",
+};
+
+export function getNotificationCategory(type: NotificationType): NotificationCategory {
+  return CATEGORY_MAP[type];
 }
 
 function generateId(): string {
@@ -37,26 +84,10 @@ function setStored(items: AppNotification[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
-const SEED_NOTIFICATIONS: AppNotification[] = [
-  { id: "notif_seed_1", title: "New Assignment", message: "You have been assigned 'New Hire Onboarding - Compliance Training'.", type: "assignment", read: false, userId: "user_learner_1", link: "/learner/assignments", createdAt: now() },
-  { id: "notif_seed_2", title: "Assignment Due Soon", message: "'Product Knowledge Refresh - Q2' is due in 7 days.", type: "due_reminder", read: false, userId: "user_learner_1", link: "/learner/assignments", createdAt: now() },
-  { id: "notif_seed_3", title: "Course Completed", message: "Congratulations! You completed 'Compliance Fundamentals'.", type: "completion", read: false, userId: "user_learner_2", link: "/learner/my-courses", createdAt: now() },
-  { id: "notif_seed_4", title: "Overdue Assignment", message: "'New Hire Onboarding - Compliance Training' is now overdue.", type: "overdue", read: false, userId: "user_learner_1", link: "/learner/assignments", createdAt: now() },
-  { id: "notif_seed_5", title: "New Training Programme", message: "New training programme 'Q2 2026 Compliance Blitz' has been launched.", type: "programme", read: false, userId: "user_learner_2", link: "/learner/programmes", createdAt: now() },
-];
-
-export function seedNotifications(): void {
-  if (typeof window === "undefined") return;
-  const existing = getStored();
-  if (existing.length === 0) {
-    setStored(SEED_NOTIFICATIONS);
-  }
-}
-
 export function getNotifications(userId?: string): AppNotification[] {
   const all = getStored();
-  if (userId) return all.filter((n) => n.userId === userId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  return all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const filtered = userId ? all.filter((n) => n.userId === userId) : all;
+  return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export function getUnreadCount(userId?: string): number {
@@ -72,6 +103,15 @@ export function markAsRead(id: string): void {
   }
 }
 
+export function markAsUnread(id: string): void {
+  const list = getStored();
+  const idx = list.findIndex((n) => n.id === id);
+  if (idx !== -1) {
+    list[idx].read = false;
+    setStored(list);
+  }
+}
+
 export function markAllAsRead(userId?: string): void {
   const list = getStored();
   const updated = list.map((n) => {
@@ -81,12 +121,89 @@ export function markAllAsRead(userId?: string): void {
   setStored(updated);
 }
 
-export function notifyAssignmentCreated(assignment: Assignment, learnerIds: string[]): void {
+export function deleteAllRead(userId?: string): void {
+  const list = getStored();
+  setStored(list.filter((n) => {
+    if (userId && n.userId !== userId) return true;
+    return !n.read;
+  }));
+}
+
+export function deleteNotification(id: string): void {
+  const list = getStored();
+  setStored(list.filter((n) => n.id !== id));
+}
+
+export function notifyTrainingProgrammeAssigned(programme: Programme, learnerIds: string[]): void {
   const notifications: AppNotification[] = learnerIds.map((userId) => ({
     id: generateId(),
-    title: "New Assignment",
-    message: `You have been assigned '${assignment.name}'.`,
-    type: "assignment",
+    title: "Training Programme Assigned",
+    message: `Training Programme '${programme.name}' has been assigned to you.`,
+    type: "training_programme_assigned",
+    read: false,
+    userId,
+    link: `/learner/programmes/${programme.id}`,
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyTrainingProgrammeUpdated(programme: Programme, learnerIds: string[]): void {
+  const notifications: AppNotification[] = learnerIds.map((userId) => ({
+    id: generateId(),
+    title: "Training Programme Updated",
+    message: `Training Programme '${programme.name}' has been updated. Check for new content.`,
+    type: "training_programme_updated",
+    read: false,
+    userId,
+    link: `/learner/programmes/${programme.id}`,
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyCourseAssigned(courseTitle: string, courseId: string, learnerIds: string[]): void {
+  const notifications: AppNotification[] = learnerIds.map((userId) => ({
+    id: generateId(),
+    title: "New Course Available",
+    message: `Course '${courseTitle}' is now available for you.`,
+    type: "course_assigned",
+    read: false,
+    userId,
+    link: `/learner/my-courses/${courseId}`,
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyCourseCompleted(courseTitle: string, courseId: string, learnerId: string): void {
+  const notification: AppNotification = {
+    id: generateId(),
+    title: "Course Completed",
+    message: `Congratulations! You completed '${courseTitle}'.`,
+    type: "course_completed",
+    read: false,
+    userId: learnerId,
+    link: `/learner/my-courses/${courseId}`,
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
+export function notifyAssignmentUnlocked(assignment: Assignment, learnerIds: string[]): void {
+  const notifications: AppNotification[] = learnerIds.map((userId) => ({
+    id: generateId(),
+    title: "Assignment Unlocked",
+    message: `Assignment '${assignment.name}' has been unlocked and is ready to start.`,
+    type: "assignment_unlocked",
     read: false,
     userId,
     link: "/learner/assignments",
@@ -97,15 +214,31 @@ export function notifyAssignmentCreated(assignment: Assignment, learnerIds: stri
   setStored(list);
 }
 
-export function notifyProgrammeCreated(programme: Programme, learnerIds: string[]): void {
-  const notifications: AppNotification[] = learnerIds.map((userId) => ({
+export function notifyAssignmentSubmitted(assignmentName: string, learnerId: string): void {
+  const notification: AppNotification = {
     id: generateId(),
-    title: "New Training Programme",
-    message: `Training Programme '${programme.name}' has been assigned to you.`,
-    type: "programme",
+    title: "Assignment Submitted",
+    message: `You have submitted '${assignmentName}'.`,
+    type: "assignment_submitted",
+    read: false,
+    userId: learnerId,
+    link: "/learner/assignments",
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
+export function notifyEventCreated(eventTitle: string, eventId: string, targetUserIds: string[]): void {
+  const notifications: AppNotification[] = targetUserIds.map((userId) => ({
+    id: generateId(),
+    title: "New Event",
+    message: `New event '${eventTitle}' has been created.`,
+    type: "event_created",
     read: false,
     userId,
-    link: `/learner/programmes/${programme.id}`,
+    link: `/learner/events/${eventId}`,
     createdAt: now(),
   }));
   const list = getStored();
@@ -113,28 +246,158 @@ export function notifyProgrammeCreated(programme: Programme, learnerIds: string[
   setStored(list);
 }
 
-export function notifyProgrammeUpdated(programme: Programme, learnerIds: string[]): void {
-  const notifications: AppNotification[] = learnerIds.map((userId) => ({
+export function notifyEventUpdated(eventTitle: string, eventId: string, targetUserIds: string[]): void {
+  const notifications: AppNotification[] = targetUserIds.map((userId) => ({
     id: generateId(),
-    title: "Training Programme Updated",
-    message: `Training Programme '${programme.name}' has been updated. Check for new content.`,
-    type: "programme",
+    title: "Event Updated",
+    message: `Event '${eventTitle}' has been updated.`,
+    type: "event_updated",
     read: false,
     userId,
-    link: `/learner/programmes/${programme.id}`,
+    link: `/learner/events/${eventId}`,
     createdAt: now(),
   }));
   const list = getStored();
   list.push(...notifications);
   setStored(list);
+}
+
+export function notifyEventReminder(eventTitle: string, eventId: string, userIds: string[]): void {
+  const notifications: AppNotification[] = userIds.map((userId) => ({
+    id: generateId(),
+    title: "Event Reminder",
+    message: `Reminder: Event '${eventTitle}' is coming up.`,
+    type: "event_reminder",
+    read: false,
+    userId,
+    link: `/learner/events/${eventId}`,
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyEventToday(eventTitle: string, eventId: string, userIds: string[]): void {
+  const notifications: AppNotification[] = userIds.map((userId) => ({
+    id: generateId(),
+    title: "Event Starts Today",
+    message: `Event '${eventTitle}' starts today!`,
+    type: "event_today",
+    read: false,
+    userId,
+    link: `/learner/events/${eventId}`,
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyResourceAdded(resourceName: string, resourceId: string, targetUserIds: string[]): void {
+  const notifications: AppNotification[] = targetUserIds.map((userId) => ({
+    id: generateId(),
+    title: "New Resource Added",
+    message: `New resource '${resourceName}' has been added.`,
+    type: "resource_added",
+    read: false,
+    userId,
+    link: `/learner/resource-library/${resourceId}`,
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyWelcome(userId: string, userName: string): void {
+  const notification: AppNotification = {
+    id: generateId(),
+    title: "Welcome to PalmLearn",
+    message: `Welcome, ${userName}! We're glad to have you on board.`,
+    type: "welcome",
+    read: false,
+    userId,
+    link: "/dashboard",
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
+export function notifyPasswordChanged(userId: string): void {
+  const notification: AppNotification = {
+    id: generateId(),
+    title: "Password Changed",
+    message: "Your password has been changed successfully.",
+    type: "password_changed",
+    read: false,
+    userId,
+    link: `/${userId.startsWith("admin") ? "admin" : userId.startsWith("trainer") ? "trainer" : "learner"}/settings`,
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
+export function notifyProfileUpdated(userId: string): void {
+  const notification: AppNotification = {
+    id: generateId(),
+    title: "Profile Updated",
+    message: "Your profile has been updated successfully.",
+    type: "profile_updated",
+    read: false,
+    userId,
+    link: `/${userId.startsWith("admin") ? "admin" : userId.startsWith("trainer") ? "trainer" : "learner"}/profile`,
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
+export function notifyAnnouncement(title: string, message: string, userIds: string[]): void {
+  const notifications: AppNotification[] = userIds.map((userId) => ({
+    id: generateId(),
+    title,
+    message,
+    type: "announcement",
+    read: false,
+    userId,
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function createSystemNotification(title: string, message: string, userIds?: string[]): void {
+  if (userIds && userIds.length > 0) {
+    const notifications: AppNotification[] = userIds.map((userId) => ({
+      id: generateId(),
+      title,
+      message,
+      type: "announcement",
+      read: false,
+      userId,
+      createdAt: now(),
+    }));
+    const list = getStored();
+    list.push(...notifications);
+    setStored(list);
+  }
 }
 
 export function notifyAssignmentDueSoon(assignment: Assignment, learnerIds: string[], daysLeft: number): void {
   const notifications: AppNotification[] = learnerIds.map((userId) => ({
     id: generateId(),
-    title: "Assignment Due Soon",
-    message: `'${assignment.name}' is due in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}.`,
-    type: "due_reminder",
+    title: daysLeft === 0 ? "Assignment Due Today" : "Assignment Due Soon",
+    message: daysLeft === 0
+      ? `'${assignment.name}' is due today!`
+      : `'${assignment.name}' is due in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}.`,
+    type: "assignment_unlocked",
     read: false,
     userId,
     link: "/learner/assignments",
@@ -150,7 +413,7 @@ export function notifyAssignmentOverdue(assignment: Assignment, learnerIds: stri
     id: generateId(),
     title: "Overdue Assignment",
     message: `'${assignment.name}' is now overdue. Please complete it as soon as possible.`,
-    type: "overdue",
+    type: "assignment_unlocked",
     read: false,
     userId,
     link: "/learner/assignments",
@@ -164,11 +427,11 @@ export function notifyAssignmentOverdue(assignment: Assignment, learnerIds: stri
 export function notifyAssignmentCompleted(assignment: Assignment, learnerId: string, courseTitle?: string): void {
   const notification: AppNotification = {
     id: generateId(),
-    title: "Course Completed",
+    title: "Assignment Submitted",
     message: courseTitle
-      ? `Congratulations! You completed '${courseTitle}' in '${assignment.name}'.`
-      : `Congratulations! You completed an assignment '${assignment.name}'.`,
-    type: "completion",
+      ? `You completed '${courseTitle}' in '${assignment.name}'.`
+      : `You completed '${assignment.name}'.`,
+    type: "assignment_submitted",
     read: false,
     userId: learnerId,
     link: "/learner/assignments",
@@ -184,7 +447,7 @@ export function notifyProgrammeCompleted(programmeName: string, programmeId: str
     id: generateId(),
     title: "Training Programme Completed",
     message: `Congratulations! You have completed '${programmeName}'.`,
-    type: "completion",
+    type: "training_programme_assigned",
     read: false,
     userId: learnerId,
     link: `/learner/programmes/${programmeId}`,
@@ -195,24 +458,20 @@ export function notifyProgrammeCompleted(programmeName: string, programmeId: str
   setStored(list);
 }
 
-export function deleteNotification(id: string): void {
-  const list = getStored();
-  setStored(list.filter((n) => n.id !== id));
-}
+export function seedNotifications(): void {
+  if (typeof window === "undefined") return;
+  const existing = getStored();
+  if (existing.length > 0) return;
 
-export function createSystemNotification(title: string, message: string, userIds?: string[]): void {
-  if (userIds && userIds.length > 0) {
-    const notifications: AppNotification[] = userIds.map((userId) => ({
-      id: generateId(),
-      title,
-      message,
-      type: "system",
-      read: false,
-      userId,
-      createdAt: now(),
-    }));
-    const list = getStored();
-    list.push(...notifications);
-    setStored(list);
-  }
+  const seed: AppNotification[] = [
+    { id: "notif_seed_1", title: "Training Programme Assigned", message: "Training Programme 'Q2 2026 Compliance Blitz' has been assigned to you.", type: "training_programme_assigned", read: false, userId: "user_learner_1", link: "/learner/programmes/1", createdAt: new Date(Date.now() - 3600000).toISOString() },
+    { id: "notif_seed_2", title: "Assignment Unlocked", message: "Assignment 'New Hire Onboarding - Compliance Training' has been unlocked.", type: "assignment_unlocked", read: false, userId: "user_learner_1", link: "/learner/assignments", createdAt: new Date(Date.now() - 7200000).toISOString() },
+    { id: "notif_seed_3", title: "Course Completed", message: "Congratulations! You completed 'Compliance Fundamentals'.", type: "course_completed", read: false, userId: "user_learner_1", link: "/learner/my-courses/course_1", createdAt: new Date(Date.now() - 86400000).toISOString() },
+    { id: "notif_seed_4", title: "New Event", message: "New event 'Annual Compliance Workshop' has been created.", type: "event_created", read: false, userId: "user_learner_1", link: "/learner/events/event_1", createdAt: new Date(Date.now() - 172800000).toISOString() },
+    { id: "notif_seed_5", title: "New Resource Added", message: "New resource 'Compliance Handbook 2026' has been added.", type: "resource_added", read: false, userId: "user_learner_1", link: "/learner/resource-library/res_1", createdAt: new Date(Date.now() - 259200000).toISOString() },
+    { id: "notif_seed_6", title: "Welcome to PalmLearn", message: "Welcome, Learner! We're glad to have you on board.", type: "welcome", read: true, userId: "user_learner_1", link: "/dashboard", createdAt: new Date(Date.now() - 604800000).toISOString() },
+    { id: "notif_seed_7", title: "Training Programme Updated", message: "Training Programme 'Product Knowledge Refresh - Q2' has been updated.", type: "training_programme_updated", read: false, userId: "user_learner_1", link: "/learner/programmes/2", createdAt: new Date(Date.now() - 43200000).toISOString() },
+    { id: "notif_seed_8", title: "New Course Available", message: "Course 'Advanced Compliance' is now available for you.", type: "course_assigned", read: false, userId: "user_learner_1", link: "/learner/my-courses/course_2", createdAt: new Date(Date.now() - 10800000).toISOString() },
+  ];
+  setStored(seed);
 }

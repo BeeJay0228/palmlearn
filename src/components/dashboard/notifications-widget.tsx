@@ -1,13 +1,17 @@
-import { useMemo } from "react";
+"use client";
+
+import { useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
-import { getNotifications, getUnreadCount } from "@/lib/mock-notifications";
+import { getNotifications, getUnreadCount, seedNotifications } from "@/lib/mock-notifications";
 import { Bell } from "lucide-react";
 
 export function NotificationsWidget({ className }: { className?: string }) {
   const { user } = useAuth();
   const router = useRouter();
+
+  useEffect(() => { seedNotifications(); }, []);
 
   const notifications = useMemo(() => {
     if (!user) return [];
@@ -61,6 +65,7 @@ export function NotificationsWidget({ className }: { className?: string }) {
           notifications.map((n) => (
             <div
               key={n.id}
+              onClick={() => { if (n.link) router.push(n.link); }}
               className={cn(
                 "flex items-start gap-3 p-3 rounded-xl transition-colors cursor-pointer",
                 !n.read ? "bg-primary-50/60 dark:bg-primary-950/20" : "hover:bg-surface-hover",
