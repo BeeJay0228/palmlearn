@@ -18,12 +18,12 @@ interface EnrichedItem extends LearnerAssignment {
   daysLeft?: number | null;
 }
 
-export function LearnerContinueLearning() {
+export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Learning" }: { maxItems?: number; heading?: string }) {
   const { user } = useAuth();
 
   const inProgress = useMemo(() => {
     if (!user) return [];
-    const records = getAssignmentsForLearner(user.id).filter((r) => r.status === "in_progress");
+    const records = getAssignmentsForLearner(user.id).filter((r) => r.status === "in_progress" || r.status === "not_started");
     const courses = getCourses();
     const assignments = getAssignments();
     return records.map<EnrichedItem>((r) => {
@@ -39,10 +39,10 @@ export function LearnerContinueLearning() {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <PlayCircle className="h-5 w-5 text-primary-600" />
-        <h2 className="text-lg font-bold text-content">Continue Learning</h2>
+        <h2 className="text-lg font-bold text-content">{heading}</h2>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {inProgress.slice(0, 8).map((item) => (
+        {inProgress.slice(0, maxItems).map((item) => (
           <Link key={item.id} href={item.course ? `/learner/course-view/${item.course.id}` : "#"} className="group relative overflow-hidden rounded-2xl border border-border/50 bg-surface transition-all duration-300 card-hover cursor-pointer block">
             <div className="relative h-28 bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-60" />
