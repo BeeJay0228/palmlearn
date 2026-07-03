@@ -16,6 +16,12 @@ const cardVariants = cva(
         "glass-strong": "glass-strong rounded-2xl floating",
         gradient:
           "rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-primary-950/30 dark:to-primary-900/10 border border-primary-200/50 dark:border-primary-800/30",
+        interactive:
+          "bg-surface border border-border shadow-sm rounded-2xl cursor-pointer card-hover",
+        stat:
+          "bg-surface border border-border shadow-sm rounded-2xl overflow-hidden",
+        feature:
+          "bg-surface border border-border/50 shadow-sm rounded-2xl card-hover group",
       },
       padding: {
         none: "",
@@ -51,7 +57,7 @@ Card.displayName = "Card";
 
 const CardHeader = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex flex-col gap-1.5 pb-4", className)} {...props} />
+    <div ref={ref} className={cn("flex flex-col gap-1.5", className)} {...props} />
   ),
 );
 CardHeader.displayName = "CardHeader";

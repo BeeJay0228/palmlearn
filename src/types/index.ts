@@ -2,12 +2,31 @@ export type Theme = "light" | "dark" | "system";
 
 export type AnimationVariant =
   | "fade-in"
+  | "fade-in-up"
+  | "fade-in-down"
   | "slide-up"
   | "slide-down"
   | "slide-left"
   | "slide-right"
   | "scale-in"
+  | "scale-in-sm"
   | "none";
+
+export type ToastType = "success" | "error" | "warning" | "info";
+
+export type StatusType =
+  | "published"
+  | "draft"
+  | "completed"
+  | "pending"
+  | "overdue"
+  | "locked"
+  | "in_progress"
+  | "active"
+  | "inactive"
+  | "cancelled"
+  | "archived"
+  | "expired";
 
 export type UserRole = "admin" | "trainer" | "learner";
 

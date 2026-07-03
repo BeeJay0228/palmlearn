@@ -1,84 +1,96 @@
 "use client";
 
-import { m, type TargetAndTransition } from "framer-motion";
-import type { ReactNode, ElementType } from "react";
+import { type HTMLMotionProps, m } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { forwardRef } from "react";
 
-type AnimationType =
-  | "fadeIn"
-  | "slideUp"
-  | "slideDown"
-  | "slideLeft"
-  | "slideRight"
-  | "scaleIn"
+type AnimationVariant =
+  | "fade-in"
+  | "fade-in-up"
+  | "fade-in-down"
+  | "slide-up"
+  | "slide-down"
+  | "slide-left"
+  | "slide-right"
+  | "scale-in"
+  | "scale-in-sm"
   | "none";
 
-interface MotionDivProps {
-  children: ReactNode;
-  className?: string;
-  animation?: AnimationType;
-  delay?: number;
-  duration?: number;
-  once?: boolean;
-  amount?: number | "some" | "all";
-  as?: ElementType;
-}
-
-const animations: Record<AnimationType, {
-  initial: TargetAndTransition;
-  animate: TargetAndTransition;
-}> = {
-  fadeIn: {
+const variants: Record<string, HTMLMotionProps<"div">> = {
+  "fade-in": {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
+    exit: { opacity: 0 },
   },
-  slideUp: {
-    initial: { opacity: 0, y: 30 },
+  "fade-in-up": {
+    initial: { opacity: 0, y: 12 },
     animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -12 },
   },
-  slideDown: {
-    initial: { opacity: 0, y: -20 },
+  "fade-in-down": {
+    initial: { opacity: 0, y: -12 },
     animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 12 },
   },
-  slideLeft: {
-    initial: { opacity: 0, x: 30 },
+  "slide-up": {
+    initial: { opacity: 0, y: 16 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -16 },
+  },
+  "slide-down": {
+    initial: { opacity: 0, y: -16 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 16 },
+  },
+  "slide-left": {
+    initial: { opacity: 0, x: 16 },
     animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -16 },
   },
-  slideRight: {
-    initial: { opacity: 0, x: -30 },
+  "slide-right": {
+    initial: { opacity: 0, x: -16 },
     animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: 16 },
   },
-  scaleIn: {
-    initial: { opacity: 0, scale: 0.95 },
+  "scale-in": {
+    initial: { opacity: 0, scale: 0.92 },
     animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.92 },
   },
-  none: {
-    initial: {},
-    animate: {},
+  "scale-in-sm": {
+    initial: { opacity: 0, scale: 0.96 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.96 },
   },
+  none: {},
 };
 
-export function MotionDiv({
-  children,
-  className,
-  animation = "slideUp",
-  delay = 0,
-  duration = 0.5,
-  once = true,
-  amount = 0.2,
-  as: Tag = "div",
-}: MotionDivProps) {
-  const { initial, animate } = animations[animation];
-
-  return (
-    <m.div
-      className={cn(className)}
-      initial={initial}
-      whileInView={animate}
-      viewport={{ once, amount }}
-      transition={{ duration, delay, ease: [0.25, 0.1, 0.25, 1] }}
-    >
-      <Tag>{children}</Tag>
-    </m.div>
-  );
+interface MotionDivProps extends Omit<HTMLMotionProps<"div">, "animate" | "initial" | "exit"> {
+  variant?: AnimationVariant;
+  delay?: number;
+  duration?: number;
 }
+
+const MotionDiv = forwardRef<HTMLDivElement, MotionDivProps>(
+  ({ className, variant = "fade-in-up", delay = 0, duration, children, ...props }, ref) => {
+    const v = variants[variant] || variants["fade-in-up"];
+    return (
+      <m.div
+        ref={ref}
+        className={cn(className)}
+        {...v}
+        transition={{
+          duration: duration || 0.4,
+          delay,
+          ease: [0.16, 1, 0.3, 1],
+        }}
+        {...props}
+      >
+        {children}
+      </m.div>
+    );
+  },
+);
+MotionDiv.displayName = "MotionDiv";
+
+export { MotionDiv, type AnimationVariant };

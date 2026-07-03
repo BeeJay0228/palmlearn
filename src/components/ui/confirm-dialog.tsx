@@ -35,21 +35,25 @@ export function ConfirmDialog({
   useEffect(() => {
     if (open) {
       document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
     }
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
   }, [open, handleKeyDown]);
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-surface shadow-2xl p-6 animate-scale-in">
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-border/50 bg-surface shadow-2xl shadow-black/10 p-6 animate-scale-in">
         <div className="flex flex-col items-center text-center gap-4">
           <div className={cn(
             "flex h-14 w-14 items-center justify-center rounded-2xl",
-            variant === "danger" && "bg-danger/10",
-            variant === "warning" && "bg-warning/10",
+            variant === "danger" && "bg-danger-light dark:bg-danger/10",
+            variant === "warning" && "bg-warning-light dark:bg-warning/10",
             variant === "default" && "bg-primary-50 dark:bg-primary-950/30",
           )}>
             <AlertTriangle className={cn(

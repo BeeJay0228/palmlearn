@@ -18,7 +18,7 @@ export function LandingFooter() {
       <div className="container-site py-16 lg:py-20">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12">
           <div className="col-span-2 md:col-span-1">
-            <MotionDiv animation="fadeIn">
+            <MotionDiv variant="fade-in">
               <Link href="/" className="flex items-center gap-3 group mb-4">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-600 text-white">
                   <GraduationCap className="h-5 w-5" />
@@ -35,7 +35,7 @@ export function LandingFooter() {
 
           {Object.entries(footerLinks).map(([category, links], index) => (
             <div key={category}>
-              <MotionDiv animation="fadeIn" delay={0.1 * index}>
+              <MotionDiv variant="fade-in" delay={0.1 * index}>
                 <h4 className="text-sm font-semibold text-content mb-4">
                   {category}
                 </h4>

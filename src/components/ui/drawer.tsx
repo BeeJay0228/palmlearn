@@ -10,9 +10,17 @@ interface DrawerProps {
   title: string;
   children: React.ReactNode;
   className?: string;
+  side?: "left" | "right";
+  size?: "sm" | "md" | "lg";
 }
 
-export function Drawer({ open, onClose, title, children, className }: DrawerProps) {
+const sizeMap = {
+  sm: "max-w-sm",
+  md: "max-w-lg",
+  lg: "max-w-2xl",
+};
+
+export function Drawer({ open, onClose, title, children, className, side = "right", size = "md" }: DrawerProps) {
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === "Escape") onClose();
   }, [onClose]);
@@ -39,8 +47,12 @@ export function Drawer({ open, onClose, title, children, className }: DrawerProp
       />
       <div
         className={cn(
-          "fixed inset-y-0 right-0 z-50 w-full max-w-lg border-l border-border bg-surface shadow-2xl transition-transform duration-300 ease-out",
-          open ? "translate-x-0" : "translate-x-full",
+          "fixed inset-y-0 z-50 w-full border-border bg-surface shadow-2xl transition-transform duration-300 ease-out",
+          side === "right" ? "right-0 border-l" : "left-0 border-r",
+          open
+            ? side === "right" ? "translate-x-0" : "translate-x-0"
+            : side === "right" ? "translate-x-full" : "-translate-x-full",
+          sizeMap[size],
           className,
         )}
       >
@@ -54,7 +66,7 @@ export function Drawer({ open, onClose, title, children, className }: DrawerProp
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="overflow-y-auto h-[calc(100%-4rem)] p-6">
+        <div className="overflow-y-auto h-[calc(100%-4rem)] p-6 scrollbar-thin">
           {children}
         </div>
       </div>

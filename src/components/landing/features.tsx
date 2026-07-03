@@ -30,7 +30,7 @@ export function Features() {
 
       <div className="container-site">
         <div className="flex flex-col items-center text-center mb-16 lg:mb-20">
-          <MotionDiv animation="slideUp">
+          <MotionDiv variant="slide-up">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
               Everything you need to
               <br />
@@ -39,7 +39,7 @@ export function Features() {
               </span>
             </h2>
           </MotionDiv>
-          <MotionDiv animation="slideUp" delay={0.1}>
+          <MotionDiv variant="slide-up" delay={0.1}>
             <p className="text-lg text-content-secondary max-w-2xl">
               From course creation to certification, PalmLearn provides all the tools 
               to build a world-class learning program.
@@ -53,7 +53,7 @@ export function Features() {
             return (
               <MotionDiv
                 key={feature.title}
-                animation="slideUp"
+                variant="slide-up"
                 delay={0.1 + index * 0.1}
               >
                 <Card

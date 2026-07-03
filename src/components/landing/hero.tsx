@@ -17,13 +17,13 @@ export function Hero() {
 
       <div className="container-site">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto gap-8">
-          <MotionDiv animation="slideUp" delay={0.1}>
+          <MotionDiv variant="slide-up" delay={0.1}>
             <Badge variant="default" size="lg" className="mb-4">
               Introducing PalmLearn v1.0
             </Badge>
           </MotionDiv>
 
-          <MotionDiv animation="slideUp" delay={0.2}>
+          <MotionDiv variant="slide-up" delay={0.2}>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-balance">
               Enterprise Learning{" "}
               <span className="bg-gradient-to-r from-primary-500 to-primary-700 bg-clip-text text-transparent">
@@ -32,7 +32,7 @@ export function Hero() {
             </h1>
           </MotionDiv>
 
-          <MotionDiv animation="slideUp" delay={0.3}>
+          <MotionDiv variant="slide-up" delay={0.3}>
             <p className="text-lg sm:text-xl text-content-secondary max-w-2xl text-balance">
               Empower your workforce with a premium learning experience. 
               Create, deliver, and track training at scale with PalmLearn&apos;s 
@@ -40,7 +40,7 @@ export function Hero() {
             </p>
           </MotionDiv>
 
-          <MotionDiv animation="slideUp" delay={0.4}>
+          <MotionDiv variant="slide-up" delay={0.4}>
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <Button variant="primary" size="xl" className="rounded-full" onClick={() => router.push("/login")}>
                 Start Learning
@@ -53,13 +53,13 @@ export function Hero() {
             </div>
           </MotionDiv>
 
-          <MotionDiv animation="slideUp" delay={0.5}>
+          <MotionDiv variant="slide-up" delay={0.5}>
             <p className="text-sm text-content-tertiary mt-4">
               Trusted by industry leaders. No credit card required.
             </p>
           </MotionDiv>
 
-          <MotionDiv animation="scaleIn" delay={0.6} className="w-full mt-8">
+          <MotionDiv variant="scale-in" delay={0.6} className="w-full mt-8">
             <div className="relative w-full max-w-5xl mx-auto aspect-video rounded-2xl border border-border bg-gradient-to-br from-surface-secondary to-surface-tertiary overflow-hidden shadow-2xl">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">

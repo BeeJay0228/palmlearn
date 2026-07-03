@@ -2,11 +2,13 @@
 
 import { useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { RoleGreeting } from "@/components/dashboard/role-greeting";
-import { StatCard } from "@/components/dashboard/stat-card";
-import { ActivityTimeline } from "@/components/dashboard/activity-timeline";
+import { DashboardWelcome } from "@/components/dashboard/dashboard-welcome";
+import { DashboardStats } from "@/components/dashboard/dashboard-stats";
+import { DashboardActivity } from "@/components/dashboard/dashboard-activity";
+import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
+import { DashboardMetricsGrid } from "@/components/dashboard/dashboard-metrics-grid";
+import { DashboardProgress } from "@/components/dashboard/dashboard-progress";
 import { NotificationsWidget } from "@/components/dashboard/notifications-widget";
-import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { AssignmentSummaryCards, RegionalPerformanceWidget, RecentAssignmentsWidget } from "@/components/assignments/assignment-analytics";
 import { AdminEventDashboardCards } from "@/components/events/event-dashboard-cards";
@@ -16,7 +18,11 @@ import { getAssignments } from "@/lib/assignments";
 import { getLearnerAssignments } from "@/lib/learner-assignments";
 import { getProgrammes } from "@/lib/programmes";
 import { getEvents } from "@/lib/events";
-import { Users, BookOpen, CalendarDays, TrendingUp, UserPlus, FileText, BarChart3, GraduationCap, Award, Clock, Activity, ClipboardList } from "lucide-react";
+import {
+  Users, BookOpen, CalendarDays, TrendingUp, UserPlus, BarChart3,
+  GraduationCap, Award, Clock, Activity, ClipboardList, Target, Building2,
+  Globe, PieChart, ArrowUpRight,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function AdminDashboard() {
@@ -30,6 +36,7 @@ export default function AdminDashboard() {
     const events = getEvents();
     const learnerAssignments = getLearnerAssignments();
     const learners = allUsers.filter((u) => u.role === "learner");
+    const trainers = allUsers.filter((u) => u.role === "trainer");
     const thisMonth = new Date().getMonth();
     const thisMonthEvents = events.filter((e) => new Date(e.schedule.startDate).getMonth() === thisMonth);
     const completedAssignments = learnerAssignments.filter((la) => la.status === "completed").length;
@@ -39,6 +46,7 @@ export default function AdminDashboard() {
     return {
       totalUsers: allUsers.length,
       learners: learners.length,
+      trainers: trainers.length,
       totalCourses: courses.length,
       assignments: assignments.length,
       programmes: programmes.length,
@@ -53,43 +61,26 @@ export default function AdminDashboard() {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
-      <RoleGreeting user={user} />
+    <div className="flex flex-col gap-6">
+      <DashboardWelcome
+        title="Executive Command Center"
+        subtitle="Monitor your organization's learning ecosystem at a glance. Track adoption, completion rates, and regional performance."
+        action={{ label: "View Reports", href: "/admin/reports" }}
+        metrics={[
+          { label: "Total Users", value: stats.totalUsers },
+          { label: "Completion", value: `${stats.completionRate}%` },
+          { label: "Programmes", value: stats.programmes },
+        ]}
+      />
 
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 p-6 lg:p-8">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-white/5 blur-3xl animate-float" />
-          <div className="absolute -bottom-32 -left-16 w-96 h-96 rounded-full bg-primary-400/10 blur-3xl animate-float" style={{ animationDelay: "-3s" }} />
-          <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, white 0.5px, transparent 0.5px)", backgroundSize: "20px 20px" }} />
-        </div>
-        <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="space-y-3 max-w-xl">
-            <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary-200" />
-              <span className="text-xs font-medium text-primary-200/80 uppercase tracking-wider">Organization Overview</span>
-            </div>
-            <h2 className="text-xl lg:text-2xl font-bold text-white leading-tight">
-              Executive Command Center
-            </h2>
-            <p className="text-sm text-primary-100/80 leading-relaxed">
-              Monitor your organization&apos;s learning ecosystem at a glance.
-              Track adoption, completion rates, and regional performance.
-            </p>
-          </div>
-          <div className="grid grid-cols-3 gap-6">
-            {[
-              { label: "Total Users", value: String(stats.totalUsers), icon: Users },
-              { label: "Completion", value: `${stats.completionRate}%`, icon: Award },
-              { label: "Programmes", value: String(stats.programmes), icon: TrendingUp },
-            ].map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-2xl lg:text-3xl font-bold text-white">{s.value}</p>
-                <p className="text-xs text-primary-200/70 mt-1">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <DashboardStats
+        stats={[
+          { title: "Total Users", value: stats.totalUsers, icon: Users, trend: { value: `${stats.learners} learners`, up: true }, color: "emerald" },
+          { title: "Active Courses", value: stats.totalCourses, icon: BookOpen, trend: { value: `${stats.assignments} assignments`, up: true }, color: "blue" },
+          { title: "Events This Month", value: stats.eventsThisMonth, icon: CalendarDays, trend: { value: "This month", up: true }, color: "amber" },
+          { title: "Completion Rate", value: stats.completionRate, icon: TrendingUp, trend: { value: `${stats.completedAssignments}/${stats.totalLearnerAssignments} done`, up: true }, color: "purple" },
+        ]}
+      />
 
       <AssignmentSummaryCards role="admin" />
 
@@ -97,48 +88,26 @@ export default function AdminDashboard() {
         <AdminEventDashboardCards />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Users" value={String(stats.totalUsers)} icon={Users} trend={`${stats.learners} learners`} trendUp iconColor="text-emerald-600 dark:text-emerald-400" bgColor="bg-emerald-50 dark:bg-emerald-950/30" />
-        <StatCard title="Active Courses" value={String(stats.totalCourses)} icon={BookOpen} trend={`${stats.assignments} assignments`} trendUp iconColor="text-blue-600 dark:text-blue-400" bgColor="bg-blue-50 dark:bg-blue-950/30" />
-        <StatCard title="Events This Month" value={String(stats.eventsThisMonth)} icon={CalendarDays} trend="This month" trendUp iconColor="text-amber-600 dark:text-amber-400" bgColor="bg-amber-50 dark:bg-amber-950/30" />
-        <StatCard title="Completion Rate" value={`${stats.completionRate}%`} icon={TrendingUp} trend={`${stats.completedAssignments}/${stats.totalLearnerAssignments}`} trendUp iconColor="text-purple-600 dark:text-purple-400" bgColor="bg-purple-50 dark:bg-purple-950/30" />
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <RegionalPerformanceWidget />
-        </div>
-
-        <div className="lg:col-span-1">
-          <RecentAssignmentsWidget />
-        </div>
-
-        <div className="lg:col-span-1">
-          <ActivityTimeline activities={[]} title="Recent Activity" />
-        </div>
-
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
+          <DashboardQuickActions
+            title="Quick Actions"
+            actions={[
+              { label: "Add User", href: "/admin/users", icon: UserPlus, color: "emerald" },
+              { label: "View Reports", href: "/admin/reports", icon: BarChart3, color: "blue" },
+              { label: "Assignments", href: "/admin/assignments", icon: ClipboardList, color: "amber" },
+              { label: "Settings", href: "/admin/settings", icon: GraduationCap, color: "purple" },
+            ]}
+            columns={2}
+          />
           <NotificationsWidget />
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <QuickActions
-          className="lg:col-span-1"
-          title="Quick Actions"
-          actions={[
-            { label: "Add User", href: "/admin/users", icon: UserPlus, color: "text-emerald-600", bgColor: "bg-emerald-50 dark:bg-emerald-950/30" },
-            { label: "View Reports", href: "/admin/reports", icon: BarChart3, color: "text-blue-600", bgColor: "bg-blue-50 dark:bg-blue-950/30" },
-            { label: "Assignments", href: "/admin/assignments", icon: ClipboardList, color: "text-amber-600", bgColor: "bg-amber-50 dark:bg-amber-950/30" },
-            { label: "Settings", href: "/admin/settings", icon: GraduationCap, color: "text-purple-600", bgColor: "bg-purple-50 dark:bg-purple-950/30" },
-          ]}
-        />
-
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <Card variant="default" padding="none">
             <div className="px-5 py-4 border-b border-border/50">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary-600" />
+                <PieChart className="h-4 w-4 text-primary-600" />
                 <CardTitle>Learning Adoption Metrics</CardTitle>
               </div>
             </div>
@@ -147,12 +116,12 @@ export default function AdminDashboard() {
                 {[
                   { label: "Course Completion", value: `${stats.completionRate}%`, sub: `${stats.completedAssignments} completed`, icon: Award, up: true },
                   { label: "In Progress", value: String(stats.inProgressAssignments), sub: "active assignments", icon: Clock, up: true },
-                  { label: "Learners", value: String(stats.learners), sub: "total users", icon: Users, up: true },
-                  { label: "Programmes", value: String(stats.programmes), sub: "active programmes", icon: Award, up: true },
+                  { label: "Learners", value: String(stats.learners), sub: "total enrolled", icon: Users, up: true },
+                  { label: "Programmes", value: String(stats.programmes), sub: "active programmes", icon: Target, up: true },
                 ].map((m) => (
-                  <div key={m.label} className="text-center">
+                  <div key={m.label} className="text-center group">
                     <div className="flex justify-center mb-2">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-950/30">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-950/30 group-hover:scale-110 transition-transform duration-200">
                         <m.icon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                       </div>
                     </div>
@@ -164,8 +133,22 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <RegionalPerformanceWidget />
+            <RecentAssignmentsWidget />
+          </div>
         </div>
       </div>
+
+      <DashboardMetricsGrid
+        items={[
+          { label: "Total Trainers", value: stats.trainers, icon: GraduationCap, color: "indigo" },
+          { label: "Learners", value: stats.learners, icon: Users, color: "emerald" },
+          { label: "Courses", value: stats.totalCourses, icon: BookOpen, color: "blue" },
+          { label: "Assignments", value: stats.assignments, icon: ClipboardList, color: "amber" },
+        ]}
+      />
     </div>
   );
 }
