@@ -1,7 +1,12 @@
 "use client";
 
-import { TrainingReports } from "@/components/reports/training-reports";
+import { AuthGuard } from "@/components/auth/auth-guard";
+import { ReportCenter } from "@/components/reports/report-center";
 
 export default function TrainerReportsPage() {
-  return <TrainingReports isSuperAdmin={false} />;
+  return (
+    <AuthGuard requiredRole="trainer">
+      <ReportCenter isSuperAdmin={false} />
+    </AuthGuard>
+  );
 }
