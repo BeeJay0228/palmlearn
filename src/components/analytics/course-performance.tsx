@@ -4,8 +4,7 @@ import { useMemo } from "react";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { getCoursePerformance, type AnalyticsFilter } from "@/lib/analytics";
 import { useAuth } from "@/hooks/use-auth";
-import { cn } from "@/lib/utils";
-import { BookOpen, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import { BookOpen, TrendingUp, TrendingDown } from "lucide-react";
 
 export function CoursePerformance({ filter }: { filter: AnalyticsFilter }) {
   const { user } = useAuth();

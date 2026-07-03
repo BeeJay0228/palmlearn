@@ -5,8 +5,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { getProgrammes, getProgrammeLearnerIds, getProgrammeProgress, seedProgrammes } from "@/lib/programmes";
 import { getAssignmentsForProgramme } from "@/lib/learner-assignments";
 import { getCourses } from "@/lib/courses";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Progress } from "@/components/ui/progress";
@@ -15,7 +13,7 @@ import { BookMarked, BookOpen, Clock, Users, GraduationCap, ArrowRight } from "l
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import type { Programme, ProgrammeStatus } from "@/types";
+import type { Programme } from "@/types";
 
 function ProgrammeCard({ programme, progress, isHighlighted }: {
   programme: Programme;
@@ -127,9 +125,12 @@ export default function LearnerProgrammesPage() {
   useEffect(() => { seedProgrammes(); }, []);
 
   useEffect(() => {
-    if (filterParam === "training") setTab("active");
-    if (programmeIdParam) setProgrammeId(programmeIdParam);
-  }, [filterParam, programmeIdParam]);
+    if (filterParam === "training") setTab("active"); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [filterParam]);
+
+  useEffect(() => {
+    if (programmeIdParam) setProgrammeId(programmeIdParam); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [programmeIdParam]);
 
   const items = useMemo(() => {
     if (!user) return [];

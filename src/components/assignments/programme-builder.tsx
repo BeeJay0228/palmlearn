@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { getCourses } from "@/lib/courses";
 import { getAssignments } from "@/lib/assignments";
 import { TargetAudienceBuilder } from "./target-audience-builder";
-import { Check, X, BookOpen } from "lucide-react";
+import { Check, X } from "lucide-react";
 import type { Programme, TargetAudience } from "@/types";
 
 interface ProgrammeBuilderProps {

@@ -74,26 +74,23 @@ const TYPE_LABELS: Record<NotificationType, string> = {
 export function NotificationsPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [refreshKey, setRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
+  const [_refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => { seedNotifications(); }, []);
 
-  useEffect(() => {
-    if (user) {
-      runReminderEngine(user.id, user.role);
-      setRefreshKey((k) => k + 1);
-    }
-  }, [user]);
+  if (user) {
+    runReminderEngine(user.id, user.role);
+  }
 
   const notifications = useMemo(() => {
     if (!user) return [];
     return getNotifications(user.id);
-  }, [user, refreshKey]);
+  }, [user]);
 
   const filtered = useMemo(() => {
     let result = notifications;
@@ -114,7 +111,7 @@ export function NotificationsPage() {
     }
 
     if (dateFilter) {
-      const now = Date.now();
+      const now = new Date().getTime();
       result = result.filter((n) => {
         const d = new Date(n.createdAt).getTime();
         switch (dateFilter) {
@@ -132,7 +129,7 @@ export function NotificationsPage() {
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
 
   const timeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
+    const diff = new Date().getTime() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return "Just now";
     if (mins < 60) return `${mins}m ago`;

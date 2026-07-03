@@ -107,7 +107,6 @@ export interface ReportHistoryItem {
   format: string;
 }
 
-const FAVORITES_KEY = "palmlearn-report-favorites";
 const HISTORY_KEY = "palmlearn-report-history";
 const SAVED_KEY = "palmlearn-saved-reports";
 

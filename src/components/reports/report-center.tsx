@@ -23,20 +23,14 @@ import {
   DEFAULT_FILTER,
   type ReportType,
   type ReportFilter,
-  type PlatformSummary,
-  type TrainingProgrammeRow,
-  type LearnerReportRow,
-  type TrainerReportRow,
-  type CourseReportRow,
-  type AssignmentReportRow,
   type SavedReport,
 } from "@/lib/reports";
 import { cn } from "@/lib/utils";
 import {
-  ChevronLeft, ChevronRight, Search, Download, Printer,
+  ChevronLeft, ChevronRight, Search, Download,
   FileText, BookOpen, Users, GraduationCap, BarChart3,
   CheckCircle, AlertTriangle, Star, Trash2, Save,
-  History, Bookmark, X,
+  History, Bookmark, X, Printer,
 } from "lucide-react";
 
 type ColumnDef<T> = { key: string; label: string; render: (row: T) => React.ReactNode; sortable?: boolean };
@@ -112,14 +106,14 @@ export function ReportCenter({ isSuperAdmin }: { isSuperAdmin: boolean }) {
   const courseData = useMemo(() => reportType === "course" ? getCourseReportData(filter, userId) : [], [reportType, filter, userId]);
   const assignmentData = useMemo(() => reportType === "assignment" ? getAssignmentReportData(filter, userId) : [], [reportType, filter, userId]);
 
-  const allData: Record<ReportType, Record<string, unknown>[]> = {
+  const allData = useMemo<Record<ReportType, Record<string, unknown>[]>>(() => ({
     platform: platformData ? [platformData as unknown as Record<string, unknown>] : [],
     programme: programmeData as unknown as Record<string, unknown>[],
     learner: learnerData as unknown as Record<string, unknown>[],
     trainer: trainerData as unknown as Record<string, unknown>[],
     course: courseData as unknown as Record<string, unknown>[],
     assignment: assignmentData as unknown as Record<string, unknown>[],
-  };
+  }), [platformData, programmeData, learnerData, trainerData, courseData, assignmentData]);
 
   const historyItems = useMemo(() => getReportHistory(), []);
 

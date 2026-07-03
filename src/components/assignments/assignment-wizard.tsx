@@ -81,6 +81,8 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
   // Reset when opening
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStep("name-type");
       setStep("name-type");
       setErrors({});
       setSaving(false);
@@ -95,6 +97,8 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
       setAudience(editAssignment?.targetAudience || getDefaultAudience());
       setSchedule(editAssignment?.schedule || getDefaultSchedule());
       setNotifications(editAssignment?.notifications || getDefaultNotifications());
+    } else {
+      setErrors({});
     }
   }, [open, editAssignment]);
 
@@ -167,7 +171,6 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
     if (status === "active" && !validateAll()) {
       // Navigate to first errored step
       const errStep = STEPS.find((s) => {
-        const test: Record<string, string> = {};
         if (s.key === "name-type" && !name.trim()) return true;
         if (s.key === "content" && courseIds.length === 0) return true;
         if (s.key === "audience") {

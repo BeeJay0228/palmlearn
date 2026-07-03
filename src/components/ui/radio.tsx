@@ -21,7 +21,7 @@ interface RadioProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "
 }
 
 const Radio = forwardRef<HTMLInputElement, RadioProps>(
-  ({ className, label, id, ...props }, ref) => {
+  ({ label, id, ...props }, ref) => {
     const radioId = id || label?.toLowerCase().replace(/\s+/g, "-");
     return (
       <label htmlFor={radioId} className="flex items-center gap-3 cursor-pointer group">

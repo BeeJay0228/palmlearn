@@ -61,7 +61,7 @@ export function DashboardStats({ stats, columns = 4, className }: DashboardStats
 
   return (
     <MotionDiv variant="fade-in-up" delay={0.1} className={cn("grid grid-cols-1 gap-4", gridCols[columns], className)}>
-      {stats.map((stat, idx) => {
+      {stats.map((stat) => {
         const theme = colorMap[stat.color || "primary"] || colorMap.primary;
         return (
           <div

@@ -8,7 +8,7 @@ interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 
 }
 
 const Switch = forwardRef<HTMLInputElement, SwitchProps>(
-  ({ className, label, id, ...props }, ref) => {
+  ({ label, id, ...props }, ref) => {
     const switchId = id || label?.toLowerCase().replace(/\s+/g, "-");
     return (
       <label htmlFor={switchId} className="flex items-center gap-3 cursor-pointer group">

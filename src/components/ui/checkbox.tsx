@@ -9,7 +9,7 @@ interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>
 }
 
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ className, label, id, checked, ...props }, ref) => {
+  ({ label, id, checked, ...props }, ref) => {
     const checkboxId = id || label?.toLowerCase().replace(/\s+/g, "-");
     return (
       <label htmlFor={checkboxId} className="flex items-center gap-3 cursor-pointer group">

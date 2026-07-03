@@ -17,15 +17,12 @@ import {
   getLearnerEngagementMetrics,
   getLearnerNotificationHistory,
   type LearnerProgramme,
-  type CourseHistoryItem,
-  type AssignmentHistoryItem,
-  type ActivityTimelineEvent,
 } from "@/lib/learner-analytics";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft, Users, BookOpen, CheckCircle, FileText, Award,
-  TrendingUp, Clock, CalendarDays, UserCheck, UserX, GraduationCap,
-  AlertTriangle, PlayCircle, MessageSquare, Bell, Search,
+  TrendingUp, Clock, CalendarDays, GraduationCap,
+  AlertTriangle, PlayCircle, Bell,
   BarChart3, Mail,
 } from "lucide-react";
 

@@ -5,10 +5,7 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { getLearnerEngagement, type AnalyticsFilter } from "@/lib/analytics";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import {
-  Users, Zap, CalendarDays, Clock, PlayCircle, Award,
-  TrendingUp, Activity,
-} from "lucide-react";
+import { Activity } from "lucide-react";
 
 function DonutChart({ value, max, size = 80, color = "text-primary-600", strokeColor = "stroke-primary-500" }: { value: number; max: number; size?: number; color?: string; strokeColor?: string }) {
   const pct = max > 0 ? Math.round((value / max) * 100) : 0;
@@ -27,13 +24,16 @@ function DonutChart({ value, max, size = 80, color = "text-primary-600", strokeC
   );
 }
 
+const WBC_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
 function WeeklyBarChart() {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const heights = useMemo(() => days.map(() => Math.floor(Math.random() * 60) + 20), []);
+  const heights = useMemo(() =>
+    WBC_DAYS.map((_, i) => Math.floor((i * 13 + 20) % 60) + 20),
+  []);
 
   return (
     <div className="flex items-end justify-between gap-1.5 h-24">
-      {days.map((day, i) => (
+      {WBC_DAYS.map((day, i) => (
         <div key={day} className="flex-1 flex flex-col items-center gap-1">
           <div className="w-full rounded-t-md bg-primary-500/60 dark:bg-primary-400/60 transition-all duration-1000" style={{ height: `${heights[i]}%` }} />
           <span className="text-[10px] text-content-tertiary">{day}</span>

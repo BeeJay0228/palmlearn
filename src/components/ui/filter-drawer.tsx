@@ -9,7 +9,6 @@ import { Separator } from "./separator";
 import { Input } from "./input";
 import { Select } from "./select";
 import {
-  Filter,
   X,
   RotateCcw,
   Save,
@@ -28,15 +27,15 @@ interface FilterOption {
 interface SavedFilter {
   id: string;
   name: string;
-  filters: Record<string, any>;
+  filters: Record<string, string | undefined>;
 }
 
 interface FilterDrawerProps {
   open: boolean;
   onClose: () => void;
   filters: FilterOption[];
-  activeFilters: Record<string, any>;
-  onFilterChange: (key: string, value: any) => void;
+  activeFilters: Record<string, string | undefined>;
+  onFilterChange: (key: string, value: string | undefined) => void;
   onReset: () => void;
   onSave?: (name: string) => void;
   savedFilters?: SavedFilter[];

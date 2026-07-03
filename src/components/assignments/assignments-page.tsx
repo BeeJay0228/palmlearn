@@ -20,7 +20,7 @@ import {
   ASSIGNMENT_TYPE_LABELS, ASSIGNMENT_TYPE_COLORS,
   ASSIGNMENT_PRIORITY_LABELS, ASSIGNMENT_PRIORITY_COLORS,
   ASSIGNMENT_STATUS_LABELS, ASSIGNMENT_STATUS_COLORS,
-  type Assignment, type AssignmentType, type AssignmentPriority, type AssignmentStatus, type TargetAudience,
+  type Assignment,
 } from "@/types";
 import {
   Plus, Search, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight,
@@ -56,7 +56,7 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
   const [contextMenu, setContextMenu] = useState<string | null>(null);
   const [bulkAction, setBulkAction] = useState<string>("");
   const [bulkConfirmAction, setBulkConfirmAction] = useState<string>("");
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [_refreshKey, setRefreshKey] = useState(0);
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -129,7 +129,7 @@ export function AssignmentsPage({ role }: AssignmentsPageProps) {
     const totalCount = result.length;
     const start = (page - 1) * pageSize;
     return { items: result.slice(start, start + pageSize), total: totalCount };
-  }, [search, statusFilter, typeFilter, priorityFilter, assignedByFilter, page, pageSize, sortKey, sortDir, refreshKey, role, user]);
+  }, [search, statusFilter, typeFilter, priorityFilter, assignedByFilter, page, pageSize, sortKey, sortDir, role, user]);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 

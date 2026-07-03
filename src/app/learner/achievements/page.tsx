@@ -4,9 +4,9 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/ui/empty-state";
+
 import {
-  Trophy, Star, Zap, Target, Award, Flame, BookOpen, CheckCircle,
+  Star, Zap, Award, Flame, BookOpen, CheckCircle,
   TrendingUp, Crown,
 } from "lucide-react";
 

@@ -64,7 +64,7 @@ export function ProgrammeDetail({ programmeId }: ProgrammeDetailProps) {
   const myRecords = learnerRecords.filter((lr) => lr.learnerId === currentUser.id);
 
   const myProgress = getProgrammeProgress(currentUser.id, currentProgramme);
-  const isAssigned = getProgrammeLearnerIds(currentProgramme).includes(currentUser.id);
+  getProgrammeLearnerIds(currentProgramme).includes(currentUser.id);
 
   const assignedLearners = isAdminOrTrainer
     ? allUsers.filter((u) =>

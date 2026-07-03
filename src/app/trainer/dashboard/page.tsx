@@ -7,16 +7,14 @@ import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { DashboardActivity } from "@/components/dashboard/dashboard-activity";
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
 import { DashboardMetricsGrid } from "@/components/dashboard/dashboard-metrics-grid";
-import { DashboardProgress } from "@/components/dashboard/dashboard-progress";
 import { NotificationsWidget } from "@/components/dashboard/notifications-widget";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { AssignmentSummaryCards, PendingLearnersWidget } from "@/components/assignments/assignment-analytics";
+import { AssignmentSummaryCards } from "@/components/assignments/assignment-analytics";
 import { TrainerEventDashboardCards } from "@/components/events/event-dashboard-cards";
 import { cn } from "@/lib/utils";
 import {
   Users, BookOpen, CalendarDays, TrendingUp, ClipboardList, Award, Clock,
-  BarChart3, GraduationCap, Star, CheckCircle, PlayCircle, Target, Sparkles,
-  ArrowUpRight,
+  BarChart3, Star, CheckCircle, PlayCircle, Target,
 } from "lucide-react";
 
 const recentActivity = [
@@ -44,7 +42,6 @@ export default function TrainerDashboard() {
   return (
     <div className="flex flex-col gap-6">
       <DashboardWelcome
-        title="Your Classroom Awaits"
         subtitle="Track learner progress, manage assignments, and inspire your classroom. You have pending reviews that need your attention."
         action={{ label: "My Learners", href: "/trainer/my-learners" }}
         metrics={[

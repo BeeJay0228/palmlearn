@@ -5,16 +5,7 @@ import { Button } from "./button";
 import { Separator } from "./separator";
 import {
   Plus,
-  Pencil,
-  Trash2,
-  Copy,
-  Archive,
   CheckCircle2,
-  XCircle,
-  Download,
-  Upload,
-  Eye,
-  Settings2,
   MoreHorizontal,
 } from "lucide-react";
 import {

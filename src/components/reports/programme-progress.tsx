@@ -10,7 +10,7 @@ import { getAllUsers } from "@/lib/auth";
 import {
   ArrowLeft, Users, BookOpen, CheckCircle, Clock, Search,
   ChevronLeft, ChevronRight, FileSpreadsheet, FileText, FileDown,
-  GraduationCap, PlayCircle, ListChecks,
+  GraduationCap, PlayCircle,
   ChevronDown, ChevronUp,
 } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -38,15 +38,6 @@ export function ProgrammeProgress({ programmeId, isSuperAdmin }: ProgrammeProgre
   const allCourses = useMemo(() => getCourses(), []);
   const allAssignments = useMemo(() => getAssignments(), []);
   const allUsers = useMemo(() => getAllUsers(), []);
-
-  const programmeCourses = useMemo(
-    () => allCourses.filter((c) => programme?.courseIds.includes(c.id)),
-    [allCourses, programme]
-  );
-  const programmeAssignments = useMemo(
-    () => allAssignments.filter((a) => programme?.assignmentIds.includes(a.id)),
-    [allAssignments, programme]
-  );
 
   const learnerIds = useMemo(
     () => (programme ? getProgrammeLearnerIds(programme) : []),
@@ -92,23 +83,6 @@ export function ProgrammeProgress({ programmeId, isSuperAdmin }: ProgrammeProgre
       };
     }).filter((d): d is NonNullable<typeof d> => d !== null);
   }, [programme, learnerIds, allUsers]);
-
-  const timeline = useMemo(() => {
-    if (!programme) return [];
-    const events: { learnerId: string; date: string; label: string; icon: React.ComponentType<{ className?: string }>; color: string }[] = [];
-    for (const ld of learnerData) {
-      const assigned = ld.records[0]?.assignedDate;
-      if (assigned) events.push({ learnerId: ld.learner.id, date: assigned, label: "Programme Assigned", icon: GraduationCap, color: "text-blue-500" });
-      for (const r of ld.records) {
-        if (r.firstOpened) events.push({ learnerId: ld.learner.id, date: r.firstOpened, label: `Started: ${allCourses.find((c) => c.id === r.courseId)?.title || "Course"}`, icon: PlayCircle, color: "text-amber-500" });
-        if (r.completedDate && r.courseId) events.push({ learnerId: ld.learner.id, date: r.completedDate, label: `Completed: ${allCourses.find((c) => c.id === r.courseId)?.title || "Course"}`, icon: CheckCircle, color: "text-emerald-500" });
-        if (r.completedDate && r.assignmentId) events.push({ learnerId: ld.learner.id, date: r.completedDate, label: `Submitted: ${allAssignments.find((a) => a.id === r.assignmentId)?.name || "Assignment"}`, icon: ListChecks, color: "text-purple-500" });
-      }
-      if (ld.completionDate) events.push({ learnerId: ld.learner.id, date: ld.completionDate, label: "Programme Completed", icon: CheckCircle, color: "text-emerald-600" });
-    }
-    events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    return events;
-  }, [programme, learnerData, allCourses, allAssignments]);
 
   const filteredData = useMemo(() => {
     let result = learnerData;

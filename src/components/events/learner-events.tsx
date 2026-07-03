@@ -72,7 +72,10 @@ function EventCard({ event, onEventClick, onJoin, status }: EventCardProps) {
         "h-24 relative flex items-center justify-center",
         event.banner ? "" : "bg-gradient-to-br from-primary-600/20 to-primary-800/20",
       )}>
-        {event.banner && <img src={event.banner} alt={event.title} className="w-full h-full object-cover" />}
+        {event.banner && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={event.banner} alt={event.title} className="w-full h-full object-cover" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" />
         <div className="absolute top-2 right-2 flex gap-1">
           <Badge variant="glass" className={EVENT_TYPE_COLORS[event.eventType] + " text-[10px]"}>

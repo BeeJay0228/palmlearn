@@ -4,10 +4,9 @@ import { useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { DashboardWelcome } from "@/components/dashboard/dashboard-welcome";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
-import { DashboardActivity } from "@/components/dashboard/dashboard-activity";
+
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
 import { DashboardMetricsGrid } from "@/components/dashboard/dashboard-metrics-grid";
-import { DashboardProgress } from "@/components/dashboard/dashboard-progress";
 import { NotificationsWidget } from "@/components/dashboard/notifications-widget";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { AssignmentSummaryCards, RegionalPerformanceWidget, RecentAssignmentsWidget } from "@/components/assignments/assignment-analytics";
@@ -20,8 +19,7 @@ import { getProgrammes } from "@/lib/programmes";
 import { getEvents } from "@/lib/events";
 import {
   Users, BookOpen, CalendarDays, TrendingUp, UserPlus, BarChart3,
-  GraduationCap, Award, Clock, Activity, ClipboardList, Target, Building2,
-  Globe, PieChart, ArrowUpRight,
+  GraduationCap, Award, Clock, ClipboardList, Target, PieChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +61,6 @@ export default function AdminDashboard() {
   return (
     <div className="flex flex-col gap-6">
       <DashboardWelcome
-        title="Executive Command Center"
         subtitle="Monitor your organization's learning ecosystem at a glance. Track adoption, completion rates, and regional performance."
         action={{ label: "View Reports", href: "/admin/reports" }}
         metrics={[

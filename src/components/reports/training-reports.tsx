@@ -2,28 +2,23 @@
 
 import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getProgrammes, getProgrammeProgress, getProgrammeLearnerIds } from "@/lib/programmes";
 import { getAssignmentsForLearnerAll, getAssignmentsForProgramme } from "@/lib/learner-assignments";
-import { getAssignments } from "@/lib/assignments";
 import { getAllUsers } from "@/lib/auth";
-import { getCourses } from "@/lib/courses";
 import {
-  BarChart3, BookOpen, CheckCircle, Clock, Users, Download,
+  BarChart3, BookOpen, CheckCircle, Clock, Users,
   FileSpreadsheet, FileText, FileDown, Search, Filter,
   GraduationCap, TrendingUp, AlertTriangle, ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Programme } from "@/types";
 import Link from "next/link";
 
 interface TrainingReportsProps {
   isSuperAdmin?: boolean;
 }
-
-const STATUS_OPTIONS = ["all", "completed", "in_progress", "not_started", "overdue"] as const;
 
 export function TrainingReports({ isSuperAdmin }: TrainingReportsProps) {
   const { user } = useAuth();
@@ -34,12 +29,7 @@ export function TrainingReports({ isSuperAdmin }: TrainingReportsProps) {
 
   const allUsers = useMemo(() => getAllUsers(), []);
   const allProgrammes = useMemo(() => getProgrammes(), []);
-  const allCourses = useMemo(() => getCourses(), []);
-  const allAssignments = useMemo(() => getAssignments(), []);
-  const allRecords = useMemo(() => {
-    if (typeof window === "undefined") return [];
-    return getAssignmentsForLearnerAll("");
-  }, []);
+
 
   const learners = useMemo(() => allUsers.filter((u) => u.role === "learner"), [allUsers]);
 
@@ -101,7 +91,6 @@ export function TrainingReports({ isSuperAdmin }: TrainingReportsProps) {
       const anyCourseRecord = records.filter((r) => r.courseId);
       const completed = anyCourseRecord.length > 0 && anyCourseRecord.every((r) => r.status === "completed");
       const inProgress = anyCourseRecord.some((r) => r.status === "in_progress");
-      const notStarted = anyCourseRecord.length === 0 || anyCourseRecord.every((r) => r.status === "not_started");
       const overdue = records.some((r) => r.status === "overdue");
       const lpData = learnerProgrammeData.filter((d) => d.learnerId === l.id);
       const lpCompleted = lpData.filter((d) => d.completed).length;
@@ -212,7 +201,7 @@ export function TrainingReports({ isSuperAdmin }: TrainingReportsProps) {
     };
   }, [isSuperAdmin, scopedLearners, activeLearners, completedLearners, programmeCompletionRate, overdueLearners]);
 
-  const visibleMetrics = isSuperAdmin ? adminMetrics : trainerMetrics;
+
   if (!user) return null;
 
   return (

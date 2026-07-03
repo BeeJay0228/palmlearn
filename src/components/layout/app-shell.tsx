@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "./sidebar";
 import { TopNav } from "./top-nav";
@@ -21,14 +21,6 @@ export function AppShell({
   className,
 }: AppShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 1024);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
 
   const toggleSidebar = () => setSidebarCollapsed((prev) => !prev);
 

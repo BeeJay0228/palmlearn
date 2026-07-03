@@ -1,4 +1,4 @@
-import type { Programme, ProgrammeStatus, TargetAudience } from "@/types";
+import type { Programme, ProgrammeStatus } from "@/types";
 import { getCourseIdByTitle, ensureCoursesSeeded, getCourses } from "./courses";
 import { getAssignments } from "./assignments";
 import { getAssignmentsForProgramme, createLearnerAssignment, getLearnerAssignments } from "./learner-assignments";

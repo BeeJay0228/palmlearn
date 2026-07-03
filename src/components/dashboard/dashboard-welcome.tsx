@@ -9,18 +9,12 @@ import { MotionDiv } from "@/components/shared/motion-div";
 import {
   Sparkles,
   ArrowRight,
-  GraduationCap,
-  TrendingUp,
   Activity,
   PlayCircle,
-  Users,
-  Award,
-  BookOpen,
 } from "lucide-react";
 import { ROLE_LABELS } from "@/constants";
 
 interface DashboardWelcomeProps {
-  title: string;
   subtitle: string;
   action?: {
     label: string;
@@ -35,7 +29,6 @@ interface DashboardWelcomeProps {
 }
 
 export function DashboardWelcome({
-  title,
   subtitle,
   action,
   metrics,
@@ -48,7 +41,8 @@ export function DashboardWelcome({
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
     if (hour < 17) return "Good afternoon";
-    return "Good evening";
+    if (hour < 21) return "Good evening";
+    return "Good night";
   }, []);
 
   const motivationalMessage = useMemo(() => {
@@ -108,7 +102,7 @@ export function DashboardWelcome({
 
           {metrics && metrics.length > 0 && (
             <div className="flex items-center gap-6">
-              {metrics.map((m, idx) => (
+              {metrics.map((m) => (
                 <div key={m.label} className="text-center">
                   <p className="text-2xl lg:text-3xl font-bold text-white">{m.value}</p>
                   <p className="text-xs text-primary-200/70 mt-1">{m.label}</p>

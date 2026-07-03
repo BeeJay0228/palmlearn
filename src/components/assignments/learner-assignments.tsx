@@ -7,10 +7,7 @@ import { getAssignments } from "@/lib/assignments";
 import { getCourses } from "@/lib/courses";
 import { getProgrammes, getProgrammeProgress } from "@/lib/programmes";
 import { useAuth } from "@/hooks/use-auth";
-import type { LearnerAssignment } from "@/types";
-import type { Course } from "@/types";
-import type { Assignment } from "@/types";
-import type { Programme } from "@/types";
+import type { LearnerAssignment, Course, Assignment } from "@/types";
 import { PlayCircle, Clock, AlertCircle, CheckCircle, BookOpen, ChevronRight, GraduationCap } from "lucide-react";
 import Link from "next/link";
 

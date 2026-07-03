@@ -11,15 +11,13 @@ import { getAllUsers } from "@/lib/auth";
 import { Card, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Progress } from "@/components/ui/progress";
 import { StatusIndicator } from "@/components/ui/status-indicator";
-import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft, PlayCircle, Loader2, Clock, CalendarDays, User, BookOpen,
-  AlertTriangle, CheckCircle, ChevronRight, BarChart3, Award, Target,
+  CheckCircle, ChevronRight, BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";

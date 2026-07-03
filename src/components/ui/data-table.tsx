@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import {
   ChevronUp, ChevronDown, ChevronsUpDown, Search, Check, X,
-  SlidersHorizontal, Eye, EyeOff,
+  SlidersHorizontal,
 } from "lucide-react";
 import { Pagination } from "./pagination";
 import { SkeletonTable } from "./skeleton";

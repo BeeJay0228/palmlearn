@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { getAssignmentPerformance, type AnalyticsFilter } from "@/lib/analytics";
 import { useAuth } from "@/hooks/use-auth";
-import { cn } from "@/lib/utils";
 import { ClipboardList, CheckCircle, Clock, AlertCircle } from "lucide-react";
 
 export function AssignmentPerformance({ filter }: { filter: AnalyticsFilter }) {

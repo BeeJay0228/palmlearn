@@ -122,8 +122,6 @@ export function getAdminKpiData(filter?: AnalyticsFilter): AdminKpiData {
   const programmes = getProgrammes();
   const learnerAssignments = getLearnerAssignments();
   const assignments = getAssignments();
-  const courses = getCourses();
-
   let filteredLA = learnerAssignments;
   if (filter?.programmeId) {
     const programme = programmes.find((p) => p.id === filter.programmeId);
@@ -135,7 +133,6 @@ export function getAdminKpiData(filter?: AnalyticsFilter): AdminKpiData {
   }
 
   const completedLAs = filteredLA.filter((la) => la.status === "completed");
-  const inProgressLAs = filteredLA.filter((la) => la.status === "in_progress" || la.status === "not_started");
   const totalLA = filteredLA.length;
 
   const totalCourseProgress = filteredLA.reduce((sum, la) => sum + (la.progress || 0), 0);
@@ -162,7 +159,6 @@ export function getAdminKpiData(filter?: AnalyticsFilter): AdminKpiData {
 export function getTrainerKpiData(user: User, filter?: AnalyticsFilter): TrainerKpiData {
   const learnerIds = getLearnerIds(user);
   const programmes = getProgrammes();
-  const allUsers = getAllUsers();
   const learnerAssignments = getLearnerAssignments().filter((la) => learnerIds.includes(la.learnerId));
 
   let filteredLA = learnerAssignments;
@@ -253,7 +249,6 @@ export function getCoursePerformance(user?: User | null, filter?: AnalyticsFilte
   averageCompletionRate: number;
 } {
   const courses = getCourses();
-  const allUsers = getAllUsers();
   let learnerAssignments = getLearnerAssignments();
 
   if (user && user.role === "trainer") {
@@ -299,8 +294,6 @@ export function getCoursePerformance(user?: User | null, filter?: AnalyticsFilte
 }
 
 export function getAssignmentPerformance(user?: User | null, filter?: AnalyticsFilter): AssignmentPerformance {
-  const assignments = getAssignments();
-  const allUsers = getAllUsers();
   let learnerAssignments = getLearnerAssignments();
 
   if (user && user.role === "trainer") {
@@ -331,7 +324,6 @@ export function getAssignmentPerformance(user?: User | null, filter?: AnalyticsF
 }
 
 export function getLearnerEngagement(user?: User | null, filter?: AnalyticsFilter): LearnerEngagement {
-  const allUsers = getAllUsers();
   let learnerAssignments = getLearnerAssignments();
 
   if (user && user.role === "trainer") {

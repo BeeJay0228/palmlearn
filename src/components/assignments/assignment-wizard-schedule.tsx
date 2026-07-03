@@ -1,6 +1,5 @@
 "use client";
 
-import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { AssignmentSchedule } from "@/types";
 

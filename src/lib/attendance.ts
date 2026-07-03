@@ -1,6 +1,6 @@
 "use client";
 
-import type { EventAttendance, AttendanceStatus } from "@/types";
+import type { EventAttendance } from "@/types";
 
 const STORAGE_KEY = "palmlearn-attendance";
 

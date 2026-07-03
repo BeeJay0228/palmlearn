@@ -1,11 +1,10 @@
-import type { Programme, Assignment, LearnerAssignment } from "@/types";
+import type { Programme } from "@/types";
 import { getProgrammes } from "./programmes";
 import { getAssignment } from "./assignments";
 import { getLearnerAssignments, getAssignmentsForLearnerAll } from "./learner-assignments";
 import { getEventsForLearner } from "./events";
 import { getAllUsers } from "./auth";
 import {
-  getNotifications,
   notifyProgrammeDueSoon,
   notifyProgrammeOverdue,
   notifyAssignmentDueSoon,
@@ -56,25 +55,6 @@ function getProgrammesForLearner(learnerId: string): Programme[] {
       .map((la) => la.campaignId)
   );
   return programmes.filter((p) => learnerCampaignIds.has(p.id));
-}
-
-function getTrainerIds(): string[] {
-  return getAllUsers().filter((u) => u.role === "trainer").map((u) => u.id);
-}
-
-function getAdminIds(): string[] {
-  return getAllUsers().filter((u) => u.role === "admin").map((u) => u.id);
-}
-
-function getLearnerName(learnerId: string): string {
-  const user = getAllUsers().find((u) => u.id === learnerId);
-  return user?.name || learnerId;
-}
-
-function hasNotificationType(userId: string, type: string, entityId: string): boolean {
-  return getNotifications(userId).some(
-    (n) => n.type === type && n.message.includes(entityId)
-  );
 }
 
 export function runLearnerProgrammeReminders(learnerId: string): void {

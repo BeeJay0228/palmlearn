@@ -37,7 +37,7 @@ export function TopNav({ className, onMenuToggle, title }: TopNavProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifRefreshKey, setNotifRefreshKey] = useState(0);
+  const [_notifRefreshKey, setNotifRefreshKey] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -58,15 +58,15 @@ export function TopNav({ className, onMenuToggle, title }: TopNavProps) {
   const notifications = useMemo(() => {
     if (!user) return [];
     return getNotifications(user.id).slice(0, 5);
-  }, [user, notifRefreshKey]);
+  }, [user]);
 
   const unreadCount = useMemo(() => {
     if (!user) return 0;
     return getUnreadCount(user.id);
-  }, [user, notifRefreshKey]);
+  }, [user]);
 
   const timeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
+    const diff = new Date().getTime() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return "Just now";
     if (mins < 60) return `${mins}m ago`;

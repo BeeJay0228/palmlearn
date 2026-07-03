@@ -34,9 +34,9 @@ function formatDate(dateStr: string): string {
 }
 
 export function CoursesPage() {
-  const [refreshKey, setRefreshKey] = useState(0);
-  const allCourses = useMemo(() => getCourses(), [refreshKey]);
-  const categories = useMemo(() => getCategories(), [refreshKey]);
+  const [_refreshKey, setRefreshKey] = useState(0);
+  const allCourses = useMemo(() => getCourses(), []);
+  const categories = useMemo(() => getCategories(), []);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<CourseStatus | "all">("all");
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | "all">("all");

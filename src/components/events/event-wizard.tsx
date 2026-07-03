@@ -13,7 +13,7 @@ import { EventWizardNotifications } from "./event-wizard-notifications";
 import {
   EVENT_TYPE_LABELS, EVENT_TYPE_COLORS,
   RECURRENCE_LABELS, AUDIENCE_TYPE_LABELS,
-  type TrainingEvent, type EventType, type EventStatus, type RecurrencePattern,
+  type TrainingEvent, type EventType, type EventStatus,
   type TargetAudience, type EventSchedule, type EventLocation,
   type EventNotifications, type EventResource, type PostEvent,
 } from "@/types";

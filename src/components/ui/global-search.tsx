@@ -115,6 +115,7 @@ export function GlobalSearch({
           aria-label="Search"
           role="combobox"
           aria-expanded={showDropdown}
+          aria-controls="search-results"
           aria-autocomplete="list"
         />
         {value && (

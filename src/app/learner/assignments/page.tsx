@@ -6,7 +6,6 @@ import { getAssignmentsForLearner, checkAndUpdateOverdueStatus } from "@/lib/lea
 import { getAssignments } from "@/lib/assignments";
 import { getCourses } from "@/lib/courses";
 import type { Assignment, Course, LearnerAssignment } from "@/types";
-import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Progress } from "@/components/ui/progress";
@@ -43,9 +42,12 @@ export default function LearnerAssignmentsPage() {
   const assignmentIdParam = searchParams.get("assignmentId");
 
   useEffect(() => {
-    if (filterParam === "assignments") setActiveTab("All");
-    if (assignmentIdParam) setAssignmentId(assignmentIdParam);
-  }, [filterParam, assignmentIdParam]);
+    if (filterParam === "assignments") setActiveTab("All"); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [filterParam]);
+
+  useEffect(() => {
+    if (assignmentIdParam) setAssignmentId(assignmentIdParam); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [assignmentIdParam]);
 
   const items = useMemo(() => {
     if (!user) return [];
@@ -57,7 +59,7 @@ export default function LearnerAssignmentsPage() {
       const asgn = allAssignments.find((a) => a.id === r.assignmentId);
       const course = courses.find((c) => c.id === r.courseId);
       const daysLeft = asgn?.schedule?.dueDate
-        ? Math.ceil((new Date(asgn.schedule.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        ? Math.ceil((new Date(asgn.schedule.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
         : null;
       return { ...r, assignment: asgn, course, daysLeft };
     });

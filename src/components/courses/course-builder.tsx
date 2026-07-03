@@ -11,7 +11,7 @@ import { StepStructure } from "./step-structure";
 import { StepResources } from "./step-resources";
 import { CoursePreview } from "./course-preview";
 import { StepPublish } from "./step-publish";
-import { X, ArrowLeft, ArrowRight, Save, Eye, CheckCircle2, AlertCircle } from "lucide-react";
+import { X, ArrowLeft, ArrowRight, Save, Eye, AlertCircle } from "lucide-react";
 
 interface CourseBuilderProps {
   initialData?: Course;

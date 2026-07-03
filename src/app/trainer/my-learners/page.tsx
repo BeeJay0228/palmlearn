@@ -13,9 +13,9 @@ import { MotionDiv } from "@/components/shared/motion-div";
 import { getTrainerLearners } from "@/lib/learner-analytics";
 import { cn } from "@/lib/utils";
 import {
-  Search, BarChart3, Users, ChevronLeft, ChevronRight,
-  GraduationCap, Award, Clock, TrendingUp, Star, CheckCircle2,
-  Mail, Phone, MapPin, BookOpen, Target, Sparkles,
+  BarChart3, Users, ChevronLeft, ChevronRight,
+  GraduationCap, Award, Clock, CheckCircle2,
+  Mail,
 } from "lucide-react";
 
 export default function TrainerMyLearnersPage() {

@@ -5,7 +5,7 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { getProgrammePerformance, type AnalyticsFilter } from "@/lib/analytics";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { Megaphone, Users, TrendingUp, Award, BarChart3 } from "lucide-react";
+import { Megaphone } from "lucide-react";
 import { PROGRAMME_STATUS_COLORS, PROGRAMME_STATUS_LABELS } from "@/types";
 
 export function ProgrammePerformance({ filter }: { filter: AnalyticsFilter }) {

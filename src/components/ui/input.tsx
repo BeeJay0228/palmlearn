@@ -150,9 +150,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 );
 Input.displayName = "Input";
 
-interface PasswordInputProps extends Omit<InputProps, "type" | "rightIcon" | "leftIcon"> {}
-
-function PasswordInput(props: PasswordInputProps) {
+function PasswordInput(props: Omit<InputProps, "type" | "rightIcon" | "leftIcon">) {
   const [show, setShow] = useState(false);
   return (
     <Input
@@ -173,9 +171,7 @@ function PasswordInput(props: PasswordInputProps) {
   );
 }
 
-interface SearchInputProps extends Omit<InputProps, "type" | "leftIcon" | "rightIcon"> {}
-
-function SearchInput(props: SearchInputProps) {
+function SearchInput(props: Omit<InputProps, "type" | "leftIcon" | "rightIcon">) {
   return (
     <Input
       type="search"

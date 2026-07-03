@@ -25,14 +25,13 @@ export function Celebration({
 
   useEffect(() => {
     if (show) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVisible(true);
       const timer = setTimeout(() => {
         setVisible(false);
         setTimeout(() => onComplete?.(), 300);
       }, duration);
       return () => clearTimeout(timer);
-    } else {
-      setVisible(false);
     }
   }, [show, duration, onComplete]);
 

@@ -1,13 +1,12 @@
 "use client";
 
 import { getAllUsers } from "./auth";
-import { getProgrammes, getProgrammeProgress, getProgrammeLearnerIds } from "./programmes";
-import { getAssignmentsForLearnerAll } from "./learner-assignments";
+import { getProgrammeProgress, getProgrammeLearnerIds } from "./programmes";
 import { getCourses } from "./courses";
 import { getAssignments } from "./assignments";
+import { getAssignmentsForLearnerAll } from "./learner-assignments";
 import { getNotifications } from "./mock-notifications";
 import { getTrainerLearnerIds, getTrainerProgrammes } from "./trainer-analytics-utils";
-import type { User } from "@/types";
 
 export interface TrainerListItem {
   id: string;
@@ -139,8 +138,6 @@ export function getTrainingSummary(trainerId: string): TrainingSummary {
   let totalProgress = 0;
   let learnersWithRecords = 0;
   let completedLearners = 0;
-  let totalAssignments = 0;
-  let completedAssignments = 0;
 
   for (const lid of learnerIds) {
     const allRecords = getAssignmentsForLearnerAll(lid);
@@ -164,9 +161,6 @@ export function getTrainingSummary(trainerId: string): TrainingSummary {
     if (progRecords.length > 0) {
       totalProgress += progRecords.reduce((a, b) => a + b, 0) / progRecords.length;
     }
-    const allAsgn = allRecords.filter((la) => la.assignmentId);
-    totalAssignments += allAsgn.length;
-    completedAssignments += allAsgn.filter((la) => la.status === "completed").length;
   }
 
   return {
@@ -192,8 +186,7 @@ export function getTrainerProgrammePerformance(trainerId: string): ProgrammePerf
     let completed = 0;
     let totalProg = 0;
     let count = 0;
-    let totalAsgnScore = 0;
-    let asgnCount = 0;
+    let asgnSubmitted = 0;
 
     for (const lid of learnerIds) {
       const pLearnerIds = getProgrammeLearnerIds(p);
@@ -208,7 +201,7 @@ export function getTrainerProgrammePerformance(trainerId: string): ProgrammePerf
       totalProg += pr.progress;
       count++;
       const asgnRecords = records.filter((la) => la.assignmentId && la.status === "completed");
-      asgnCount += asgnRecords.length;
+      asgnSubmitted += asgnRecords.length;
     }
 
     return {
@@ -220,7 +213,7 @@ export function getTrainerProgrammePerformance(trainerId: string): ProgrammePerf
       learnersCompleted: completed,
       completionPercent: count > 0 ? Math.round((completed / count) * 100) : 0,
       averageProgress: count > 0 ? Math.round(totalProg / count) : 0,
-      averageAssignmentScore: asgnCount > 0 ? Math.round(totalAsgnScore / asgnCount) : 0,
+      averageAssignmentScore: asgnSubmitted > 0 ? Math.round(asgnSubmitted / count * 100) / 100 : 0,
       status: p.status,
     };
   });

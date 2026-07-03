@@ -18,10 +18,9 @@ import {
 import { getProgramme } from "@/lib/programmes";
 import { cn } from "@/lib/utils";
 import {
-  Users, UserCheck, UserX, BookOpen, CheckCircle, Clock,
+  Users, UserCheck, BookOpen, CheckCircle, Clock,
   GraduationCap, TrendingUp, ArrowLeft, Search, ChevronLeft, ChevronRight,
   ChevronDown, ChevronUp, PlayCircle, Award, AlertTriangle, FileText,
-  BarChart3,
 } from "lucide-react";
 
 const PROGRESS_COLS: { key: keyof LearnerProgressRow; label: string; sortable?: boolean }[] = [
@@ -33,18 +32,6 @@ const PROGRESS_COLS: { key: keyof LearnerProgressRow; label: string; sortable?: 
   { key: "assignmentsCompleted", label: "Assignments" },
   { key: "lastActivity", label: "Last Activity", sortable: true },
 ];
-
-function statValue(overview: ReturnType<typeof getProgrammeOverview>, overviewNull: boolean) {
-  return {
-    assigned: overviewNull ? 0 : overview!.assignedLearners,
-    started: overviewNull ? 0 : overview!.startedLearners,
-    completed: overviewNull ? 0 : overview!.completedLearners,
-    completionRate: overviewNull ? 0 : overview!.completionRate,
-    avgProgress: overviewNull ? 0 : overview!.averageProgress,
-    avgCourseCompletion: overviewNull ? 0 : overview!.averageCourseCompletion,
-    avgTime: overviewNull ? 0 : overview!.averageTimeToComplete,
-  };
-}
 
 function ProgressBar({ value, size = "sm", color }: { value: number; size?: "sm" | "md"; color?: string }) {
   const barColor = color || (value >= 80 ? "bg-emerald-500" : value >= 40 ? "bg-primary-600" : "bg-amber-500");
@@ -112,6 +99,30 @@ export function ProgrammeAnalytics({ programmeId }: { programmeId: string }) {
   const [page, setPage] = useState(1);
   const [expandedLearner, setExpandedLearner] = useState<string | null>(null);
   const perPage = 10;
+  const filtered = useMemo(() => {
+    if (!hasAccess) return [];
+    let data = [...rawLearners];
+    if (search) {
+      const q = search.toLowerCase();
+      data = data.filter((d) => d.name.toLowerCase().includes(q) || d.email.toLowerCase().includes(q) || d.department.toLowerCase().includes(q));
+    }
+    if (statusFilter !== "all") {
+      data = data.filter((d) => d.status === statusFilter);
+    }
+    if (sortKey) {
+      data.sort((a, b) => {
+        const aVal = a[sortKey];
+        const bVal = b[sortKey];
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
+        if (typeof aVal === "string" && typeof bVal === "string") {
+          return sortDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        }
+        return sortDir === "asc" ? Number(aVal) - Number(bVal) : Number(bVal) - Number(aVal);
+      });
+    }
+    return data;
+  }, [hasAccess, rawLearners, search, statusFilter, sortKey, sortDir]);
 
   if (!programme) {
     return (
@@ -138,30 +149,6 @@ export function ProgrammeAnalytics({ programmeId }: { programmeId: string }) {
       </div>
     );
   }
-
-  const filtered = useMemo(() => {
-    let data = [...rawLearners];
-    if (search) {
-      const q = search.toLowerCase();
-      data = data.filter((d) => d.name.toLowerCase().includes(q) || d.email.toLowerCase().includes(q) || d.department.toLowerCase().includes(q));
-    }
-    if (statusFilter !== "all") {
-      data = data.filter((d) => d.status === statusFilter);
-    }
-    if (sortKey) {
-      data.sort((a, b) => {
-        const aVal = a[sortKey];
-        const bVal = b[sortKey];
-        if (aVal == null) return 1;
-        if (bVal == null) return -1;
-        if (typeof aVal === "string" && typeof bVal === "string") {
-          return sortDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-        }
-        return sortDir === "asc" ? Number(aVal) - Number(bVal) : Number(bVal) - Number(aVal);
-      });
-    }
-    return data;
-  }, [rawLearners, search, statusFilter, sortKey, sortDir]);
 
   const totalPages = Math.ceil(filtered.length / perPage);
   const paged = filtered.slice((page - 1) * perPage, page * perPage);

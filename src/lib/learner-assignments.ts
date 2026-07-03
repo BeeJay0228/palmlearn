@@ -1,4 +1,4 @@
-import type { LearnerAssignment, LearnerAssignmentStatus, Assignment } from "@/types";
+import type { LearnerAssignment, Assignment } from "@/types";
 import { checkAndMarkProgrammeCompletion, getProgramme } from "./programmes";
 import { getAllUsers } from "./auth";
 import {
@@ -7,7 +7,6 @@ import {
   notifyLearnerStartedProgramme,
   notifyLearnerCompletedCourse,
   notifyLearnerSubmittedAssignment,
-  notifyLearnerCompletedProgramme,
 } from "./mock-notifications";
 
 const STORAGE_KEY = "palmlearn-learner-assignments";
@@ -23,12 +22,6 @@ function now(): string {
 function pastDate(days: number): string {
   const d = new Date();
   d.setDate(d.getDate() - days);
-  return d.toISOString();
-}
-
-function futureDate(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
   return d.toISOString();
 }
 
@@ -136,7 +129,7 @@ export function bulkCreateFromAssignment(assignmentId: string, learnerIds: strin
   return created;
 }
 
-export function getLearnerStats(learnerId: string): { total: number; completed: number; inProgress: number; notStarted: number; overdue: number } {
+export function getLearnerStats(learnerId: string) {
   const items = getAssignmentsForLearnerAll(learnerId);
   return {
     total: items.length,

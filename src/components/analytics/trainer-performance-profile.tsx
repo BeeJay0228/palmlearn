@@ -17,8 +17,8 @@ import { getAllUsers } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft, BookOpen, Users, CheckCircle, FileText, Award,
-  TrendingUp, Clock, GraduationCap, BarChart3, PlayCircle,
-  AlertTriangle, CalendarDays, UserCheck, UserX, Edit3, Send,
+  TrendingUp, Clock, GraduationCap, BarChart3,
+  AlertTriangle, UserCheck, Edit3,
   Activity, Bell,
 } from "lucide-react";
 

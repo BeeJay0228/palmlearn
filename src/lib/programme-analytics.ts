@@ -5,8 +5,6 @@ import { getAllUsers } from "./auth";
 import { getCourses } from "./courses";
 import { getAssignments } from "./assignments";
 import { getAssignmentsForProgramme } from "./learner-assignments";
-import { getNotifications } from "./mock-notifications";
-import { getAttendance } from "./attendance";
 import type { User } from "@/types";
 
 export interface ProgrammeOverview {
@@ -101,7 +99,7 @@ export function getProgrammeOverview(programmeId: string): ProgrammeOverview | n
   const learnerAssignments = getAssignmentsForProgramme(programmeId);
   const learnerIds = getProgrammeLearnerIds(programme);
 
-  const learnerSet = new Set(learnerAssignments.map((la) => la.learnerId));
+  new Set(learnerAssignments.map((la) => la.learnerId));
   const startedIds = new Set(learnerAssignments.filter((la) => la.status !== "not_started").map((la) => la.learnerId));
   const completedIds = new Set(learnerAssignments.filter((la) => la.status === "completed").map((la) => la.learnerId));
   const allProgress = learnerAssignments.map((la) => la.progress || 0);

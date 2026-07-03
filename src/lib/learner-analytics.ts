@@ -4,7 +4,7 @@ import { getAllUsers } from "./auth";
 import { getProgrammes, getProgrammeProgress, getProgrammeLearnerIds } from "./programmes";
 import { getCourses } from "./courses";
 import { getAssignments } from "./assignments";
-import { getAssignmentsForLearnerAll, getLearnerStats } from "./learner-assignments";
+import { getAssignmentsForLearnerAll } from "./learner-assignments";
 import { getNotifications } from "./mock-notifications";
 import type { User } from "@/types";
 
@@ -160,9 +160,6 @@ export function getLearnerProfile(learnerId: string): LearnerProfileData | null 
 export function getLearnerLearningSummary(learnerId: string): LearningSummary {
   const programmes = getProgrammes();
   const learnerAssignments = getAssignmentsForLearnerAll(learnerId);
-  const allCourses = getCourses();
-  const allAssignments = getAssignments();
-  const allUsers = getAllUsers();
 
   const assignedProgrammes = programmes.filter((p) => {
     const ids = getProgrammeLearnerIds(p);
@@ -227,8 +224,7 @@ export function getLearnerProgrammes(learnerId: string): LearnerProgramme[] {
       const progress = getProgrammeProgress(learnerId, p);
       const isOverdue = records.some((r) => r.status === "overdue");
       const isCompleted = progress.progress >= 100;
-      const isInProgress = records.some((r) => r.status === "in_progress" || r.status === "completed");
-      const isStarted = records.some((r) => r.status !== "not_started" && r.status !== "locked");
+      const isStarted = records.some((r) => r.status === "in_progress" || r.status === "completed");
 
       let status: LearnerProgramme["status"] = "not_started";
       if (isOverdue) status = "overdue";
@@ -298,8 +294,6 @@ export function getLearnerActivityTimeline(learnerId: string): ActivityTimelineE
   const learnerAssignments = getAssignmentsForLearnerAll(learnerId);
   const allCourses = getCourses();
   const allAssignments = getAssignments();
-  const allUsers = getAllUsers();
-
   const assignedProgrammes = programmes.filter((p) => {
     const ids = getProgrammeLearnerIds(p);
     return ids.includes(learnerId);

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getAllTrainerStats } from "@/lib/trainer-analytics";
 import { cn } from "@/lib/utils";
-import { Search, Users, ChevronLeft, ChevronRight, Eye, BarChart3, GraduationCap, TrendingUp, Clock, BookOpen } from "lucide-react";
+import { Search, Users, ChevronLeft, ChevronRight, Eye, GraduationCap, BookOpen, TrendingUp } from "lucide-react";
 
 export function TrainerAnalyticsList() {
   const router = useRouter();

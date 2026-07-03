@@ -6,8 +6,7 @@ import { getCourses } from "@/lib/courses";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen, Clock, User, GraduationCap, BookMarked, ArrowRight } from "lucide-react";
+import { BookOpen, User, GraduationCap, BookMarked, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -26,7 +25,7 @@ export default function LearnerMyCoursesPage() {
   const highlightRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
-    if (courseIdParam) setCourseId(courseIdParam);
+    if (courseIdParam) setCourseId(courseIdParam); // eslint-disable-line react-hooks/set-state-in-effect
   }, [courseIdParam]);
 
   const courses = useMemo(() => getCourses().filter((c) => c.status === "published"), []);

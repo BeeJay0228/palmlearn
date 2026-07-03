@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useRouter } from "next/navigation";
+
 import { DashboardWelcome } from "@/components/dashboard/dashboard-welcome";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { DashboardActivity } from "@/components/dashboard/dashboard-activity";
@@ -14,13 +14,11 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { LearnerContinueLearning, LearnerMandatoryLearning, LearnerDueSoon, LearnerCompleted } from "@/components/assignments/learner-assignments";
 import { TodaysEvents, UpcomingLiveSessions, MissedEvents, CompletedEvents } from "@/components/events/learner-events";
 import {
-  BookOpen, Clock, Award, TrendingUp, PlayCircle, CheckCircle, Star, Trophy,
-  ChevronRight, Sparkles, BarChart3, GraduationCap, Target, Zap,
+  BookOpen, Clock, Award, TrendingUp, PlayCircle, CheckCircle, Star,
+  BarChart3, GraduationCap, Trophy, Target,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { getAssignmentsForLearner, getAssignmentsForLearnerAll } from "@/lib/learner-assignments";
+import { getAssignmentsForLearnerAll } from "@/lib/learner-assignments";
 import { getProgrammes, getProgrammeProgress } from "@/lib/programmes";
-import { getCourses } from "@/lib/courses";
 
 const recentActivity = [
   { id: "1", icon: PlayCircle, iconBg: "bg-blue-100 dark:bg-blue-950/30", iconColor: "text-blue-600 dark:text-blue-400", title: "Course resumed", description: "Continued Advanced Mathematics - Module 4", time: "30m ago" },
@@ -31,13 +29,10 @@ const recentActivity = [
 
 export default function LearnerDashboard() {
   const { user } = useAuth();
-  const router = useRouter();
 
   const metrics = useMemo(() => {
     if (!user) return null;
     const allRecords = getAssignmentsForLearnerAll(user.id);
-    const standaloneRecords = getAssignmentsForLearner(user.id);
-    const courses = getCourses();
 
     const enrolledCourseIds = new Set(allRecords.map((r) => r.courseId).filter(Boolean));
     const enrolledCourses = enrolledCourseIds.size;
@@ -84,7 +79,6 @@ export default function LearnerDashboard() {
   return (
     <div className="flex flex-col gap-6">
       <DashboardWelcome
-        title="Continue Building Your Knowledge"
         subtitle="Pick up where you left off. Your next breakthrough is just one lesson away."
         action={{ label: "Continue Learning", href: "/learner/continue-learning" }}
         metrics={[

@@ -22,7 +22,7 @@ function Tabs({ defaultValue, value: controlledValue, onValueChange, children, c
   };
 
   return (
-    <div className={className} data-active-value={activeValue} data-set-value={setValue}>
+    <div className={className} data-active-value={activeValue} ref={(el) => { if (el) (el as unknown as { __setValue?: (v: string) => void }).__setValue = setValue; }}>
       {children}
     </div>
   );
@@ -66,8 +66,7 @@ function TabsTrigger({ className, value, children, ...props }: TabsTriggerProps)
       onClick={(e) => {
         const parent = (e.currentTarget as HTMLElement).closest('[data-active-value]') as HTMLElement | null;
         if (parent) {
-          const setValue = (parent as any).dataset.setValue;
-          const setValueFn = parent.dataset.setValue ? (parent as any).__setValue : null;
+          const setValueFn = (parent as unknown as { __setValue?: (v: string) => void }).__setValue;
           if (setValueFn) setValueFn(value);
         }
         props.onClick?.(e);
@@ -83,7 +82,7 @@ interface TabsContentProps extends React.HTMLAttributes<HTMLDivElement> {
   value: string;
 }
 
-function TabsContent({ className, value, children, ...props }: TabsContentProps) {
+function TabsContent({ className, children, ...props }: TabsContentProps) {
   return (
     <div
       className={cn("mt-4 focus-ring", className)}

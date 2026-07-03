@@ -26,8 +26,8 @@ const RESOURCE_CONFIG: Record<ResourceType, { icon: React.ComponentType<{ classN
 
 export function ResourceLibraryPage() {
   const { user } = useAuth();
-  const [refreshKey, setRefreshKey] = useState(0);
-  const allResources = useMemo(() => getResources(), [refreshKey]);
+  const [_refreshKey, setRefreshKey] = useState(0);
+  const allResources = useMemo(() => getResources(), []);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<ResourceType | "all">("all");
   const [deleteConfirm, setDeleteConfirm] = useState<Resource | null>(null);

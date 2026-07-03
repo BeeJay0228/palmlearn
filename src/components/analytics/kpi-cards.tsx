@@ -6,7 +6,7 @@ import { getAdminKpiData, getTrainerKpiData, type AnalyticsFilter } from "@/lib/
 import { useAuth } from "@/hooks/use-auth";
 import {
   Users, UserCheck, UserX, BookOpen, CheckCircle, FileText,
-  Award, TrendingUp, BarChart3, GraduationCap, Clock,
+  Award, TrendingUp, BarChart3, GraduationCap,
 } from "lucide-react";
 
 export function AdminKpiCards({ filter }: { filter: AnalyticsFilter }) {
