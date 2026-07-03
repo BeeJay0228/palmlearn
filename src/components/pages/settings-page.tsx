@@ -132,7 +132,7 @@ export function SettingsPage() {
                 <div className="flex flex-col gap-5">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-content">Language</label>
-                    <select className="h-12 rounded-xl border border-border bg-surface-secondary px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all">
+                    <select className="h-12 rounded-xl border border-border bg-surface-secondary px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all">
                       <option>English (US)</option>
                       <option>English (UK)</option>
                       <option>French</option>
@@ -141,7 +141,7 @@ export function SettingsPage() {
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-content">Time Zone</label>
-                    <select className="h-12 rounded-xl border border-border bg-surface-secondary px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all">
+                    <select className="h-12 rounded-xl border border-border bg-surface-secondary px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all">
                       <option>UTC+1 (West Africa Time)</option>
                       <option>UTC+0 (GMT)</option>
                       <option>UTC-5 (Eastern Time)</option>
@@ -173,7 +173,7 @@ export function SettingsPage() {
                         <p className="text-sm font-medium text-content">{n.label}</p>
                         <p className="text-xs text-content-tertiary mt-0.5">{n.desc}</p>
                       </div>
-                      <input type="checkbox" defaultChecked className="h-5 w-5 rounded-lg accent-primary-600" />
+                      <input type="checkbox" defaultChecked className="h-5 w-5 rounded-lg accent-primary-600 rounded-lg border-border" />
                     </label>
                   ))}
                 </div>
@@ -201,7 +201,7 @@ export function SettingsPage() {
                         <p className="text-sm font-medium text-content">{p.label}</p>
                         <p className="text-xs text-content-tertiary mt-0.5">{p.desc}</p>
                       </div>
-                      <input type="checkbox" defaultChecked className="h-5 w-5 rounded-lg accent-primary-600" />
+                      <input type="checkbox" defaultChecked className="h-5 w-5 rounded-lg accent-primary-600 rounded-lg border-border" />
                     </label>
                   ))}
                 </div>
