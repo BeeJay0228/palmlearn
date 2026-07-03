@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { GraduationCap, BookOpen, Users, Award, TrendingUp } from "lucide-react";
 import { APP_NAME } from "@/constants";
 
@@ -29,23 +28,20 @@ export function LoginBranding() {
       />
 
       <div className="relative z-10 flex w-full flex-col p-12 xl:p-16 2xl:p-20">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center gap-3"
+        <div
+          className="flex items-center gap-3 animate-fade-in"
+          style={{ animationDuration: "0.5s" }}
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm">
             <GraduationCap className="h-6 w-6 text-white" />
           </div>
           <span className="text-xl font-bold text-white">{APP_NAME}</span>
-        </motion.div>
+        </div>
 
         <div className="flex flex-1 flex-col justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+          <div
+            className="animate-fade-in-up"
+            style={{ animationDuration: "0.6s", animationDelay: "0.2s" }}
           >
             <h1 className="text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white leading-[1.1]">
               Enterprise Learning
@@ -56,16 +52,14 @@ export function LoginBranding() {
             <p className="text-base xl:text-lg text-primary-200/70 max-w-md mt-6 leading-relaxed">
               Empower your workforce with a premium learning experience. Create, deliver, and track training at scale with PalmLearn.
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-2 gap-4 mt-14 max-w-sm">
             {floatingCards.map((card, i) => (
-              <motion.div
+              <div
                 key={card.label}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 + i * 0.12 }}
-                className="group rounded-xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-sm p-4 hover:bg-white/[0.10] hover:border-white/[0.12] transition-all duration-300"
+                className="group rounded-xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-sm p-4 hover:bg-white/[0.10] hover:border-white/[0.12] transition-all duration-300 animate-fade-in-up"
+                style={{ animationDuration: "0.5s", animationDelay: `${0.4 + i * 0.12}s` }}
               >
                 <div className="flex items-center gap-3">
                   <div className={`flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br ${card.gradient}`}>
@@ -76,19 +70,17 @@ export function LoginBranding() {
                     <p className="text-[11px] font-medium text-primary-200/50 uppercase tracking-wider">{card.label}</p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 1.0 }}
-          className="text-sm text-primary-200/30"
+        <p
+          className="text-sm text-primary-200/30 animate-fade-in"
+          style={{ animationDuration: "0.5s", animationDelay: "1.0s" }}
         >
           &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
-        </motion.p>
+        </p>
       </div>
     </div>
   );

@@ -29,18 +29,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
   });
   const [isLoading] = useState(false);
 
+  const setAuthCookie = useCallback((user: User | null) => {
+    if (typeof document === "undefined") return;
+    if (user) {
+      const data = btoa(JSON.stringify({ role: user.role, id: user.id }));
+      document.cookie = `palmlearn-auth=${data};path=/;max-age=86400;samesite=lax`;
+    } else {
+      document.cookie = "palmlearn-auth=;path=/;max-age=0";
+    }
+  }, []);
+
   const login = useCallback(async (credentials: LoginCredentials) => {
     const result = authLib.login(credentials);
     if (result.success && result.user) {
       setUser(result.user);
+      setAuthCookie(result.user);
     }
     return { success: result.success, error: result.error };
-  }, []);
+  }, [setAuthCookie]);
 
   const logout = useCallback(() => {
     authLib.logout();
     setUser(null);
-  }, []);
+    setAuthCookie(null);
+  }, [setAuthCookie]);
 
   const updateUser = useCallback((updated: User) => {
     setUser(updated);

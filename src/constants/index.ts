@@ -65,8 +65,8 @@ export const AUTH_STORAGE_KEY = "palmlearn-auth";
 export const USERS_STORAGE_KEY = "palmlearn-users";
 
 export const DEFAULT_ADMIN = {
-  email: "adeyinka.bolaji500@gmail.com",
-  password: "ADMIN",
+  email: process.env.ADMIN_EMAIL || "adeyinka.bolaji500@gmail.com",
+  password: process.env.ADMIN_PASSWORD || "ADMIN",
   name: "Adeyinka Bolaji",
   role: "admin" as const,
   mustChangePassword: true,
