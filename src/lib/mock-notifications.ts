@@ -102,6 +102,30 @@ function setStored(items: AppNotification[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
+const TYPE_MIGRATION_KEY = "palmlearn-notif-migration-v3";
+const OLD_TYPE_MAP: Record<string, NotificationType> = {
+  programme: "training_programme_assigned",
+  assignment: "assignment_unlocked",
+  due_reminder: "assignment_due_soon",
+  overdue: "assignment_overdue",
+  completion: "course_completed",
+  system: "announcement",
+};
+
+function migrateTypes(items: AppNotification[]): boolean {
+  if (typeof window !== "undefined" && localStorage.getItem(TYPE_MIGRATION_KEY)) return false;
+  let changed = false;
+  for (const n of items) {
+    const newType = OLD_TYPE_MAP[n.type];
+    if (newType && n.type !== newType) {
+      (n as AppNotification & { type: string }).type = newType;
+      changed = true;
+    }
+  }
+  if (typeof window !== "undefined") localStorage.setItem(TYPE_MIGRATION_KEY, "1");
+  return changed;
+}
+
 const MIGRATION_KEY = "palmlearn-notif-migration-v2";
 
 function migrateLinks(items: AppNotification[]): boolean {
@@ -694,7 +718,10 @@ export function seedNotifications(): void {
   if (typeof window === "undefined") return;
   const existing = getStored();
   if (existing.length > 0) {
-    if (migrateLinks(existing)) setStored(existing);
+    let migrated = false;
+    if (migrateLinks(existing)) migrated = true;
+    if (migrateTypes(existing)) migrated = true;
+    if (migrated) setStored(existing);
     return;
   }
 
