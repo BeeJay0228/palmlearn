@@ -116,14 +116,14 @@ export function ResourceLibraryPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-11 w-full rounded-xl border border-border bg-surface-secondary/50 pl-10 pr-4 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all"
+                className="h-11 w-full rounded-xl border border-border bg-surface-secondary/50 pl-10 pr-4 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all"
                 placeholder="Search resources..."
               />
             </div>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as ResourceType | "all")}
-              className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all appearance-none cursor-pointer"
+              className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all appearance-none cursor-pointer"
             >
               <option value="all">All Types</option>
               {Object.entries(RESOURCE_CONFIG).map(([key, config]) => (
@@ -223,29 +223,29 @@ export function ResourceLibraryPage() {
             <div className="p-6 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-content-secondary">Resource Name *</label>
-                <input type="text" value={uploadForm.name} onChange={(e) => setUploadForm({ ...uploadForm, name: e.target.value })} className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all" placeholder="e.g., Employee Handbook" />
+                <input type="text" value={uploadForm.name} onChange={(e) => setUploadForm({ ...uploadForm, name: e.target.value })} className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all" placeholder="e.g., Employee Handbook" />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-content-secondary">Type</label>
-                <select value={uploadForm.type} onChange={(e) => setUploadForm({ ...uploadForm, type: e.target.value as ResourceType })} className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all appearance-none cursor-pointer">
+                <select value={uploadForm.type} onChange={(e) => setUploadForm({ ...uploadForm, type: e.target.value as ResourceType })} className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all appearance-none cursor-pointer">
                   {Object.entries(RESOURCE_CONFIG).map(([key, config]) => (<option key={key} value={key}>{config.label}</option>))}
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-content-secondary">URL</label>
-                <input type="text" value={uploadForm.url} onChange={(e) => setUploadForm({ ...uploadForm, url: e.target.value })} className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all" placeholder="https://example.com/resource" />
+                <input type="text" value={uploadForm.url} onChange={(e) => setUploadForm({ ...uploadForm, url: e.target.value })} className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all" placeholder="https://example.com/resource" />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-content-secondary">File Size (optional)</label>
-                <input type="text" value={uploadForm.size} onChange={(e) => setUploadForm({ ...uploadForm, size: e.target.value })} className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all" placeholder="e.g., 2.4 MB" />
+                <input type="text" value={uploadForm.size} onChange={(e) => setUploadForm({ ...uploadForm, size: e.target.value })} className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all" placeholder="e.g., 2.4 MB" />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-content-secondary">Description</label>
-                <textarea value={uploadForm.description} onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })} rows={2} className="rounded-xl border border-border bg-surface-secondary/50 px-4 py-3 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all resize-none" placeholder="Brief description..." />
+                <textarea value={uploadForm.description} onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })} rows={2} className="rounded-xl border border-border bg-surface-secondary/50 px-4 py-3 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all resize-none" placeholder="Brief description..." />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-content-secondary">Tags (comma-separated)</label>
-                <input type="text" value={uploadForm.tags} onChange={(e) => setUploadForm({ ...uploadForm, tags: e.target.value })} className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all" placeholder="training, handbook, policies" />
+                <input type="text" value={uploadForm.tags} onChange={(e) => setUploadForm({ ...uploadForm, tags: e.target.value })} className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all" placeholder="training, handbook, policies" />
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border/50">

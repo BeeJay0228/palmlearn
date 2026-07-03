@@ -159,14 +159,14 @@ export function CoursesPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(0); }}
-                className="h-11 w-full rounded-xl border border-border bg-surface-secondary/50 pl-10 pr-4 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all"
+                className="h-11 w-full rounded-xl border border-border bg-surface-secondary/50 pl-10 pr-4 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all"
                 placeholder="Search courses..."
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value as CourseStatus | "all"); setCurrentPage(0); }}
-              className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all appearance-none cursor-pointer"
+              className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all appearance-none cursor-pointer"
             >
               <option value="all">All Status</option>
               <option value="draft">Draft</option>
@@ -177,7 +177,7 @@ export function CoursesPage() {
             <select
               value={difficultyFilter}
               onChange={(e) => { setDifficultyFilter(e.target.value as Difficulty | "all"); setCurrentPage(0); }}
-              className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all appearance-none cursor-pointer"
+              className="h-11 rounded-xl border border-border bg-surface-secondary/50 px-4 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all appearance-none cursor-pointer"
             >
               <option value="all">All Levels</option>
               <option value="beginner">Beginner</option>

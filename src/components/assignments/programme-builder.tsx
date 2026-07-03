@@ -82,7 +82,7 @@ export function ProgrammeBuilder({ open, onClose, onSave, editProgramme }: Progr
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the training programme..."
               rows={3}
-              className="flex w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all resize-none"
+              className="flex w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all resize-none"
             />
           </div>
 
@@ -157,7 +157,7 @@ export function ProgrammeBuilder({ open, onClose, onSave, editProgramme }: Progr
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="flex w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all"
+                className="flex w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all"
               />
             </div>
             <div>
@@ -166,7 +166,7 @@ export function ProgrammeBuilder({ open, onClose, onSave, editProgramme }: Progr
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="flex w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all"
+                className="flex w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-content outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all"
               />
             </div>
           </div>

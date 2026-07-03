@@ -314,7 +314,7 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
                   placeholder="Describe what this assignment covers..."
                   rows={3}
                   maxLength={DESC_MAX + 10}
-                  className="flex w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all resize-none"
+                  className="flex w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all resize-none"
                   aria-describedby="desc-counter"
                 />
                 <p id="desc-counter" className={cn("mt-1 text-xs text-right", description.length > DESC_MAX ? "text-danger" : "text-content-tertiary")}>
@@ -365,7 +365,7 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
                     value={courseSearch}
                     onChange={(e) => setCourseSearch(e.target.value)}
                     placeholder="Search courses..."
-                    className="flex h-10 w-full rounded-xl border border-border bg-surface pl-9 pr-4 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all"
+                    className="flex h-10 w-full rounded-xl border border-border bg-surface pl-9 pr-4 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all"
                   />
                 </div>
 
@@ -464,7 +464,7 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
                         type="date"
                         value={schedule.startDate?.split("T")[0] || ""}
                         onChange={(e) => { setSchedule({ ...schedule, startDate: e.target.value ? new Date(e.target.value).toISOString() : null }); markDirty(); }}
-                        className="flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-content transition-all focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] outline-none"
+                        className="flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-content transition-all focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] outline-none"
                       />
                       {errors.startDate && <p className="text-xs text-danger">{errors.startDate}</p>}
                     </div>
@@ -480,7 +480,7 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
                           setSchedule({ ...schedule, startDate: d.toISOString() });
                           markDirty();
                         }}
-                        className="flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-content transition-all focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] outline-none"
+                        className="flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-content transition-all focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] outline-none"
                       />
                     </div>
                   </div>
@@ -491,7 +491,7 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
                         type="date"
                         value={schedule.dueDate?.split("T")[0] || ""}
                         onChange={(e) => { setSchedule({ ...schedule, dueDate: e.target.value ? new Date(e.target.value).toISOString() : null }); markDirty(); }}
-                        className="flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-content transition-all focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] outline-none"
+                        className="flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-content transition-all focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] outline-none"
                       />
                       {errors.dueDate && <p className="text-xs text-danger">{errors.dueDate}</p>}
                     </div>
@@ -507,7 +507,7 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
                           setSchedule({ ...schedule, dueDate: d.toISOString() });
                           markDirty();
                         }}
-                        className="flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-content transition-all focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] outline-none"
+                        className="flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-content transition-all focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] outline-none"
                       />
                     </div>
                   </div>
@@ -518,7 +518,7 @@ export function AssignmentWizard({ open, onClose, onSave, editAssignment }: Assi
                         type="date"
                         value={schedule.expiryDate?.split("T")[0] || ""}
                         onChange={(e) => { setSchedule({ ...schedule, expiryDate: e.target.value ? new Date(e.target.value).toISOString() : null }); markDirty(); }}
-                        className="flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-content transition-all focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] outline-none"
+                        className="flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-content transition-all focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] outline-none"
                       />
                     </div>
                     <Select

@@ -26,11 +26,16 @@ export { Progress } from "./progress";
 export { StatusIndicator, statusLabels, statusDotColors } from "./status-indicator";
 export type { StatusIndicatorProps } from "./status-indicator";
 
-export { Skeleton, SkeletonText, SkeletonCard, SkeletonTable, SkeletonPage } from "./skeleton";
+export { Skeleton, SkeletonText, SkeletonCard, SkeletonTable, SkeletonPage, SkeletonChart, SkeletonStats, SkeletonForm } from "./skeleton";
 export { EmptyState } from "./empty-state";
+export type { EmptyStateVariant } from "./empty-state";
 export { PageHeader } from "./page-header";
 export { Breadcrumb } from "./breadcrumb";
 export type { BreadcrumbItem } from "./breadcrumb";
+export { SectionSummary } from "./section-summary";
+export { GlobalSearch } from "./global-search";
+export { ActionToolbar } from "./action-toolbar";
+export { FilterDrawer } from "./filter-drawer";
 
 export { Modal } from "./modal";
 export { ConfirmDialog } from "./confirm-dialog";
@@ -59,5 +64,6 @@ export {
   DropdownMenuRadioGroup,
 } from "./dropdown-menu";
 
+export { Celebration } from "./celebration";
 export { MotionDiv } from "@/components/shared/motion-div";
 export type { AnimationVariant } from "@/components/shared/motion-div";

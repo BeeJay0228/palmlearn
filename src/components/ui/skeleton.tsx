@@ -78,4 +78,58 @@ function SkeletonPage({ className }: { className?: string }) {
   );
 }
 
-export { Skeleton, SkeletonText, SkeletonCard, SkeletonTable, SkeletonPage };
+function SkeletonChart({ className }: { className?: string }) {
+  return (
+    <div className={cn("rounded-2xl border border-border p-5", className)}>
+      <div className="flex items-center justify-between mb-5">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-8 w-20 rounded-xl" />
+      </div>
+      <div className="flex items-end gap-2 h-40">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Skeleton
+            key={i}
+            className="flex-1 rounded-lg"
+            style={{ height: `${30 + Math.random() * 70}%` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SkeletonStats({ count = 4, className }: { count?: number; className?: string }) {
+  return (
+    <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4", className)}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="rounded-2xl border border-border p-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton variant="circular" className="h-9 w-9" />
+          </div>
+          <Skeleton className="h-8 w-16" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SkeletonForm({ fields = 4, className }: { fields?: number; className?: string }) {
+  return (
+    <div className={cn("rounded-2xl border border-border p-6 space-y-5", className)}>
+      {Array.from({ length: fields }).map((_, i) => (
+        <div key={i} className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-11 w-full rounded-xl" />
+        </div>
+      ))}
+      <div className="flex items-center gap-3 pt-2">
+        <Skeleton className="h-10 w-24 rounded-xl" />
+        <Skeleton className="h-10 w-24 rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
+export { Skeleton, SkeletonText, SkeletonCard, SkeletonTable, SkeletonPage, SkeletonChart, SkeletonStats, SkeletonForm };

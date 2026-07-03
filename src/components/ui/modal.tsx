@@ -66,7 +66,7 @@ export function Modal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-label={title || "Dialog"}
         className={cn(
           "relative z-10 w-full rounded-2xl border border-border/50 bg-surface shadow-2xl shadow-black/10 animate-scale-in max-h-[85vh] flex flex-col",
           sizeMap[size],

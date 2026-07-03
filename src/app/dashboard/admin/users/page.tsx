@@ -303,7 +303,7 @@ export default function AdminUsersPage() {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-content">Bio</label>
-            <textarea value={form.bio || ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} placeholder="Tell us about this user..." className="flex w-full rounded-xl border border-transparent bg-surface-secondary px-4 py-3 text-sm text-content placeholder:text-content-tertiary transition-all duration-200 hover:bg-surface-tertiary focus:bg-surface focus:border-primary-500/50 focus:shadow-[0_0_0_3px_rgba(5,150,105,0.1)] outline-none resize-none" />
+            <textarea value={form.bio || ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} placeholder="Tell us about this user..." className="flex w-full rounded-xl border border-transparent bg-surface-secondary px-4 py-3 text-sm text-content placeholder:text-content-tertiary transition-all duration-200 hover:bg-surface-tertiary focus:bg-surface focus:border-primary-500/50 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] outline-none resize-none" />
           </div>
 
           <div className="flex items-center gap-3 pt-2 border-t border-border">

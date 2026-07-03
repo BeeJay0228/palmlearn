@@ -54,7 +54,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const addToast = useCallback((t: Omit<Toast, "id">) => {
     const id = Math.random().toString(36).slice(2);
-    setToasts((prev) => [...prev, { ...t, id }]);
+    setToasts((prev) => [ { ...t, id }, ...prev ]);
   }, []);
 
   const dismiss = useCallback((id: string) => {
@@ -64,7 +64,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast: addToast, dismiss }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+      <div
+        className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none"
+        aria-live="polite"
+        aria-label="Notifications"
+      >
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} onDismiss={dismiss} />
         ))}
@@ -78,23 +82,29 @@ function ToastItem({ toast: t, onDismiss }: { toast: Toast; onDismiss: (id: stri
   const Icon = iconMap[t.type];
 
   useEffect(() => {
-    requestAnimationFrame(() => setVisible(true));
+    const raf = requestAnimationFrame(() => setVisible(true));
     const timer = setTimeout(() => {
       setVisible(false);
-      setTimeout(() => onDismiss(t.id), 200);
+      setTimeout(() => onDismiss(t.id), 300);
     }, t.duration || 4000);
-    return () => clearTimeout(timer);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(timer);
+    };
   }, [t.id, t.duration, onDismiss]);
 
   return (
     <div
       className={cn(
-        "pointer-events-auto flex items-start gap-3 rounded-2xl border border-border/50 bg-surface shadow-xl shadow-black/5 p-4 transition-all duration-200 border-l-4 border-l-solid",
+        "pointer-events-auto flex items-start gap-3 rounded-2xl border border-border/50 bg-surface shadow-xl shadow-black/5 p-4 transition-all duration-300 border-l-4",
         colorMap[t.type],
-        visible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0",
+        visible
+          ? "translate-x-0 opacity-100 scale-100"
+          : "translate-x-8 opacity-0 scale-95",
       )}
+      role="alert"
     >
-      <Icon className={cn("h-5 w-5 shrink-0 mt-0.5", iconColorMap[t.type])} />
+      <Icon className={cn("h-5 w-5 shrink-0 mt-0.5", iconColorMap[t.type])} aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-content">{t.title}</p>
         {t.message && (
@@ -106,7 +116,7 @@ function ToastItem({ toast: t, onDismiss }: { toast: Toast; onDismiss: (id: stri
               t.onUndo?.();
               onDismiss(t.id);
             }}
-            className="text-xs font-medium text-primary-600 hover:text-primary-700 mt-1.5"
+            className="text-xs font-medium text-primary-600 hover:text-primary-700 mt-1.5 transition-colors"
           >
             Undo
           </button>
@@ -115,10 +125,10 @@ function ToastItem({ toast: t, onDismiss }: { toast: Toast; onDismiss: (id: stri
       <button
         onClick={() => {
           setVisible(false);
-          setTimeout(() => onDismiss(t.id), 200);
+          setTimeout(() => onDismiss(t.id), 300);
         }}
         className="flex h-6 w-6 items-center justify-center rounded-lg text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors shrink-0"
-        aria-label="Dismiss"
+        aria-label="Dismiss notification"
       >
         <X className="h-3.5 w-3.5" />
       </button>

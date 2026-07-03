@@ -1,5 +1,19 @@
 import { cn } from "@/lib/utils";
-import { Inbox } from "lucide-react";
+import {
+  Inbox,
+  SearchX,
+  Users,
+  BookOpen,
+  ClipboardList,
+  BarChart3,
+  Bell,
+  Megaphone,
+  Library,
+  FileBarChart,
+  GraduationCap,
+  Lightbulb,
+  Target,
+} from "lucide-react";
 
 interface EmptyStateProps {
   icon?: React.ComponentType<{ className?: string }>;
@@ -8,6 +22,7 @@ interface EmptyStateProps {
   action?: React.ReactNode;
   className?: string;
   size?: "sm" | "md" | "lg";
+  variant?: "default" | "subtle" | "bordered" | "gradient";
 }
 
 const sizeClasses = {
@@ -31,25 +46,83 @@ const sizeClasses = {
   },
 };
 
+const variantClasses = {
+  default: {
+    container: "",
+    iconContainer: "bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-primary-950/30 dark:to-primary-900/10 border border-primary-200/50 dark:border-primary-800/30",
+    icon: "text-primary-600 dark:text-primary-400",
+    dot: "bg-primary-400",
+  },
+  subtle: {
+    container: "",
+    iconContainer: "bg-surface-secondary border border-border/50",
+    icon: "text-content-tertiary",
+    dot: "bg-content-tertiary",
+  },
+  bordered: {
+    container: "border-2 border-dashed border-border rounded-3xl mx-4",
+    iconContainer: "bg-surface-secondary border border-border/50",
+    icon: "text-content-tertiary",
+    dot: "bg-content-tertiary",
+  },
+  gradient: {
+    container: "rounded-3xl bg-gradient-to-br from-primary-50/50 to-primary-100/20 dark:from-primary-950/20 dark:to-primary-900/5 border border-primary-200/30 dark:border-primary-800/20 mx-4",
+    iconContainer: "bg-white dark:bg-primary-950/50 border border-primary-200/50 dark:border-primary-800/30 shadow-sm",
+    icon: "text-primary-600 dark:text-primary-400",
+    dot: "bg-primary-400",
+  },
+};
+
+const emptyStateIcons = {
+  default: Inbox,
+  search: SearchX,
+  users: Users,
+  courses: BookOpen,
+  assignments: ClipboardList,
+  analytics: BarChart3,
+  notifications: Bell,
+  programmes: Megaphone,
+  library: Library,
+  reports: FileBarChart,
+  learning: GraduationCap,
+  ideas: Lightbulb,
+  goals: Target,
+} as const;
+
+export type EmptyStateVariant = keyof typeof emptyStateIcons;
+
 export function EmptyState({
-  icon: Icon = Inbox,
+  icon: Icon,
   title,
   description,
   action,
   className,
   size = "md",
+  variant = "default",
 }: EmptyStateProps) {
+  const IconComponent = Icon || emptyStateIcons.default;
   const classes = sizeClasses[size];
+  const vc = variantClasses[variant];
+
   return (
-    <div className={cn("flex flex-col items-center justify-center text-center", classes.wrapper, className)}>
+    <div className={cn(
+      "flex flex-col items-center justify-center text-center",
+      classes.wrapper,
+      vc.container,
+      className,
+    )}>
       <div className="relative mb-6">
         <div className={cn(
-          "flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-primary-950/30 dark:to-primary-900/10 border border-primary-200/50 dark:border-primary-800/30",
+          "flex items-center justify-center",
           classes.iconContainer,
+          vc.iconContainer,
         )}>
-          <Icon className={cn("text-primary-600 dark:text-primary-400", classes.icon)} />
+          <IconComponent className={cn(vc.icon, classes.icon)} />
         </div>
-        <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-400 animate-badge-pulse" />
+        <div className={cn(
+          "absolute -top-1 -right-1 h-4 w-4 rounded-full animate-badge-pulse",
+          vc.dot,
+        )} />
       </div>
       <h3 className={cn("font-semibold text-content", classes.title)}>{title}</h3>
       {description && (

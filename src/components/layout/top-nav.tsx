@@ -320,34 +320,44 @@ export function TopNav({ className, onMenuToggle, title }: TopNavProps) {
 
       {/* Command Search Modal */}
       {searchOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setSearchOpen(false)} />
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Command search"
+        >
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setSearchOpen(false)} aria-hidden="true" />
           <div className="relative z-10 w-full max-w-xl animate-scale-in-sm">
             <div className="rounded-2xl border border-border/50 bg-surface shadow-2xl shadow-black/10 overflow-hidden">
               <div className="flex items-center gap-3 px-4 h-14 border-b border-border/50">
-                <Search className="h-4 w-4 text-content-tertiary" />
+                <Search className="h-4 w-4 text-content-tertiary" aria-hidden="true" />
                 <input
                   type="text"
                   placeholder="Search courses, users, settings..."
                   className="flex-1 bg-transparent text-sm text-content placeholder:text-content-tertiary/60 outline-none"
                   autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") setSearchOpen(false);
+                  }}
                 />
                 <kbd className="text-[11px] text-content-tertiary/60 bg-surface-tertiary/50 px-1.5 py-0.5 rounded-md font-mono">ESC</kbd>
               </div>
-              <div className="p-2 flex flex-col gap-0.5">
+              <div className="p-2 flex flex-col gap-0.5" role="listbox" aria-label="Quick actions">
                 <p className="px-3 py-2 text-[11px] font-medium text-content-tertiary uppercase tracking-wider">Quick Actions</p>
                 {[
-                  { label: "Continue Learning", icon: Sparkles },
-                  { label: "Browse Courses", icon: Search },
-                  { label: "View Profile", icon: User },
-                  { label: "Open Settings", icon: Settings },
+                  { label: "Continue Learning", icon: Sparkles, href: "/dashboard" },
+                  { label: "Browse Courses", icon: Search, href: "/courses" },
+                  { label: "View Profile", icon: User, href: "/profile" },
+                  { label: "Open Settings", icon: Settings, href: "/settings" },
                 ].map((action) => (
                   <button
                     key={action.label}
                     onClick={() => setSearchOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
+                    role="option"
+                    aria-selected={false}
                   >
-                    <action.icon className="h-4 w-4 text-content-tertiary" />
+                    <action.icon className="h-4 w-4 text-content-tertiary" aria-hidden="true" />
                     {action.label}
                   </button>
                 ))}

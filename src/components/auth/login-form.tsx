@@ -97,7 +97,7 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
-              className="flex h-12 w-full rounded-xl border border-transparent bg-surface-secondary px-4 pr-11 text-sm text-content placeholder:text-content-tertiary transition-all duration-200 hover:bg-surface-tertiary focus:bg-surface focus:border-primary-500/50 focus:shadow-[0_0_0_3px_rgba(5,150,105,0.1)] outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-12 w-full rounded-xl border border-transparent bg-surface-secondary px-4 pr-11 text-sm text-content placeholder:text-content-tertiary transition-all duration-200 hover:bg-surface-tertiary focus:bg-surface focus:border-primary-500/50 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] outline-none disabled:cursor-not-allowed disabled:opacity-50"
             />
             <button
               type="button"

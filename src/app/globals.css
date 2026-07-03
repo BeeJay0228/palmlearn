@@ -341,11 +341,10 @@ body {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.dark .\@utility\.glass {
-  background: rgba(11, 17, 33, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  @variant dark {
+    background: rgba(11, 17, 33, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
 }
 
 @utility glass-strong {
@@ -353,19 +352,17 @@ body {
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
   border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.dark .\@utility\.glass-strong {
-  background: rgba(11, 17, 33, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  @variant dark {
+    background: rgba(11, 17, 33, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
 }
 
 @utility floating {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-
-.dark .\@utility\.floating {
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+  @variant dark {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
 }
 
 @utility gradient-border {
@@ -408,11 +405,10 @@ body {
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+    @variant dark {
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
   }
-}
-
-.dark .\@utility\.card-hover:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 @utility dot-grid-bg {

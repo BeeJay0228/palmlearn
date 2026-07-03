@@ -156,7 +156,7 @@ export function TargetAudienceBuilder({ value, onChange }: TargetAudienceBuilder
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search..."
-              className="flex h-10 w-full rounded-xl border border-border bg-surface pl-9 pr-4 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(5,150,105,0.08)] transition-all"
+              className="flex h-10 w-full rounded-xl border border-border bg-surface pl-9 pr-4 text-sm text-content placeholder:text-content-tertiary/60 outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all"
             />
           </div>
           <div className="max-h-48 overflow-y-auto rounded-xl border border-border divide-y divide-border/60">

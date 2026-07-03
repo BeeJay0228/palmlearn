@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 interface DrawerProps {
   open: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: React.ReactNode;
   className?: string;
   side?: "left" | "right";
@@ -57,7 +57,8 @@ export function Drawer({ open, onClose, title, children, className, side = "righ
         )}
       >
         <div className="flex h-16 items-center justify-between border-b border-border px-6">
-          <h2 className="text-lg font-semibold text-content">{title}</h2>
+          {title && <h2 className="text-lg font-semibold text-content">{title}</h2>}
+          {!title && <div />}
           <button
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-xl text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
