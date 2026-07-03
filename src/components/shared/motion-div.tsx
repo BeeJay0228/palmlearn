@@ -1,17 +1,6 @@
 import { cn } from "@/lib/utils";
 import { forwardRef, type HTMLAttributes } from "react";
-
-type AnimationVariant =
-  | "fade-in"
-  | "fade-in-up"
-  | "fade-in-down"
-  | "slide-up"
-  | "slide-down"
-  | "slide-left"
-  | "slide-right"
-  | "scale-in"
-  | "scale-in-sm"
-  | "none";
+import type { AnimationVariant } from "@/types";
 
 const variantClasses: Record<string, string> = {
   "fade-in": "animate-fade-in",
@@ -53,4 +42,4 @@ const MotionDiv = forwardRef<HTMLDivElement, MotionDivProps>(
 );
 MotionDiv.displayName = "MotionDiv";
 
-export { MotionDiv, type AnimationVariant };
+export { MotionDiv };

@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { useAuth } from "@/hooks/use-auth";
 import {
   getPlatformSummary,
@@ -27,7 +28,7 @@ import {
 } from "@/lib/reports";
 import { cn } from "@/lib/utils";
 import {
-  ChevronLeft, ChevronRight, Search, Download,
+  Search, Download,
   FileText, BookOpen, Users, GraduationCap, BarChart3,
   CheckCircle, AlertTriangle, Star, Trash2, Save,
   History, Bookmark, X, Printer,
@@ -47,34 +48,6 @@ const REPORT_TABS: { type: ReportType; label: string; icon: React.ComponentType<
 function renderValue(val: unknown): string {
   if (val === null || val === undefined) return "—";
   return String(val);
-}
-
-function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
-  if (totalPages <= 1) return null;
-  return (
-    <div className="flex items-center justify-between px-1 py-3">
-      <p className="text-xs text-content-tertiary">Page {page} of {totalPages}</p>
-      <div className="flex items-center gap-1">
-        <button onClick={() => onChange(Math.max(1, page - 1))} disabled={page <= 1}
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-content-secondary hover:bg-surface-secondary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        ><ChevronLeft className="h-3.5 w-3.5" /></button>
-        {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-          const start = Math.max(1, Math.min(page - 2, totalPages - 4));
-          const p = start + i;
-          if (p > totalPages) return null;
-          return (
-            <button key={p} onClick={() => onChange(p)}
-              className={cn("flex h-7 min-w-[28px] items-center justify-center rounded-lg text-xs font-medium transition-colors",
-                p === page ? "bg-primary-600 text-white" : "text-content-secondary hover:bg-surface-secondary"
-              )}>{p}</button>
-          );
-        })}
-        <button onClick={() => onChange(Math.min(totalPages, page + 1))} disabled={page >= totalPages}
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-content-secondary hover:bg-surface-secondary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        ><ChevronRight className="h-3.5 w-3.5" /></button>
-      </div>
-    </div>
-  );
 }
 
 export function ReportCenter({ isSuperAdmin }: { isSuperAdmin: boolean }) {
@@ -432,7 +405,7 @@ export function ReportCenter({ isSuperAdmin }: { isSuperAdmin: boolean }) {
                 </table>
               )}
             </div>
-            <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+            <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
           </Card>
         </div>
 

@@ -65,4 +65,3 @@ export {
 } from "./dropdown-menu";
 
 export { Celebration } from "./celebration";
-export { MotionDiv, type AnimationVariant } from "@/components/shared/motion-div";
