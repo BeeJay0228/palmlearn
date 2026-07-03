@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/use-auth";
 
 import { DashboardWelcome } from "@/components/dashboard/dashboard-welcome";
@@ -11,8 +12,15 @@ import { DashboardMetricsGrid } from "@/components/dashboard/dashboard-metrics-g
 import { DashboardProgress } from "@/components/dashboard/dashboard-progress";
 import { NotificationsWidget } from "@/components/dashboard/notifications-widget";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { LearnerContinueLearning, LearnerMandatoryLearning, LearnerDueSoon, LearnerCompleted } from "@/components/assignments/learner-assignments";
-import { TodaysEvents, UpcomingLiveSessions, MissedEvents, CompletedEvents } from "@/components/events/learner-events";
+
+const LearnerContinueLearning = dynamic(() => import("@/components/assignments/learner-assignments").then(m => m.LearnerContinueLearning), { ssr: false });
+const LearnerMandatoryLearning = dynamic(() => import("@/components/assignments/learner-assignments").then(m => m.LearnerMandatoryLearning), { ssr: false });
+const LearnerDueSoon = dynamic(() => import("@/components/assignments/learner-assignments").then(m => m.LearnerDueSoon), { ssr: false });
+const LearnerCompleted = dynamic(() => import("@/components/assignments/learner-assignments").then(m => m.LearnerCompleted), { ssr: false });
+const TodaysEvents = dynamic(() => import("@/components/events/learner-events").then(m => m.TodaysEvents), { ssr: false });
+const UpcomingLiveSessions = dynamic(() => import("@/components/events/learner-events").then(m => m.UpcomingLiveSessions), { ssr: false });
+const MissedEvents = dynamic(() => import("@/components/events/learner-events").then(m => m.MissedEvents), { ssr: false });
+const CompletedEvents = dynamic(() => import("@/components/events/learner-events").then(m => m.CompletedEvents), { ssr: false });
 import {
   BookOpen, Clock, Award, TrendingUp, PlayCircle, CheckCircle, Star,
   BarChart3, GraduationCap, Trophy, Target,
@@ -117,15 +125,31 @@ export default function LearnerDashboard() {
         <DashboardActivity activities={recentActivity} title="Recent Activity" />
       </div>
 
-      <TodaysEvents onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
-      <UpcomingLiveSessions onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
-      <MissedEvents onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
-      <CompletedEvents onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
+      <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-surface-secondary" />}>
+        <TodaysEvents onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
+      </Suspense>
+      <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-surface-secondary" />}>
+        <UpcomingLiveSessions onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
+      </Suspense>
+      <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-surface-secondary" />}>
+        <MissedEvents onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
+      </Suspense>
+      <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-surface-secondary" />}>
+        <CompletedEvents onEventClick={(event) => window.location.href = `/learner/events/${event.id}`} />
+      </Suspense>
 
-      <LearnerMandatoryLearning />
-      <LearnerDueSoon />
-      <LearnerContinueLearning />
-      <LearnerCompleted />
+      <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-surface-secondary" />}>
+        <LearnerMandatoryLearning />
+      </Suspense>
+      <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-surface-secondary" />}>
+        <LearnerDueSoon />
+      </Suspense>
+      <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-surface-secondary" />}>
+        <LearnerContinueLearning />
+      </Suspense>
+      <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-surface-secondary" />}>
+        <LearnerCompleted />
+      </Suspense>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">

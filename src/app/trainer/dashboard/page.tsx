@@ -1,5 +1,7 @@
 "use client";
 
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { DashboardWelcome } from "@/components/dashboard/dashboard-welcome";
@@ -9,9 +11,10 @@ import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-ac
 import { DashboardMetricsGrid } from "@/components/dashboard/dashboard-metrics-grid";
 import { NotificationsWidget } from "@/components/dashboard/notifications-widget";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { AssignmentSummaryCards } from "@/components/assignments/assignment-analytics";
-import { TrainerEventDashboardCards } from "@/components/events/event-dashboard-cards";
 import { cn } from "@/lib/utils";
+
+const AssignmentSummaryCards = dynamic(() => import("@/components/assignments/assignment-analytics").then(m => m.AssignmentSummaryCards), { ssr: false });
+const TrainerEventDashboardCards = dynamic(() => import("@/components/events/event-dashboard-cards").then(m => m.TrainerEventDashboardCards), { ssr: false });
 import {
   Users, BookOpen, CalendarDays, TrendingUp, ClipboardList, Award, Clock,
   BarChart3, Star, CheckCircle, PlayCircle, Target,
@@ -60,10 +63,14 @@ export default function TrainerDashboard() {
         ]}
       />
 
-      <AssignmentSummaryCards role="trainer" />
+      <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-surface-secondary" />}>
+        <AssignmentSummaryCards role="trainer" />
+      </Suspense>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <TrainerEventDashboardCards />
+        <Suspense fallback={<div className="h-24 animate-pulse rounded-xl bg-surface-secondary" />}>
+          <TrainerEventDashboardCards />
+        </Suspense>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

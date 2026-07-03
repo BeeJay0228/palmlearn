@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, memo } from "react";
 import { cn } from "@/lib/utils";
 import { MotionDiv } from "@/components/shared/motion-div";
 import type { LucideIcon } from "lucide-react";

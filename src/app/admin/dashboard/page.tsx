@@ -1,16 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/use-auth";
 import { DashboardWelcome } from "@/components/dashboard/dashboard-welcome";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
-
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
 import { DashboardMetricsGrid } from "@/components/dashboard/dashboard-metrics-grid";
 import { NotificationsWidget } from "@/components/dashboard/notifications-widget";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { AssignmentSummaryCards, RegionalPerformanceWidget, RecentAssignmentsWidget } from "@/components/assignments/assignment-analytics";
-import { AdminEventDashboardCards } from "@/components/events/event-dashboard-cards";
 import { getAllUsers } from "@/lib/auth";
 import { getCourses } from "@/lib/courses";
 import { getAssignments } from "@/lib/assignments";
@@ -22,6 +20,11 @@ import {
   GraduationCap, Award, Clock, ClipboardList, Target, PieChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const AssignmentSummaryCards = dynamic(() => import("@/components/assignments/assignment-analytics").then(m => m.AssignmentSummaryCards), { ssr: false });
+const RegionalPerformanceWidget = dynamic(() => import("@/components/assignments/assignment-analytics").then(m => m.RegionalPerformanceWidget), { ssr: false });
+const RecentAssignmentsWidget = dynamic(() => import("@/components/assignments/assignment-analytics").then(m => m.RecentAssignmentsWidget), { ssr: false });
+const AdminEventDashboardCards = dynamic(() => import("@/components/events/event-dashboard-cards").then(m => m.AdminEventDashboardCards), { ssr: false });
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -79,10 +82,14 @@ export default function AdminDashboard() {
         ]}
       />
 
-      <AssignmentSummaryCards role="admin" />
+      <Suspense fallback={<div className="h-32 animate-pulse rounded-xl bg-surface-secondary" />}>
+        <AssignmentSummaryCards role="admin" />
+      </Suspense>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <AdminEventDashboardCards />
+        <Suspense fallback={<div className="h-24 animate-pulse rounded-xl bg-surface-secondary" />}>
+          <AdminEventDashboardCards />
+        </Suspense>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -132,8 +139,12 @@ export default function AdminDashboard() {
           </Card>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <RegionalPerformanceWidget />
-            <RecentAssignmentsWidget />
+            <Suspense fallback={<div className="h-48 animate-pulse rounded-xl bg-surface-secondary" />}>
+              <RegionalPerformanceWidget />
+            </Suspense>
+            <Suspense fallback={<div className="h-48 animate-pulse rounded-xl bg-surface-secondary" />}>
+              <RecentAssignmentsWidget />
+            </Suspense>
           </div>
         </div>
       </div>
