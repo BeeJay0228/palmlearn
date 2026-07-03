@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { getNotifications, getUnreadCount, seedNotifications } from "@/lib/mock-notifications";
+import { runReminderEngine } from "@/lib/reminder-engine";
 import { Bell } from "lucide-react";
 
 export function NotificationsWidget({ className }: { className?: string }) {
@@ -12,6 +13,12 @@ export function NotificationsWidget({ className }: { className?: string }) {
   const router = useRouter();
 
   useEffect(() => { seedNotifications(); }, []);
+
+  useEffect(() => {
+    if (user) {
+      runReminderEngine(user.id, user.role);
+    }
+  }, [user]);
 
   const notifications = useMemo(() => {
     if (!user) return [];

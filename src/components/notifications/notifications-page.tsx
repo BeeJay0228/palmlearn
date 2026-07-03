@@ -11,6 +11,7 @@ import {
   getNotifications, markAsRead, markAsUnread, markAllAsRead,
   deleteAllRead, deleteNotification, seedNotifications, getNotificationCategory,
 } from "@/lib/mock-notifications";
+import { runReminderEngine } from "@/lib/reminder-engine";
 import type { NotificationCategory, NotificationType } from "@/lib/mock-notifications";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -46,15 +47,24 @@ const CATEGORY_COLORS: Record<NotificationCategory, string> = {
 const TYPE_LABELS: Record<NotificationType, string> = {
   training_programme_assigned: "Programme Assigned",
   training_programme_updated: "Programme Updated",
+  programme_due_soon: "Programme Due Soon",
+  programme_overdue: "Programme Overdue",
   course_assigned: "Course Available",
   course_completed: "Course Completed",
+  course_unlocked: "Course Unlocked",
   assignment_unlocked: "Assignment Unlocked",
   assignment_submitted: "Assignment Submitted",
+  assignment_due_soon: "Assignment Due Soon",
+  assignment_due_today: "Assignment Due Today",
+  assignment_overdue: "Assignment Overdue",
   event_created: "Event Created",
   event_reminder: "Event Reminder",
   event_today: "Event Today",
   event_updated: "Event Updated",
   resource_added: "Resource Added",
+  learner_progress: "Learner Progress",
+  admin_summary: "Admin Summary",
+  smart_reminder: "Smart Reminder",
   welcome: "Welcome",
   password_changed: "Password Changed",
   profile_updated: "Profile Updated",
@@ -72,6 +82,13 @@ export function NotificationsPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => { seedNotifications(); }, []);
+
+  useEffect(() => {
+    if (user) {
+      runReminderEngine(user.id, user.role);
+      setRefreshKey((k) => k + 1);
+    }
+  }, [user]);
 
   const notifications = useMemo(() => {
     if (!user) return [];

@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useMounted } from "@/hooks/use-mounted";
 import { ROLE_LABELS } from "@/constants";
 import { getNotifications, getUnreadCount, markAsRead, seedNotifications } from "@/lib/mock-notifications";
+import { runReminderEngine } from "@/lib/reminder-engine";
 import {
   Sun,
   Moon,
@@ -43,6 +44,16 @@ export function TopNav({ className, onMenuToggle, title }: TopNavProps) {
   useEffect(() => {
     seedNotifications();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    runReminderEngine(user.id, user.role);
+    const interval = setInterval(() => {
+      runReminderEngine(user.id, user.role);
+      setNotifRefreshKey((k) => k + 1);
+    }, 120000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const notifications = useMemo(() => {
     if (!user) return [];
@@ -151,7 +162,13 @@ export function TopNav({ className, onMenuToggle, title }: TopNavProps) {
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
           <button
-            onClick={() => setNotifOpen(!notifOpen)}
+            onClick={() => {
+              setNotifOpen(!notifOpen);
+              if (user && !notifOpen) {
+                runReminderEngine(user.id, user.role);
+                setNotifRefreshKey((k) => k + 1);
+              }
+            }}
             className="flex h-9 w-9 items-center justify-center rounded-xl text-content-secondary hover:text-content hover:bg-surface-hover transition-colors relative"
             aria-label="Notifications"
           >

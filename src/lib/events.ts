@@ -1,6 +1,8 @@
 "use client";
 
 import type { TrainingEvent, EventStatus, EventType, TargetAudience, EventSchedule, EventLocation, EventNotifications, EventResource, PostEvent } from "@/types";
+import { notifyEventCreated, notifyEventUpdated } from "./mock-notifications";
+import { getAllUsers } from "./auth";
 
 const STORAGE_KEY = "palmlearn-events";
 

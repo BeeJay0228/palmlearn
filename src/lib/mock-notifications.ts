@@ -13,15 +13,24 @@ export type NotificationCategory =
 export type NotificationType =
   | "training_programme_assigned"
   | "training_programme_updated"
+  | "programme_due_soon"
+  | "programme_overdue"
   | "course_assigned"
   | "course_completed"
+  | "course_unlocked"
   | "assignment_unlocked"
   | "assignment_submitted"
+  | "assignment_due_soon"
+  | "assignment_due_today"
+  | "assignment_overdue"
   | "event_created"
   | "event_reminder"
   | "event_today"
   | "event_updated"
   | "resource_added"
+  | "learner_progress"
+  | "admin_summary"
+  | "smart_reminder"
   | "welcome"
   | "password_changed"
   | "profile_updated"
@@ -41,15 +50,24 @@ export interface AppNotification {
 const CATEGORY_MAP: Record<NotificationType, NotificationCategory> = {
   training_programme_assigned: "training",
   training_programme_updated: "training",
+  programme_due_soon: "training",
+  programme_overdue: "training",
   course_assigned: "course",
   course_completed: "course",
+  course_unlocked: "course",
   assignment_unlocked: "assignment",
   assignment_submitted: "assignment",
+  assignment_due_soon: "assignment",
+  assignment_due_today: "assignment",
+  assignment_overdue: "assignment",
   event_created: "event",
   event_reminder: "event",
   event_today: "event",
   event_updated: "event",
   resource_added: "resource",
+  learner_progress: "training",
+  admin_summary: "system",
+  smart_reminder: "system",
   welcome: "system",
   password_changed: "system",
   profile_updated: "system",
@@ -393,11 +411,9 @@ export function createSystemNotification(title: string, message: string, userIds
 export function notifyAssignmentDueSoon(assignment: Assignment, learnerIds: string[], daysLeft: number): void {
   const notifications: AppNotification[] = learnerIds.map((userId) => ({
     id: generateId(),
-    title: daysLeft === 0 ? "Assignment Due Today" : "Assignment Due Soon",
-    message: daysLeft === 0
-      ? `'${assignment.name}' is due today!`
-      : `'${assignment.name}' is due in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}.`,
-    type: "assignment_unlocked",
+    title: "Assignment Due Soon",
+    message: `'${assignment.name}' is due in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}.`,
+    type: "assignment_due_soon",
     read: false,
     userId,
     link: "/learner/assignments",
@@ -413,7 +429,7 @@ export function notifyAssignmentOverdue(assignment: Assignment, learnerIds: stri
     id: generateId(),
     title: "Overdue Assignment",
     message: `'${assignment.name}' is now overdue. Please complete it as soon as possible.`,
-    type: "assignment_unlocked",
+    type: "assignment_overdue",
     read: false,
     userId,
     link: "/learner/assignments",
@@ -451,6 +467,182 @@ export function notifyProgrammeCompleted(programmeName: string, programmeId: str
     read: false,
     userId: learnerId,
     link: `/learner/programmes/${programmeId}`,
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
+export function notifyProgrammeDueSoon(programme: Programme, learnerId: string, daysLeft: number): void {
+  const label = daysLeft === 1 ? "tomorrow" : `in ${daysLeft} days`;
+  const notification: AppNotification = {
+    id: generateId(),
+    title: "Training Programme Due Soon",
+    message: `Training Programme '${programme.name}' is due ${label}.`,
+    type: "programme_due_soon",
+    read: false,
+    userId: learnerId,
+    link: `/learner/programmes/${programme.id}`,
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
+export function notifyProgrammeOverdue(programme: Programme, learnerId: string): void {
+  const notification: AppNotification = {
+    id: generateId(),
+    title: "Overdue Training Programme",
+    message: `Training Programme '${programme.name}' is now overdue. Please complete it as soon as possible.`,
+    type: "programme_overdue",
+    read: false,
+    userId: learnerId,
+    link: `/learner/programmes/${programme.id}`,
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
+export function notifyCourseUnlocked(courseTitle: string, courseId: string, learnerId: string): void {
+  const notification: AppNotification = {
+    id: generateId(),
+    title: "Course Unlocked",
+    message: `Course '${courseTitle}' has been unlocked and is ready to start.`,
+    type: "course_unlocked",
+    read: false,
+    userId: learnerId,
+    link: `/learner/my-courses/${courseId}`,
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
+export function notifyAssignmentDueToday(assignmentName: string, learnerIds: string[]): void {
+  const notifications: AppNotification[] = learnerIds.map((userId) => ({
+    id: generateId(),
+    title: "Assignment Due Today",
+    message: `'${assignmentName}' is due today!`,
+    type: "assignment_due_today",
+    read: false,
+    userId,
+    link: "/learner/assignments",
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyLearnerStartedProgramme(trainerIds: string[], learnerName: string, programmeName: string): void {
+  const notifications: AppNotification[] = trainerIds.map((userId) => ({
+    id: generateId(),
+    title: "Learner Started Programme",
+    message: `${learnerName} has started the Training Programme '${programmeName}'.`,
+    type: "learner_progress",
+    read: false,
+    userId,
+    link: "/trainer/dashboard",
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyLearnerCompletedCourse(trainerIds: string[], learnerName: string, courseTitle: string): void {
+  const notifications: AppNotification[] = trainerIds.map((userId) => ({
+    id: generateId(),
+    title: "Learner Completed Course",
+    message: `${learnerName} has completed the course '${courseTitle}'.`,
+    type: "learner_progress",
+    read: false,
+    userId,
+    link: "/trainer/dashboard",
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyLearnerSubmittedAssignment(trainerIds: string[], learnerName: string, assignmentName: string): void {
+  const notifications: AppNotification[] = trainerIds.map((userId) => ({
+    id: generateId(),
+    title: "Learner Submitted Assignment",
+    message: `${learnerName} has submitted the assignment '${assignmentName}'.`,
+    type: "learner_progress",
+    read: false,
+    userId,
+    link: "/trainer/dashboard",
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyLearnerCompletedProgramme(trainerIds: string[], learnerName: string, programmeName: string): void {
+  const notifications: AppNotification[] = trainerIds.map((userId) => ({
+    id: generateId(),
+    title: "Learner Completed Programme",
+    message: `${learnerName} has completed the Training Programme '${programmeName}'.`,
+    type: "learner_progress",
+    read: false,
+    userId,
+    link: "/trainer/dashboard",
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyLearnerOverdue(trainerIds: string[], learnerName: string, itemName: string): void {
+  const notifications: AppNotification[] = trainerIds.map((userId) => ({
+    id: generateId(),
+    title: "Learner Overdue",
+    message: `${learnerName} is overdue on '${itemName}'.`,
+    type: "learner_progress",
+    read: false,
+    userId,
+    link: "/trainer/dashboard",
+    createdAt: now(),
+  }));
+  const list = getStored();
+  list.push(...notifications);
+  setStored(list);
+}
+
+export function notifyAdminSummary(adminId: string, title: string, message: string, link?: string): void {
+  const notification: AppNotification = {
+    id: generateId(),
+    title,
+    message,
+    type: "admin_summary",
+    read: false,
+    userId: adminId,
+    link: link || "/admin/dashboard",
+    createdAt: now(),
+  };
+  const list = getStored();
+  list.push(notification);
+  setStored(list);
+}
+
+export function notifySmartReminder(learnerId: string, title: string, message: string): void {
+  const notification: AppNotification = {
+    id: generateId(),
+    title,
+    message,
+    type: "smart_reminder",
+    read: false,
+    userId: learnerId,
     createdAt: now(),
   };
   const list = getStored();

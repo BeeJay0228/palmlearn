@@ -1,5 +1,14 @@
 import type { LearnerAssignment, LearnerAssignmentStatus, Assignment } from "@/types";
-import { checkAndMarkProgrammeCompletion } from "./programmes";
+import { checkAndMarkProgrammeCompletion, getProgramme } from "./programmes";
+import { getAllUsers } from "./auth";
+import {
+  notifyAssignmentCompleted,
+  notifyCourseCompleted,
+  notifyLearnerStartedProgramme,
+  notifyLearnerCompletedCourse,
+  notifyLearnerSubmittedAssignment,
+  notifyLearnerCompletedProgramme,
+} from "./mock-notifications";
 
 const STORAGE_KEY = "palmlearn-learner-assignments";
 
@@ -143,25 +152,58 @@ export function getCourseProgress(learnerId: string, courseId: string): LearnerA
 }
 
 export function markAssignmentInProgress(id: string): LearnerAssignment | undefined {
-  return updateLearnerAssignment(id, {
+  const record = getLearnerAssignment(id);
+  const updated = updateLearnerAssignment(id, {
     status: "in_progress",
     firstOpened: new Date().toISOString(),
     lastActivity: new Date().toISOString(),
     progress: 10,
   });
+  if (updated && record && record.status === "not_started" && record.campaignId) {
+    const programme = getProgramme(record.campaignId);
+    if (programme) {
+      const trainerIds = getAllUsers().filter((u) => u.role === "trainer").map((u) => u.id);
+      if (trainerIds.length > 0) {
+        const learnerName = getAllUsers().find((u) => u.id === record.learnerId)?.name || record.learnerId;
+        notifyLearnerStartedProgramme(trainerIds, learnerName, programme.name);
+      }
+    }
+  }
+  return updated;
 }
 
 export function markAssignmentCompleted(id: string): LearnerAssignment | undefined {
   const record = getLearnerAssignment(id);
   if (!record) return undefined;
+  const prevStatus = record.status;
   const updated = updateLearnerAssignment(id, {
     status: "completed",
     progress: 100,
     completedDate: new Date().toISOString(),
     lastActivity: new Date().toISOString(),
   });
-  if (updated && record.campaignId) {
-    checkAndMarkProgrammeCompletion(record.learnerId, record.campaignId);
+  if (!updated) return undefined;
+
+  const learnerName = getAllUsers().find((u) => u.id === record.learnerId)?.name || record.learnerId;
+  const trainerIds = getAllUsers().filter((u) => u.role === "trainer").map((u) => u.id);
+
+  if (record.assignmentId) {
+    notifyAssignmentCompleted({ id: record.assignmentId, name: "Assignment" } as Assignment, record.learnerId);
+    if (trainerIds.length > 0) {
+      notifyLearnerSubmittedAssignment(trainerIds, learnerName, "an assignment");
+    }
+  }
+
+  if (record.campaignId) {
+    const programme = getProgramme(record.campaignId);
+    if (programme) {
+      const courseName = programme.name;
+      notifyCourseCompleted(courseName, record.courseId, record.learnerId);
+      if (trainerIds.length > 0 && prevStatus !== "completed") {
+        notifyLearnerCompletedCourse(trainerIds, learnerName, courseName);
+      }
+      checkAndMarkProgrammeCompletion(record.learnerId, record.campaignId);
+    }
   }
   return updated;
 }

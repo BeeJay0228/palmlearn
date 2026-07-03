@@ -1,9 +1,16 @@
 import type { Programme, ProgrammeStatus, TargetAudience } from "@/types";
-import { getCourseIdByTitle, ensureCoursesSeeded } from "./courses";
+import { getCourseIdByTitle, ensureCoursesSeeded, getCourses } from "./courses";
 import { getAssignments } from "./assignments";
 import { getAssignmentsForProgramme, createLearnerAssignment, getLearnerAssignments } from "./learner-assignments";
 import { getAllUsers } from "./auth";
-import { notifyTrainingProgrammeAssigned, notifyTrainingProgrammeUpdated, notifyProgrammeCompleted } from "./mock-notifications";
+import {
+  notifyTrainingProgrammeAssigned,
+  notifyTrainingProgrammeUpdated,
+  notifyProgrammeCompleted,
+  notifyCourseAssigned,
+  notifyLearnerCompletedProgramme,
+  notifyAdminSummary,
+} from "./mock-notifications";
 
 const STORAGE_KEY = "palmlearn-campaigns";
 
@@ -152,6 +159,18 @@ export function createProgramme(data: Omit<Programme, "id" | "createdAt" | "upda
   setStored(list);
   if (isActive) {
     bulkCreateForProgramme(programme.id);
+    const learnerIds = getProgrammeLearnerIds(programme);
+    if (programme.courseIds.length >= 5 || learnerIds.length >= 50) {
+      const adminIds = getAllUsers().filter((u) => u.role === "admin").map((u) => u.id);
+      for (const adminId of adminIds) {
+        notifyAdminSummary(
+          adminId,
+          "Large Programme Published",
+          `'${programme.name}' has been published with ${programme.courseIds.length} courses targeting ${learnerIds.length} learners.`,
+          "/admin/programmes"
+        );
+      }
+    }
   }
   return programme;
 }
@@ -205,6 +224,16 @@ export function updatePublishedProgramme(id: string, data: Partial<Programme>): 
           }
         }
       }
+      if (data.courseIds) {
+        const newCourses = data.courseIds.filter((cid) => !old.courseIds.includes(cid));
+        const allCourses = getCourses();
+        for (const courseId of newCourses) {
+          const course = allCourses.find((c) => c.id === courseId);
+          if (course) {
+            notifyCourseAssigned(course.title, courseId, learnerIds);
+          }
+        }
+      }
       notifyTrainingProgrammeUpdated(programme, learnerIds);
     }
   }
@@ -232,7 +261,20 @@ export function publishProgramme(id: string, userId: string): Programme | undefi
   };
   setStored(list);
   bulkCreateForProgramme(list[idx].id);
-  return list[idx];
+  const programme = list[idx];
+  const learnerIds = getProgrammeLearnerIds(programme);
+  if (programme.courseIds.length >= 5 || learnerIds.length >= 50) {
+    const adminIds = getAllUsers().filter((u) => u.role === "admin").map((u) => u.id);
+    for (const adminId of adminIds) {
+      notifyAdminSummary(
+        adminId,
+        "Large Programme Published",
+        `'${programme.name}' has been published with ${programme.courseIds.length} courses targeting ${learnerIds.length} learners.`,
+        "/admin/programmes"
+      );
+    }
+  }
+  return programme;
 }
 
 export function duplicateProgramme(id: string): Programme | undefined {
@@ -341,8 +383,14 @@ export function markProgrammeCompleted(learnerId: string, programmeId: string): 
     updatedAt: now(),
   };
   setStored(list);
-  notifyProgrammeCompleted(list[idx].name, programmeId, learnerId);
-  return list[idx];
+  const programme = list[idx];
+  notifyProgrammeCompleted(programme.name, programmeId, learnerId);
+  const trainerIds = getAllUsers().filter((u) => u.role === "trainer").map((u) => u.id);
+  if (trainerIds.length > 0) {
+    const learnerName = getAllUsers().find((u) => u.id === learnerId)?.name || learnerId;
+    notifyLearnerCompletedProgramme(trainerIds, learnerName, programme.name);
+  }
+  return programme;
 }
 
 export function checkAndMarkProgrammeCompletion(learnerId: string, programmeId: string): void {
