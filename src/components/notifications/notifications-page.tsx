@@ -371,7 +371,7 @@ export function NotificationsPage() {
                       <span className="text-xs text-content-tertiary">{timeAgo(n.createdAt)}</span>
                       {n.link && (
                         <button
-                          onClick={() => router.push(n.link!)}
+                          onClick={() => { if (!n.read) markAsRead(n.id); router.push(n.link!); }}
                           className="flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
                         >
                           <ExternalLink className="h-3 w-3" />

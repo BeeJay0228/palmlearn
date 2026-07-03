@@ -4,7 +4,7 @@ import { useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
-import { getNotifications, getUnreadCount, seedNotifications } from "@/lib/mock-notifications";
+import { getNotifications, getUnreadCount, markAsRead, seedNotifications } from "@/lib/mock-notifications";
 import { runReminderEngine } from "@/lib/reminder-engine";
 import { Bell } from "lucide-react";
 
@@ -72,7 +72,7 @@ export function NotificationsWidget({ className }: { className?: string }) {
           notifications.map((n) => (
             <div
               key={n.id}
-              onClick={() => { if (n.link) router.push(n.link); }}
+              onClick={() => { if (!n.read && n.link) markAsRead(n.id); if (n.link) router.push(n.link); }}
               className={cn(
                 "flex items-start gap-3 p-3 rounded-xl transition-colors cursor-pointer",
                 !n.read ? "bg-primary-50/60 dark:bg-primary-950/20" : "hover:bg-surface-hover",

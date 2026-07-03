@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { getProgrammes, getProgrammeLearnerIds, getProgrammeProgress, seedProgrammes } from "@/lib/programmes";
 import { getAssignmentsForProgramme } from "@/lib/learner-assignments";
@@ -9,16 +9,27 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { BookMarked, ChevronRight, BookOpen, CheckCircle, Clock, Users } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export default function LearnerProgrammesPage() {
   const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"active" | "completed">("active");
+  const [programmeId, setProgrammeId] = useState<string | null>(null);
+  const highlightRef = useRef<HTMLAnchorElement>(null);
+  const searchParams = useSearchParams();
+  const filterParam = searchParams.get("filter");
+  const programmeIdParam = searchParams.get("programmeId");
 
   useEffect(() => {
     seedProgrammes();
   }, []);
+
+  useEffect(() => {
+    if (filterParam === "training") setTab("active");
+    if (programmeIdParam) setProgrammeId(programmeIdParam);
+  }, [filterParam, programmeIdParam]);
 
   const items = useMemo(() => {
     if (!user) return [];
@@ -39,6 +50,12 @@ export default function LearnerProgrammesPage() {
     }
     return items;
   }, [user, tab]);
+
+  useEffect(() => {
+    if (highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [programmeId, items]);
 
   if (!user) return null;
 
@@ -75,6 +92,13 @@ export default function LearnerProgrammesPage() {
         </button>
       </div>
 
+      {filterParam === "training" && (
+        <div className="flex items-center gap-2 text-xs text-primary-600 font-medium animate-fade-in bg-primary-50 dark:bg-primary-950/20 px-3 py-2 rounded-lg w-fit">
+          <BookMarked className="h-3.5 w-3.5" />
+          Showing all programmes
+        </div>
+      )}
+
       {assignedItems.length === 0 ? (
         <EmptyState
           icon={BookMarked}
@@ -86,13 +110,16 @@ export default function LearnerProgrammesPage() {
           {assignedItems.map(({ programme, progress }) => {
             const isCompleted = progress.progress >= 100;
             const isInProgress = progress.progress > 0 && !isCompleted;
+            const isHighlighted = programmeId === programme.id;
             return (
               <Link
                 key={programme.id}
                 href={`/learner/programmes/${programme.id}`}
+                ref={isHighlighted ? highlightRef : undefined}
                 className={cn(
                   "flex flex-col sm:flex-row sm:items-center gap-4 p-5 rounded-2xl border border-border/50 bg-surface transition-all card-hover group",
                   isCompleted && "opacity-75",
+                  isHighlighted && "ring-2 ring-primary-500 animate-highlight-fade",
                 )}
               >
                 <div

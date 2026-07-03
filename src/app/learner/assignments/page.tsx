@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { getAssignmentsForLearner, checkAndUpdateOverdueStatus } from "@/lib/learner-assignments";
 import { getAssignments } from "@/lib/assignments";
@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ClipboardList, Clock, ChevronRight, AlertTriangle, CheckCircle, PlayCircle, BookOpen, Search, Filter } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface EnrichedItem extends LearnerAssignment {
@@ -33,6 +34,16 @@ export default function LearnerAssignmentsPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [search, setSearch] = useState("");
+  const [assignmentId, setAssignmentId] = useState<string | null>(null);
+  const highlightRef = useRef<HTMLAnchorElement>(null);
+  const searchParams = useSearchParams();
+  const filterParam = searchParams.get("filter");
+  const assignmentIdParam = searchParams.get("assignmentId");
+
+  useEffect(() => {
+    if (filterParam === "assignments") setActiveTab("All");
+    if (assignmentIdParam) setAssignmentId(assignmentIdParam);
+  }, [filterParam, assignmentIdParam]);
 
   const items = useMemo(() => {
     if (!user) return [];
@@ -62,6 +73,12 @@ export default function LearnerAssignmentsPage() {
     }
     return result;
   }, [items, activeTab, search]);
+
+  useEffect(() => {
+    if (highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [assignmentId, filtered]);
 
   if (!user) return null;
 
@@ -111,6 +128,13 @@ export default function LearnerAssignmentsPage() {
         ))}
       </div>
 
+      {filterParam === "assignments" && (
+        <div className="flex items-center gap-2 text-xs text-primary-600 font-medium animate-fade-in bg-primary-50 dark:bg-primary-950/20 px-3 py-2 rounded-lg w-fit">
+          <ClipboardList className="h-3.5 w-3.5" />
+          Showing all assignments
+        </div>
+      )}
+
       {/* List */}
       {filtered.length === 0 ? (
         <EmptyState
@@ -128,14 +152,17 @@ export default function LearnerAssignmentsPage() {
             const badge = STATUS_BADGE[item.status] || STATUS_BADGE.not_started;
             const isOverdue = item.status === "overdue";
             const isCompleted = item.status === "completed";
+            const isHighlighted = assignmentId === item.assignmentId;
             return (
               <Link
                 key={item.id}
                 href={`/learner/assignment/${item.id}`}
+                ref={isHighlighted ? highlightRef : undefined}
                 className={cn(
                   "flex items-center gap-4 p-4 rounded-2xl border border-border/50 bg-surface transition-all card-hover group",
                   isOverdue && "border-danger/30 bg-danger/[0.02]",
                   isCompleted && "opacity-75",
+                  isHighlighted && "ring-2 ring-primary-500 animate-highlight-fade",
                 )}
               >
                 <div

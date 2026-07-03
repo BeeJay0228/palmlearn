@@ -102,6 +102,46 @@ function setStored(items: AppNotification[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
+const MIGRATION_KEY = "palmlearn-notif-migration-v2";
+
+function migrateLinks(items: AppNotification[]): boolean {
+  if (typeof window !== "undefined" && localStorage.getItem(MIGRATION_KEY)) return false;
+  let changed = false;
+  for (const n of items) {
+    if (!n.link) continue;
+    const progMatch = n.link.match(/^\/learner\/programmes\/([^?]+)$/);
+    if (progMatch) {
+      n.link = `/learner/programmes?filter=training&programmeId=${progMatch[1]}`;
+      changed = true;
+      continue;
+    }
+    const courseMatch = n.link.match(/^\/learner\/my-courses\/([^?]+)$/);
+    if (courseMatch) {
+      n.link = `/learner/my-courses?courseId=${courseMatch[1]}`;
+      changed = true;
+      continue;
+    }
+    if (n.link === "/learner/assignments") {
+      n.link = `/learner/assignments?filter=assignments`;
+      changed = true;
+      continue;
+    }
+    const asgnMatch = n.link.match(/^\/learner\/assignments\/([^?]+)$/);
+    if (asgnMatch) {
+      n.link = `/learner/assignments?filter=assignments&assignmentId=${asgnMatch[1]}`;
+      changed = true;
+      continue;
+    }
+    if (n.link === "/learner/programmes" && (n.type.startsWith("training_") || n.type.startsWith("programme_"))) {
+      n.link = `/learner/programmes?filter=training`;
+      changed = true;
+      continue;
+    }
+  }
+  if (typeof window !== "undefined") localStorage.setItem(MIGRATION_KEY, "1");
+  return changed;
+}
+
 export function getNotifications(userId?: string): AppNotification[] {
   const all = getStored();
   const filtered = userId ? all.filter((n) => n.userId === userId) : all;
@@ -160,7 +200,7 @@ export function notifyTrainingProgrammeAssigned(programme: Programme, learnerIds
     type: "training_programme_assigned",
     read: false,
     userId,
-    link: `/learner/programmes/${programme.id}`,
+    link: `/learner/programmes?filter=training&programmeId=${programme.id}`,
     createdAt: now(),
   }));
   const list = getStored();
@@ -176,7 +216,7 @@ export function notifyTrainingProgrammeUpdated(programme: Programme, learnerIds:
     type: "training_programme_updated",
     read: false,
     userId,
-    link: `/learner/programmes/${programme.id}`,
+    link: `/learner/programmes?filter=training&programmeId=${programme.id}`,
     createdAt: now(),
   }));
   const list = getStored();
@@ -192,7 +232,7 @@ export function notifyCourseAssigned(courseTitle: string, courseId: string, lear
     type: "course_assigned",
     read: false,
     userId,
-    link: `/learner/my-courses/${courseId}`,
+    link: `/learner/my-courses?courseId=${courseId}`,
     createdAt: now(),
   }));
   const list = getStored();
@@ -208,7 +248,7 @@ export function notifyCourseCompleted(courseTitle: string, courseId: string, lea
     type: "course_completed",
     read: false,
     userId: learnerId,
-    link: `/learner/my-courses/${courseId}`,
+    link: `/learner/my-courses?courseId=${courseId}`,
     createdAt: now(),
   };
   const list = getStored();
@@ -224,7 +264,7 @@ export function notifyAssignmentUnlocked(assignment: Assignment, learnerIds: str
     type: "assignment_unlocked",
     read: false,
     userId,
-    link: "/learner/assignments",
+    link: `/learner/assignments?filter=assignments&assignmentId=${assignment.id}`,
     createdAt: now(),
   }));
   const list = getStored();
@@ -416,7 +456,7 @@ export function notifyAssignmentDueSoon(assignment: Assignment, learnerIds: stri
     type: "assignment_due_soon",
     read: false,
     userId,
-    link: "/learner/assignments",
+    link: `/learner/assignments?filter=assignments&assignmentId=${assignment.id}`,
     createdAt: now(),
   }));
   const list = getStored();
@@ -432,7 +472,7 @@ export function notifyAssignmentOverdue(assignment: Assignment, learnerIds: stri
     type: "assignment_overdue",
     read: false,
     userId,
-    link: "/learner/assignments",
+    link: `/learner/assignments?filter=assignments&assignmentId=${assignment.id}`,
     createdAt: now(),
   }));
   const list = getStored();
@@ -483,7 +523,7 @@ export function notifyProgrammeDueSoon(programme: Programme, learnerId: string, 
     type: "programme_due_soon",
     read: false,
     userId: learnerId,
-    link: `/learner/programmes/${programme.id}`,
+    link: `/learner/programmes?filter=training&programmeId=${programme.id}`,
     createdAt: now(),
   };
   const list = getStored();
@@ -653,17 +693,20 @@ export function notifySmartReminder(learnerId: string, title: string, message: s
 export function seedNotifications(): void {
   if (typeof window === "undefined") return;
   const existing = getStored();
-  if (existing.length > 0) return;
+  if (existing.length > 0) {
+    if (migrateLinks(existing)) setStored(existing);
+    return;
+  }
 
   const seed: AppNotification[] = [
-    { id: "notif_seed_1", title: "Training Programme Assigned", message: "Training Programme 'Q2 2026 Compliance Blitz' has been assigned to you.", type: "training_programme_assigned", read: false, userId: "user_learner_1", link: "/learner/programmes/1", createdAt: new Date(Date.now() - 3600000).toISOString() },
-    { id: "notif_seed_2", title: "Assignment Unlocked", message: "Assignment 'New Hire Onboarding - Compliance Training' has been unlocked.", type: "assignment_unlocked", read: false, userId: "user_learner_1", link: "/learner/assignments", createdAt: new Date(Date.now() - 7200000).toISOString() },
-    { id: "notif_seed_3", title: "Course Completed", message: "Congratulations! You completed 'Compliance Fundamentals'.", type: "course_completed", read: false, userId: "user_learner_1", link: "/learner/my-courses/course_1", createdAt: new Date(Date.now() - 86400000).toISOString() },
+    { id: "notif_seed_1", title: "Training Programme Assigned", message: "Training Programme 'Q2 2026 Compliance Blitz' has been assigned to you.", type: "training_programme_assigned", read: false, userId: "user_learner_1", link: "/learner/programmes?filter=training&programmeId=1", createdAt: new Date(Date.now() - 3600000).toISOString() },
+    { id: "notif_seed_2", title: "Assignment Unlocked", message: "Assignment 'New Hire Onboarding - Compliance Training' has been unlocked.", type: "assignment_unlocked", read: false, userId: "user_learner_1", link: "/learner/assignments?filter=assignments&assignmentId=1", createdAt: new Date(Date.now() - 7200000).toISOString() },
+    { id: "notif_seed_3", title: "Course Completed", message: "Congratulations! You completed 'Compliance Fundamentals'.", type: "course_completed", read: false, userId: "user_learner_1", link: "/learner/my-courses?courseId=course_1", createdAt: new Date(Date.now() - 86400000).toISOString() },
     { id: "notif_seed_4", title: "New Event", message: "New event 'Annual Compliance Workshop' has been created.", type: "event_created", read: false, userId: "user_learner_1", link: "/learner/events/event_1", createdAt: new Date(Date.now() - 172800000).toISOString() },
     { id: "notif_seed_5", title: "New Resource Added", message: "New resource 'Compliance Handbook 2026' has been added.", type: "resource_added", read: false, userId: "user_learner_1", link: "/learner/resource-library/res_1", createdAt: new Date(Date.now() - 259200000).toISOString() },
     { id: "notif_seed_6", title: "Welcome to PalmLearn", message: "Welcome, Learner! We're glad to have you on board.", type: "welcome", read: true, userId: "user_learner_1", link: "/dashboard", createdAt: new Date(Date.now() - 604800000).toISOString() },
-    { id: "notif_seed_7", title: "Training Programme Updated", message: "Training Programme 'Product Knowledge Refresh - Q2' has been updated.", type: "training_programme_updated", read: false, userId: "user_learner_1", link: "/learner/programmes/2", createdAt: new Date(Date.now() - 43200000).toISOString() },
-    { id: "notif_seed_8", title: "New Course Available", message: "Course 'Advanced Compliance' is now available for you.", type: "course_assigned", read: false, userId: "user_learner_1", link: "/learner/my-courses/course_2", createdAt: new Date(Date.now() - 10800000).toISOString() },
+    { id: "notif_seed_7", title: "Training Programme Updated", message: "Training Programme 'Product Knowledge Refresh - Q2' has been updated.", type: "training_programme_updated", read: false, userId: "user_learner_1", link: "/learner/programmes?filter=training&programmeId=2", createdAt: new Date(Date.now() - 43200000).toISOString() },
+    { id: "notif_seed_8", title: "New Course Available", message: "Course 'Advanced Compliance' is now available for you.", type: "course_assigned", read: false, userId: "user_learner_1", link: "/learner/my-courses?courseId=course_2", createdAt: new Date(Date.now() - 10800000).toISOString() },
   ];
   setStored(seed);
 }
