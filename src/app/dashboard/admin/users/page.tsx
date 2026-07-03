@@ -24,7 +24,7 @@ import {
   getStates,
   type CreateUserData,
 } from "@/lib/organization";
-import { UserPlus, Eye, Pencil, Trash2, Power, KeyRound, Loader2 } from "lucide-react";
+import { UserPlus, Eye, Pencil, Trash2, Power, KeyRound, Loader2, BarChart3 } from "lucide-react";
 import type { User, TableColumn, UserRole } from "@/types";
 import { ROLE_LABELS } from "@/constants";
 
@@ -192,9 +192,15 @@ export default function AdminUsersPage() {
       className: "text-right",
       render: (u) => (
         <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-          <button onClick={() => setViewingUser(u)} className="flex h-8 w-8 items-center justify-center rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover transition-colors" title="View">
-            <Eye className="h-4 w-4" />
-          </button>
+          {u.role === "learner" ? (
+            <a href={`/admin/learners/${u.id}/profile`} className="flex h-8 w-8 items-center justify-center rounded-lg text-content-secondary hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors" title="View Performance">
+              <BarChart3 className="h-4 w-4" />
+            </a>
+          ) : (
+            <button onClick={() => setViewingUser(u)} className="flex h-8 w-8 items-center justify-center rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover transition-colors" title="View">
+              <Eye className="h-4 w-4" />
+            </button>
+          )}
           <button onClick={() => openEdit(u)} className="flex h-8 w-8 items-center justify-center rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover transition-colors" title="Edit">
             <Pencil className="h-4 w-4" />
           </button>

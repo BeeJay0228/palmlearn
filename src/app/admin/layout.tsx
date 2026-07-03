@@ -30,6 +30,7 @@ const adminNavItems: NavItem[] = [
   { label: "Main", href: "", isSection: true },
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+  { label: "Trainer Analytics", href: "/admin/trainer-analytics", icon: UserCheck },
   { label: "Users", href: "/admin/users", icon: Users },
   { label: "Learning", href: "/admin/learning", icon: BookOpen },
   { label: "Reports", href: "/admin/reports", icon: BarChart3 },
