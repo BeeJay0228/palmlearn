@@ -24,6 +24,7 @@ import {
 const trainerNavItems: NavItem[] = [
   { label: "Main", href: "", isSection: true },
   { label: "Dashboard", href: "/trainer/dashboard", icon: LayoutDashboard },
+  { label: "Analytics", href: "/trainer/analytics", icon: BarChart3 },
   { label: "My Learners", href: "/trainer/my-learners", icon: Users },
   { label: "Reports", href: "/trainer/reports", icon: BarChart3 },
   { label: "Notifications", href: "/trainer/notifications", icon: Bell },

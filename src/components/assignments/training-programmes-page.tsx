@@ -147,7 +147,7 @@ export function TrainingProgrammesPage() {
                     <Eye className="h-3.5 w-3.5" />
                   </a>
                   <a
-                    href={`/${user?.role || "admin"}/programmes/${programme.id}?tab=analytics`}
+                    href={`/${user?.role || "admin"}/programmes/${programme.id}/analytics`}
                     className="flex h-7 w-7 items-center justify-center rounded-lg text-content-secondary hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors"
                     title="Analytics"
                   >
