@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getAssignmentsForLearner } from "@/lib/learner-assignments";
 import { getAssignments } from "@/lib/assignments";
 import { getCourses } from "@/lib/courses";
 import { getProgrammes, getProgrammeProgress } from "@/lib/programmes";
 import { useAuth } from "@/hooks/use-auth";
+import { useResumeData } from "@/hooks/use-learner-progress";
 import type { LearnerAssignment, Course, Assignment } from "@/types";
 import { PlayCircle, Clock, AlertCircle, CheckCircle, BookOpen, ChevronRight, GraduationCap } from "lucide-react";
 import Link from "next/link";
@@ -29,10 +30,14 @@ interface ProgrammeCard {
 
 export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Learning" }: { maxItems?: number; heading?: string }) {
   const { user } = useAuth();
+  const { items: resumeItems, loading: resumeLoading } = useResumeData(user?.id);
+  const [localItems, setLocalItems] = useState<EnrichedItem[]>([]);
 
-  const items = useMemo(() => {
-    if (!user) return [];
-    const records = getAssignmentsForLearner(user.id).filter((r) => r.status === "in_progress" || r.status === "not_started");
+  useEffect(() => {
+    if (!user) return;
+    const records = getAssignmentsForLearner(user.id).filter(
+      (r) => r.status === "in_progress" || r.status === "not_started"
+    );
     const courses = getCourses();
     const assignments = getAssignments();
     const enriched: EnrichedItem[] = records.map((r) => {
@@ -40,18 +45,43 @@ export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Lear
       const asgn = assignments.find((a) => a.id === r.assignmentId);
       return { ...r, course, assignment: asgn };
     });
-    // Sort: assignments first, then standalone courses
     enriched.sort((a, b) => {
       if (a.assignmentId && !b.assignmentId) return -1;
       if (!a.assignmentId && b.assignmentId) return 1;
       return 0;
     });
-    return enriched;
+    setLocalItems(enriched);
   }, [user]);
+
+  const displayItems = useMemo(() => {
+    if (resumeItems.length > 0) {
+      const courses = getCourses();
+      const assignments = getAssignments();
+      return resumeItems.map((r) => {
+        const course = courses.find((c) => c.id === r.courseId);
+        const asgn = assignments.find((a) => a.campaignId === r.campaignId);
+        return {
+          id: r.id,
+          assignmentId: asgn?.id || "",
+          campaignId: r.campaignId,
+          learnerId: user?.id || "",
+          courseId: r.courseId,
+          progress: r.progress,
+          status: r.status,
+          assignedDate: "",
+          lastActivity: r.lastActivity || undefined,
+          timeSpent: r.timeSpent || 0,
+          course,
+          assignment: asgn,
+        } as EnrichedItem;
+      });
+    }
+    return localItems;
+  }, [resumeItems, localItems, user]);
 
   const programmeItems = useMemo(() => {
     if (!user) return [];
-    if (items.length > 0) return [];
+    if (displayItems.length > 0) return [];
     const programmes = getProgrammes().filter((p) => p.status === "active");
     const withProgress = programmes.map((p) => {
       const progress = getProgrammeProgress(user.id, p);
@@ -66,9 +96,31 @@ export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Lear
       totalCourses: p.prog.totalCourses,
       completedCourses: p.prog.completedCourses,
     }));
-  }, [user, items]);
+  }, [user, displayItems]);
 
-  const allDone = items.length === 0 && programmeItems.length === 0;
+  const allDone = displayItems.length === 0 && programmeItems.length === 0;
+
+  if (resumeLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <PlayCircle className="h-5 w-5 text-primary-600" />
+          <h2 className="text-lg font-bold text-content">{heading}</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-2xl border border-border/50 bg-surface overflow-hidden animate-pulse">
+              <div className="h-28 bg-surface-secondary" />
+              <div className="p-3.5 space-y-2">
+                <div className="h-3 w-20 bg-surface-secondary rounded" />
+                <div className="h-4 w-32 bg-surface-secondary rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (allDone) {
     return (
@@ -95,7 +147,7 @@ export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Lear
         <h2 className="text-lg font-bold text-content">{heading}</h2>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {items.slice(0, maxItems).map((item) => (
+        {displayItems.slice(0, maxItems).map((item) => (
           <Link key={item.id} href={item.course ? `/learner/course-view/${item.course.id}` : "#"} className="group relative overflow-hidden rounded-2xl border border-border/50 bg-surface transition-all duration-300 card-hover cursor-pointer block">
             <div className="relative h-28 bg-gradient-to-br from-primary-600/20 to-primary-800/20 flex items-center justify-center overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-60" />
@@ -108,7 +160,7 @@ export function LearnerContinueLearning({ maxItems = 8, heading = "Continue Lear
             </div>
             <div className="p-3.5">
               <p className="text-[10px] font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-wider truncate">
-                {item.assignment?.name || "Assignment"}
+                {item.assignment?.name || "Course"}
               </p>
               <h3 className="text-sm font-semibold text-content mt-0.5 line-clamp-1">{item.course?.title || "Unknown Course"}</h3>
               <div className="flex items-center justify-between mt-2">

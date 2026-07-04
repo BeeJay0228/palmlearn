@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, Suspense } from "react";
+import { useMemo, Suspense, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/use-auth";
+import { useEnrollments } from "@/hooks/use-learner-progress";
 
 import { DashboardWelcome } from "@/components/dashboard/dashboard-welcome";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
@@ -12,6 +13,8 @@ import { DashboardMetricsGrid } from "@/components/dashboard/dashboard-metrics-g
 import { DashboardProgress } from "@/components/dashboard/dashboard-progress";
 import { NotificationsWidget } from "@/components/dashboard/notifications-widget";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { getAssignmentsForLearnerAll } from "@/lib/learner-assignments";
+import { getProgrammes, getProgrammeProgress } from "@/lib/programmes";
 
 const LearnerContinueLearning = dynamic(() => import("@/components/assignments/learner-assignments").then(m => m.LearnerContinueLearning), { ssr: false });
 const LearnerMandatoryLearning = dynamic(() => import("@/components/assignments/learner-assignments").then(m => m.LearnerMandatoryLearning), { ssr: false });
@@ -25,8 +28,6 @@ import {
   BookOpen, Clock, Award, TrendingUp, PlayCircle, CheckCircle, Star,
   BarChart3, GraduationCap, Trophy, Target,
 } from "lucide-react";
-import { getAssignmentsForLearnerAll } from "@/lib/learner-assignments";
-import { getProgrammes, getProgrammeProgress } from "@/lib/programmes";
 
 const recentActivity = [
   { id: "1", icon: PlayCircle, iconBg: "bg-blue-100 dark:bg-blue-950/30", iconColor: "text-blue-600 dark:text-blue-400", title: "Course resumed", description: "Continued Advanced Mathematics - Module 4", time: "30m ago" },
@@ -37,14 +38,14 @@ const recentActivity = [
 
 export default function LearnerDashboard() {
   const { user } = useAuth();
+  const { enrollments: apiEnrollments, loading: apiLoading } = useEnrollments(user?.id);
+  const [localMetrics, setLocalMetrics] = useState<Record<string, number> | null>(null);
 
-  const metrics = useMemo(() => {
-    if (!user) return null;
+  useEffect(() => {
+    if (!user) return;
     const allRecords = getAssignmentsForLearnerAll(user.id);
-
     const enrolledCourseIds = new Set(allRecords.map((r) => r.courseId).filter(Boolean));
     const enrolledCourses = enrolledCourseIds.size;
-
     const allProgrammes = getProgrammes();
     const assignedProgrammes = allProgrammes.filter((p) => {
       const progress = getProgrammeProgress(user.id, p);
@@ -57,14 +58,13 @@ export default function LearnerDashboard() {
       p.status === "completed" || getProgrammeProgress(user.id, p).progress >= 100
     );
     const totalProgrammes = assignedProgrammes.length;
-
     const standaloneAssignments = allRecords.filter((r) => r.assignmentId && !r.campaignId);
     const assignedAssignments = standaloneAssignments.length;
     const completedAssignments = standaloneAssignments.filter((r) => r.status === "completed").length;
     const inProgressAssignments = standaloneAssignments.filter((r) => r.status === "in_progress").length;
     const completedCourses = allRecords.filter((r) => r.courseId && r.status === "completed").length;
 
-    return {
+    setLocalMetrics({
       enrolledCourses,
       totalProgrammes,
       programmesActive: programmesActive.length,
@@ -73,8 +73,33 @@ export default function LearnerDashboard() {
       assignedAssignments,
       completedAssignments,
       inProgressAssignments,
-    };
+    });
   }, [user]);
+
+  const metrics = useMemo(() => {
+    if (!user) return null;
+
+    const fromLocal = localMetrics || {
+      enrolledCourses: 0, totalProgrammes: 0, programmesActive: 0,
+      programmesCompleted: 0, completedCourses: 0, assignedAssignments: 0,
+      completedAssignments: 0, inProgressAssignments: 0,
+    };
+
+    const enrolledCourseIds = new Set(apiEnrollments.map((e) => e.courseId));
+    const apiCompleted = apiEnrollments.filter((e) => e.status === "completed").length;
+    const apiInProgress = apiEnrollments.filter((e) => e.status === "in_progress").length;
+
+    return {
+      enrolledCourses: Math.max(enrolledCourseIds.size, fromLocal.enrolledCourses),
+      totalProgrammes: fromLocal.totalProgrammes,
+      programmesActive: fromLocal.programmesActive,
+      programmesCompleted: fromLocal.programmesCompleted,
+      completedCourses: Math.max(apiCompleted, fromLocal.completedCourses),
+      assignedAssignments: fromLocal.assignedAssignments,
+      completedAssignments: fromLocal.completedAssignments,
+      inProgressAssignments: Math.max(apiInProgress, fromLocal.inProgressAssignments),
+    };
+  }, [user, apiEnrollments, localMetrics]);
 
   if (!user) return null;
 

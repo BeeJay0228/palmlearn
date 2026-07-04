@@ -6,3 +6,9 @@ export { useToast } from "./use-toast";
 export { usePermission } from "./use-permission";
 export { useTableState } from "./use-table-state";
 export { useNotifications } from "./use-notifications";
+export {
+  useEnrollments,
+  useEnrollment,
+  useResumeData,
+  useLearningSession,
+} from "./use-learner-progress";

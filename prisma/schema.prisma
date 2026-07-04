@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,4 +5,64 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model LessonProgress {
+  id        String   @id @default(cuid())
+  learnerId String
+  courseId  String
+  moduleId  String
+  lessonId  String
+  completed Boolean  @default(false)
+  progress  Float    @default(0.0)
+  timeSpent Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([learnerId, lessonId])
+  @@index([learnerId, courseId])
+  @@index([learnerId, moduleId])
+}
+
+model LearnerProgress {
+  id                    String    @id
+  assignmentId          String
+  campaignId            String?
+  learnerId             String
+  courseId              String
+  progress              Int       @default(0)
+  status                String    @default("not_started")
+  assignedDate          DateTime  @default(now())
+  firstOpened           DateTime?
+  lastActivity          DateTime?
+  completedDate         DateTime?
+  timeSpent             Int       @default(0)
+  currentModuleId       String?
+  currentLessonId       String?
+  currentLessonProgress Float?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime
+
+  @@unique([learnerId, courseId])
+  @@index([assignmentId])
+  @@index([courseId])
+  @@index([learnerId])
+  @@index([learnerId, status])
+  @@index([status])
+}
+
+model LearningSession {
+  id             String    @id
+  learnerId      String
+  courseId       String
+  lessonId       String?
+  moduleId       String?
+  startTime      DateTime  @default(now())
+  endTime        DateTime?
+  duration       Int       @default(0)
+  progressBefore Int       @default(0)
+  progressAfter  Int       @default(0)
+
+  @@index([learnerId, courseId])
+  @@index([learnerId])
 }
