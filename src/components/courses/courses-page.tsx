@@ -6,7 +6,7 @@ import type { Course, CourseStatus, Difficulty } from "@/types";
 import { DIFFICULTY_LABELS, DIFFICULTY_COLORS, COURSE_STATUS_COLORS } from "@/types";
 import { getCourses, deleteCourse, duplicateCourse, updateCourseStatus } from "@/lib/courses";
 import { getCategories } from "@/lib/organization";
-import { useTrainerData } from "@/hooks/use-trainer-data";
+import { usePersistentData } from "@/hooks/use-persistent-data";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,8 +39,9 @@ export function CoursesPage() {
   const [_refreshKey, setRefreshKey] = useState(0);
   const allCourses = useMemo(() => getCourses(), []);
   const categories = useMemo(() => getCategories(), []);
-  const { data: trainerData, save: saveTrainerData } = useTrainerData();
   const { user } = useAuth();
+  const coursesApiPath = useMemo(() => user?.role === "admin" ? "/api/admin/data" : "/api/trainer/data", [user?.role]);
+  const { data: trainerData, save: saveTrainerData } = usePersistentData(coursesApiPath);
   const initialLoadDone = useRef(false);
 
   const savedFilters = (trainerData?.savedFilters as Record<string, unknown>)?.courses as Record<string, string | undefined> | undefined;

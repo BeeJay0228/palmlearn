@@ -3,7 +3,7 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { updateProfile, updatePassword } from "@/lib/auth";
-import { useTrainerData } from "@/hooks/use-trainer-data";
+import { usePersistentData } from "@/hooks/use-persistent-data";
 import Image from "next/image";
 import { Camera, Loader2, Save, Lock, KeyRound, Eye, EyeOff, CheckCircle2, AlertCircle, User } from "lucide-react";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,8 @@ import { ROLE_LABELS } from "@/constants";
 
 export function ProfilePage() {
   const { user, refreshUser } = useAuth();
-  const { data: trainerData, save: saveTrainerData } = useTrainerData();
+  const apiPath = useMemo(() => user?.role === "admin" ? "/api/admin/data" : "/api/trainer/data", [user?.role]);
+  const { data: profileData, save: saveProfileData } = usePersistentData(apiPath);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -41,8 +42,8 @@ export function ProfilePage() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
-    if (trainerData?.profile) {
-      const p = trainerData.profile as Record<string, string | undefined>;
+    if (profileData?.profile) {
+      const p = profileData.profile as Record<string, string | undefined>;
       setForm((prev) => ({
         name: p.name ?? prev.name,
         bio: p.bio ?? prev.bio,
@@ -51,7 +52,7 @@ export function ProfilePage() {
         homeAddress: p.homeAddress ?? prev.homeAddress,
       }));
     }
-  }, [trainerData?.profile]);
+  }, [profileData?.profile]);
 
   const initials = useMemo(() => {
     if (!user) return "?";
@@ -82,7 +83,7 @@ export function ProfilePage() {
         return;
       }
       refreshUser();
-      await saveTrainerData({
+      await saveProfileData({
         profile: form as unknown as Record<string, unknown>,
       });
       setSuccess("Profile updated successfully");

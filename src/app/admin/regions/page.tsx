@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useAdminData } from "@/hooks/use-admin-data";
 import { getRegions, createRegion, renameRegion, deleteRegion } from "@/lib/organization";
 import { Plus, Pencil, Trash2, MapPin, Check, X, Loader2 } from "lucide-react";
 import type { Region } from "@/types";
 
 export default function AdminRegionsPage() {
+  const { save: saveAdminData } = useAdminData();
   const [regions, setRegions] = useState<Region[]>(() => getRegions());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -31,6 +33,9 @@ export default function AdminRegionsPage() {
     createRegion(newName.trim());
     setNewName(""); setShowNew(false); setSaving(false);
     refresh();
+    saveAdminData({
+      workflowState: { lastAction: "create_region", name: newName.trim(), timestamp: new Date().toISOString() },
+    });
   }
 
   function handleRename(id: string) {
@@ -39,6 +44,9 @@ export default function AdminRegionsPage() {
     renameRegion(id, editName.trim());
     setEditingId(null); setSaving(false);
     refresh();
+    saveAdminData({
+      workflowState: { lastAction: "rename_region", regionId: id, timestamp: new Date().toISOString() },
+    });
   }
 
   function handleDelete() {
@@ -46,6 +54,9 @@ export default function AdminRegionsPage() {
     deleteRegion(deleteTarget.id);
     setDeleteTarget(null);
     refresh();
+    saveAdminData({
+      workflowState: { lastAction: "delete_region", regionId: deleteTarget.id, timestamp: new Date().toISOString() },
+    });
   }
 
   return (

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { PageHeader } from "@/components/ui/page-header";
+import { useAdminData } from "@/hooks/use-admin-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import { Plus, Pencil, Trash2, FolderTree, Check, X, Loader2 } from "lucide-reac
 import type { Category } from "@/types";
 
 export default function AdminCategoriesPage() {
+  const { save: saveAdminData } = useAdminData();
   const [categories, setCategories] = useState<Category[]>(() => getCategories());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -33,6 +35,9 @@ export default function AdminCategoriesPage() {
     setShowNew(false);
     setSaving(false);
     refresh();
+    saveAdminData({
+      workflowState: { lastAction: "create_category", name: newName.trim(), timestamp: new Date().toISOString() },
+    });
   }
 
   function handleRename(id: string) {
@@ -42,6 +47,9 @@ export default function AdminCategoriesPage() {
     setEditingId(null);
     setSaving(false);
     refresh();
+    saveAdminData({
+      workflowState: { lastAction: "rename_category", categoryId: id, timestamp: new Date().toISOString() },
+    });
   }
 
   function handleDelete() {
@@ -49,6 +57,9 @@ export default function AdminCategoriesPage() {
     deleteCategory(deleteTarget.id);
     setDeleteTarget(null);
     refresh();
+    saveAdminData({
+      workflowState: { lastAction: "delete_category", categoryId: deleteTarget.id, timestamp: new Date().toISOString() },
+    });
   }
 
   return (

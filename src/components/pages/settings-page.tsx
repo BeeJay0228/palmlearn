@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTheme } from "next-themes";
-import { useTrainerData } from "@/hooks/use-trainer-data";
+import { usePersistentData } from "@/hooks/use-persistent-data";
+import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Sun, Moon, Globe, Bell, Shield, Lock, Monitor, Laptop, CheckCircle2 } from "lucide-react";
@@ -33,23 +34,25 @@ const PRIVACY_ITEMS = [
 export function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("appearance");
   const { theme, setTheme } = useTheme();
-  const { data: trainerData, save: saveTrainerData } = useTrainerData();
+  const { user } = useAuth();
+  const apiPath = useMemo(() => user?.role === "admin" ? "/api/admin/data" : "/api/trainer/data", [user?.role]);
+  const { data: userData, save: saveUserData } = usePersistentData(apiPath);
   const [saved, setSaved] = useState(false);
 
-  const settings = (trainerData?.settings as Record<string, unknown>) || {};
+  const settings = (userData?.settings as Record<string, unknown>) || {};
   const notificationPrefs = (settings.notifications as Record<string, boolean>) || {};
   const privacyPrefs = (settings.privacy as Record<string, boolean>) || {};
 
   const handleThemeChange = async (newTheme: string) => {
     setTheme(newTheme);
-    await saveTrainerData({
+    await saveUserData({
       settings: { ...settings, theme: newTheme },
     });
   };
 
   const handleNotificationToggle = async (key: string, value: boolean) => {
     const updated = { ...notificationPrefs, [key]: value };
-    await saveTrainerData({
+    await saveUserData({
       settings: { ...settings, notifications: updated },
     });
     setSaved(true);
@@ -58,7 +61,7 @@ export function SettingsPage() {
 
   const handlePrivacyToggle = async (key: string, value: boolean) => {
     const updated = { ...privacyPrefs, [key]: value };
-    await saveTrainerData({
+    await saveUserData({
       settings: { ...settings, privacy: updated },
     });
     setSaved(true);
@@ -66,13 +69,13 @@ export function SettingsPage() {
   };
 
   const handleLanguageChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    await saveTrainerData({
+    await saveUserData({
       settings: { ...settings, language: e.target.value },
     });
   };
 
   const handleTimezoneChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    await saveTrainerData({
+    await saveUserData({
       settings: { ...settings, timezone: e.target.value },
     });
   };

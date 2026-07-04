@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/data-table";
+import { useAdminData } from "@/hooks/use-admin-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -29,6 +30,7 @@ import type { User, TableColumn, UserRole } from "@/types";
 import { ROLE_LABELS } from "@/constants";
 
 export default function AdminUsersPage() {
+  const { data: adminData, save: saveAdminData } = useAdminData();
   const [users, setUsers] = useState<User[]>(() => getManagedUsers());
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -107,6 +109,18 @@ export default function AdminUsersPage() {
         }
         setDrawerOpen(false);
         loadUsers();
+        saveAdminData({
+          userManagement: {
+            lastAction: "update",
+            userId: editingUser.id,
+            userName: form.name,
+            timestamp: new Date().toISOString(),
+          },
+          recentRecords: [
+            { id: editingUser.id, type: "user", name: form.name, action: "updated", timestamp: new Date().toISOString() },
+            ...((adminData?.recentRecords as unknown as Array<Record<string, unknown>>) || []).filter((r) => r.id !== editingUser.id).slice(0, 19),
+          ],
+        });
       } else {
         const result = createManagedUser(form);
         if (!result.success) {
@@ -119,6 +133,18 @@ export default function AdminUsersPage() {
         }
         setDrawerOpen(false);
         loadUsers();
+        saveAdminData({
+          userManagement: {
+            lastAction: "create",
+            userName: form.name,
+            userRole: form.role,
+            timestamp: new Date().toISOString(),
+          },
+          recentRecords: [
+            { id: Date.now().toString(), type: "user", name: form.name, action: "created", timestamp: new Date().toISOString() },
+            ...((adminData?.recentRecords as unknown as Array<Record<string, unknown>>) || []).slice(0, 19),
+          ],
+        });
       }
     } catch {
       setFormError("An unexpected error occurred.");
@@ -132,11 +158,28 @@ export default function AdminUsersPage() {
     deleteManagedUser(deleteTarget.id);
     setDeleteTarget(null);
     loadUsers();
+    saveAdminData({
+      userManagement: {
+        lastAction: "delete",
+        userId: deleteTarget.id,
+        userName: deleteTarget.name,
+        timestamp: new Date().toISOString(),
+      },
+    });
   }
 
   function handleToggleStatus(user: User) {
     toggleUserStatus(user.id);
     loadUsers();
+    const newStatus = user.status === "active" ? "deactivated" : "activated";
+    saveAdminData({
+      userManagement: {
+        lastAction: newStatus,
+        userId: user.id,
+        userName: user.name,
+        timestamp: new Date().toISOString(),
+      },
+    });
   }
 
   function handleResetPassword() {

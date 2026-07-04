@@ -3,6 +3,7 @@
 import { useMemo, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/use-auth";
+import { useAdminData } from "@/hooks/use-admin-data";
 import { DashboardWelcome } from "@/components/dashboard/dashboard-welcome";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
@@ -28,6 +29,9 @@ const AdminEventDashboardCards = dynamic(() => import("@/components/events/event
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const { data: adminData } = useAdminData();
+
+  const recentRecords = (adminData?.recentRecords as unknown as Array<{ id: string; type: string; name: string; action: string; timestamp: string }>) || [];
 
   const stats = useMemo(() => {
     const allUsers = getAllUsers();

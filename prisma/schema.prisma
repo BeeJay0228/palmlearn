@@ -84,3 +84,23 @@ model TrainerData {
 
   @@index([trainerId])
 }
+
+model AdminData {
+  id                   String   @id @default(cuid())
+  adminId              String   @unique
+  profile              Json?
+  settings             Json?
+  dashboardState       Json?
+  savedFilters         Json?
+  searchPrefs          Json?
+  userManagement       Json?
+  courseManagement     Json?
+  programmeManagement  Json?
+  assignmentManagement Json?
+  recentRecords        Json?
+  workflowState        Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([adminId])
+}

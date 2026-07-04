@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,11 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useAdminData } from "@/hooks/use-admin-data";
 import { getRegions, getStates, createState, renameState, deleteState } from "@/lib/organization";
 import { Plus, Pencil, Trash2, Globe, Check, X, Loader2 } from "lucide-react";
 import type { StateEntity, Region } from "@/types";
 
 export default function AdminStatesPage() {
+  const { save: saveAdminData } = useAdminData();
   const [regions] = useState<Region[]>(() => getRegions());
   const [states, setStates] = useState<StateEntity[]>(() => getStates());
   const [selectedRegion, setSelectedRegion] = useState("");
@@ -40,6 +42,9 @@ export default function AdminStatesPage() {
     createState(newName.trim(), newRegionId);
     setNewName(""); setNewRegionId(""); setShowNew(false); setSaving(false);
     refresh();
+    saveAdminData({
+      workflowState: { lastAction: "create_state", name: newName.trim(), timestamp: new Date().toISOString() },
+    });
   }
 
   function handleRename(id: string) {
@@ -48,6 +53,9 @@ export default function AdminStatesPage() {
     renameState(id, editName.trim());
     setEditingId(null); setSaving(false);
     refresh();
+    saveAdminData({
+      workflowState: { lastAction: "rename_state", stateId: id, timestamp: new Date().toISOString() },
+    });
   }
 
   function handleDelete() {
@@ -55,6 +63,9 @@ export default function AdminStatesPage() {
     deleteState(deleteTarget.id);
     setDeleteTarget(null);
     refresh();
+    saveAdminData({
+      workflowState: { lastAction: "delete_state", stateId: deleteTarget.id, timestamp: new Date().toISOString() },
+    });
   }
 
   function getRegionName(regionId: string) {
