@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { updateProfile, updatePassword } from "@/lib/auth";
+import { useTrainerData } from "@/hooks/use-trainer-data";
 import Image from "next/image";
 import { Camera, Loader2, Save, Lock, KeyRound, Eye, EyeOff, CheckCircle2, AlertCircle, User } from "lucide-react";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { ROLE_LABELS } from "@/constants";
 
 export function ProfilePage() {
   const { user, refreshUser } = useAuth();
+  const { data: trainerData, save: saveTrainerData } = useTrainerData();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -37,6 +39,19 @@ export function ProfilePage() {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  useEffect(() => {
+    if (trainerData?.profile) {
+      const p = trainerData.profile as Record<string, string | undefined>;
+      setForm((prev) => ({
+        name: p.name ?? prev.name,
+        bio: p.bio ?? prev.bio,
+        phone: p.phone ?? prev.phone,
+        officeAddress: p.officeAddress ?? prev.officeAddress,
+        homeAddress: p.homeAddress ?? prev.homeAddress,
+      }));
+    }
+  }, [trainerData?.profile]);
 
   const initials = useMemo(() => {
     if (!user) return "?";
@@ -67,6 +82,9 @@ export function ProfilePage() {
         return;
       }
       refreshUser();
+      await saveTrainerData({
+        profile: form as unknown as Record<string, unknown>,
+      });
       setSuccess("Profile updated successfully");
       setTimeout(() => setSuccess(null), 3000);
     } catch {

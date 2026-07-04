@@ -66,3 +66,21 @@ model LearningSession {
   @@index([learnerId, courseId])
   @@index([learnerId])
 }
+
+model TrainerData {
+  id                 String   @id @default(cuid())
+  trainerId          String   @unique
+  profile            Json?
+  settings           Json?
+  dashboardState     Json?
+  savedFilters       Json?
+  searchPrefs        Json?
+  courseProgress     Json?
+  programmeProgress  Json?
+  assignmentProgress Json?
+  recentContent      Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([trainerId])
+}

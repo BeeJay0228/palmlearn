@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { Course, CourseStatus } from "@/types";
 import { createCourse, updateCourse } from "@/lib/courses";
 import { useAuth } from "@/hooks/use-auth";
+import { useTrainerData } from "@/hooks/use-trainer-data";
 import { StepBasicInfo } from "./step-basic-info";
 import { StepStructure } from "./step-structure";
 import { StepResources } from "./step-resources";
 import { CoursePreview } from "./course-preview";
 import { StepPublish } from "./step-publish";
-import { X, ArrowLeft, ArrowRight, Save, Eye, AlertCircle } from "lucide-react";
+import { X, ArrowLeft, ArrowRight, Save, Eye, AlertCircle, Cloud } from "lucide-react";
 
 interface CourseBuilderProps {
   initialData?: Course;
@@ -29,6 +30,7 @@ const STEPS = [
 export function CourseBuilder({ initialData, onClose }: CourseBuilderProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const { save: saveTrainerData } = useTrainerData();
   const [currentStep, setCurrentStep] = useState(0);
   const [courseData, setCourseData] = useState<Partial<Course>>(
     initialData || {
@@ -52,9 +54,48 @@ export function CourseBuilder({ initialData, onClose }: CourseBuilderProps) {
   );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [autoSaving, setAutoSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saveError, setSaveError] = useState("");
+  const initialAutoSaveDone = useRef(false);
+  const courseIdRef = useRef<string | null>(initialData?.id || null);
+
+  useEffect(() => {
+    if (!initialAutoSaveDone.current && (courseData.title || initialData)) {
+      initialAutoSaveDone.current = true;
+      return;
+    }
+    if (!initialAutoSaveDone.current) return;
+    const timer = setTimeout(async () => {
+      setAutoSaving(true);
+      const courseId = courseIdRef.current || "temp_" + Date.now();
+      await saveTrainerData({
+        courseProgress: {
+          editingCourseId: courseId,
+          autoSaveData: courseData,
+          lastEditedAt: new Date().toISOString(),
+        },
+      });
+      setAutoSaving(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [courseData]);
+
+  useEffect(() => {
+    if (courseData.title && courseData.title.trim()) {
+      saveTrainerData({
+        recentContent: [
+          {
+            id: courseIdRef.current || "temp_" + Date.now(),
+            type: "course",
+            title: courseData.title,
+            updatedAt: new Date().toISOString(),
+          },
+        ],
+      });
+    }
+  }, [courseData.title]);
 
   const validate = useCallback((): boolean => {
     const errs: Record<string, string> = {};
@@ -83,15 +124,32 @@ export function CourseBuilder({ initialData, onClose }: CourseBuilderProps) {
       } else {
         const created = createCourse({ ...courseData, ...(status ? { status } : {}), createdBy: user?.id || "" });
         setCourseData(created);
+        courseIdRef.current = created.id;
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+      if (status === "published" || status === "draft") {
+        await saveTrainerData({
+          courseProgress: {
+            editingCourseId: courseIdRef.current,
+            lastEditedAt: new Date().toISOString(),
+          },
+          recentContent: [
+            {
+              id: courseIdRef.current,
+              type: "course",
+              title: courseData.title || "Untitled",
+              updatedAt: new Date().toISOString(),
+            },
+          ],
+        });
+      }
     } catch {
       setSaveError("An unexpected error occurred while saving.");
     } finally {
       setSaving(false);
     }
-  }, [courseData, initialData, user?.id, validate]);
+  }, [courseData, initialData, user?.id, validate, saveTrainerData]);
 
   const handleStatusChange = useCallback((status: CourseStatus) => {
     setCourseData((prev) => ({ ...prev, status }));
@@ -130,6 +188,12 @@ export function CourseBuilder({ initialData, onClose }: CourseBuilderProps) {
           <h1 className="text-lg font-semibold text-content">{initialData ? "Edit Course" : "Create Course"}</h1>
         </div>
         <div className="flex items-center gap-2">
+          {autoSaving && (
+            <span className="flex items-center gap-1 text-xs text-content-tertiary">
+              <Cloud className="h-3 w-3 animate-pulse" />
+              Auto-saving...
+            </span>
+          )}
           <button
             type="button"
             onClick={() => setShowPreview(true)}

@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/use-auth";
+import { useTrainerData } from "@/hooks/use-trainer-data";
 import { useRouter } from "next/navigation";
 import { DashboardWelcome } from "@/components/dashboard/dashboard-welcome";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
@@ -20,13 +21,26 @@ import {
   BarChart3, Star, CheckCircle, PlayCircle, Target,
 } from "lucide-react";
 
-const recentActivity = [
-  { id: "1", icon: Users, iconBg: "bg-blue-100 dark:bg-blue-950/30", iconColor: "text-blue-600 dark:text-blue-400", title: "New learner added", description: "Michael Chen joined your Mathematics class", time: "15m ago" },
-  { id: "2", icon: ClipboardList, iconBg: "bg-emerald-100 dark:bg-emerald-950/30", iconColor: "text-emerald-600 dark:text-emerald-400", title: "Assignment graded", description: "Week 4 quiz results published to 32 learners", time: "1h ago" },
-  { id: "3", icon: Clock, iconBg: "bg-amber-100 dark:bg-amber-950/30", iconColor: "text-amber-600 dark:text-amber-400", title: "Session scheduled", description: "Advanced Physics lab rescheduled to Friday", time: "2h ago" },
-  { id: "4", icon: Award, iconBg: "bg-purple-100 dark:bg-purple-950/30", iconColor: "text-purple-600 dark:text-purple-400", title: "Certification update", description: "5 learners completed Python certification", time: "4h ago" },
-  { id: "5", icon: Star, iconBg: "bg-rose-100 dark:bg-rose-950/30", iconColor: "text-rose-600 dark:text-rose-400", title: "Top performer", description: "Adaobi scored 98% on advanced assessment", time: "6h ago" },
-];
+function getTimeAgo(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diff = now - then;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+const iconMap: Record<string, typeof BookOpen> = {
+  course: BookOpen,
+  programme: ClipboardList,
+  assignment: ClipboardList,
+  event: CalendarDays,
+};
 
 const topLearners = [
   { name: "Adaobi Okonkwo", score: 98, course: "Data Science", avatar: "AO", color: "from-amber-400 to-amber-600" },
@@ -38,7 +52,34 @@ const topLearners = [
 
 export default function TrainerDashboard() {
   const { user } = useAuth();
+  const { data: trainerData } = useTrainerData();
   const router = useRouter();
+
+  const recentContent = (trainerData?.recentContent as unknown as Array<{ id: string; type: string; title: string; updatedAt: string }>) || [];
+
+  const recentActivity = useMemo(() => {
+    return recentContent.slice(0, 5).map((item, idx) => {
+      const Icon = iconMap[item.type] || BookOpen;
+      const colors: Record<string, { bg: string; color: string }> = {
+        course: { bg: "bg-blue-100 dark:bg-blue-950/30", color: "text-blue-600 dark:text-blue-400" },
+        programme: { bg: "bg-emerald-100 dark:bg-emerald-950/30", color: "text-emerald-600 dark:text-emerald-400" },
+        assignment: { bg: "bg-amber-100 dark:bg-amber-950/30", color: "text-amber-600 dark:text-amber-400" },
+        event: { bg: "bg-purple-100 dark:bg-purple-950/30", color: "text-purple-600 dark:text-purple-400" },
+      };
+      const c = colors[item.type] || colors.course;
+      const timeAgo = getTimeAgo(item.updatedAt);
+      const typeLabel = item.type.charAt(0).toUpperCase() + item.type.slice(1);
+      return {
+        id: item.id || String(idx),
+        icon: Icon,
+        iconBg: c.bg,
+        iconColor: c.color,
+        title: `${typeLabel} updated`,
+        description: item.title,
+        time: timeAgo,
+      };
+    });
+  }, [recentContent]);
 
   if (!user) return null;
 

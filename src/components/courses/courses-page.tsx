@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import type { Course, CourseStatus, Difficulty } from "@/types";
 import { DIFFICULTY_LABELS, DIFFICULTY_COLORS, COURSE_STATUS_COLORS } from "@/types";
 import { getCourses, deleteCourse, duplicateCourse, updateCourseStatus } from "@/lib/courses";
 import { getCategories } from "@/lib/organization";
+import { useTrainerData } from "@/hooks/use-trainer-data";
+import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,6 +39,12 @@ export function CoursesPage() {
   const [_refreshKey, setRefreshKey] = useState(0);
   const allCourses = useMemo(() => getCourses(), []);
   const categories = useMemo(() => getCategories(), []);
+  const { data: trainerData, save: saveTrainerData } = useTrainerData();
+  const { user } = useAuth();
+  const initialLoadDone = useRef(false);
+
+  const savedFilters = (trainerData?.savedFilters as Record<string, unknown>)?.courses as Record<string, string | undefined> | undefined;
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<CourseStatus | "all">("all");
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | "all">("all");
@@ -49,6 +57,50 @@ export function CoursesPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<Course | null>(null);
   const [successMsg, setSuccessMsg] = useState("");
   const pageSize = 10;
+
+  useEffect(() => {
+    if (savedFilters && !initialLoadDone.current) {
+      initialLoadDone.current = true;
+      if (savedFilters.searchQuery) setSearchQuery(savedFilters.searchQuery);
+      if (savedFilters.statusFilter && savedFilters.statusFilter !== "all") setStatusFilter(savedFilters.statusFilter as CourseStatus | "all");
+      if (savedFilters.difficultyFilter && savedFilters.difficultyFilter !== "all") setDifficultyFilter(savedFilters.difficultyFilter as Difficulty | "all");
+    }
+  }, [savedFilters]);
+
+  useEffect(() => {
+    if (!initialLoadDone.current) return;
+    const timer = setTimeout(() => {
+      saveTrainerData({
+        savedFilters: {
+          ...(trainerData?.savedFilters as Record<string, unknown>),
+          courses: { searchQuery, statusFilter, difficultyFilter, sortField, sortAsc },
+        },
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery, statusFilter, difficultyFilter, sortField, sortAsc, saveTrainerData, trainerData?.savedFilters]);
+
+  useEffect(() => {
+    if (user && editingCourse) {
+      saveTrainerData({
+        courseProgress: {
+          editingCourseId: editingCourse.id,
+          lastEditedAt: new Date().toISOString(),
+        },
+        recentContent: [
+          {
+            id: editingCourse.id,
+            type: "course",
+            title: editingCourse.title,
+            updatedAt: new Date().toISOString(),
+          },
+          ...((trainerData?.recentContent as Array<Record<string, unknown>>) || []).filter(
+            (item) => item.id !== editingCourse.id
+          ).slice(0, 9),
+        ],
+      });
+    }
+  }, [editingCourse?.id]);
 
   const filtered = useMemo(() => {
     let result = [...allCourses];
@@ -111,6 +163,12 @@ export function CoursesPage() {
     if (copy) {
       setRefreshKey((k) => k + 1);
       showSuccess(`"${copy.title}" created.`);
+      saveTrainerData({
+        recentContent: [
+          { id: copy.id, type: "course", title: copy.title, updatedAt: new Date().toISOString() },
+          ...((trainerData?.recentContent as unknown as Array<Record<string, unknown>>) || []).filter((item) => item.id !== copy.id).slice(0, 9),
+        ],
+      });
     }
   };
 
@@ -118,6 +176,14 @@ export function CoursesPage() {
     updateCourseStatus(course.id, status);
     setRefreshKey((k) => k + 1);
     showSuccess(`Course ${status === "published" ? "published" : status === "archived" ? "archived" : "status updated"} successfully.`);
+    if (status === "published") {
+      saveTrainerData({
+        recentContent: [
+          { id: course.id, type: "course", title: course.title, updatedAt: new Date().toISOString() },
+          ...((trainerData?.recentContent as Array<Record<string, unknown>>) || []).filter((item) => item.id !== course.id).slice(0, 9),
+        ],
+      });
+    }
   };
 
   const getCategoryName = (id: string): string => {
